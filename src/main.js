@@ -30,6 +30,8 @@ import ImageUpload from "@/components/ImageUpload"
 import DictTag from '@/components/DictTag'
 // 头部标签组件
 import VueMeta from 'vue-meta'
+//高德地图引入
+import AMap from 'vue-amap';
 
 // 全局方法挂载
 Vue.prototype.getDicts = getDicts
@@ -64,6 +66,7 @@ Vue.component('ImageUpload', ImageUpload)
 
 Vue.use(directive)
 Vue.use(VueMeta)
+Vue.use(AMap);
 
 /**
  * If you don't want to use mock-server
@@ -73,6 +76,16 @@ Vue.use(VueMeta)
  * Currently MockJs will be used in the production environment,
  * please remove it before going online! ! !
  */
+// 初始化vue-amap
+AMap.initAMapApiLoader({
+  // 高德key
+  key: '0b9e9ed233fe8d4516eeaa5c7afe393c',
+  // 插件集合 （插件按需引入）
+  plugin: ['AMap.Scale','Amap.OverView','AMap.ToolBar','AMap.MapType','AMap.PlaceSearch','AMap.Geolocation','AMap.Geocoder'],
+  v: '1.4.4',
+  uiVersion:'1.0'
+
+});
 
 Vue.use(Element, {
   size: Cookies.get('size') || 'medium' // set element-ui default size

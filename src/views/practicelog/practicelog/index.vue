@@ -10,15 +10,15 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="地点信息" prop="locationName">
-        <el-input
-          v-model="queryParams.locationName"
-          placeholder="请输入地点信息"
-          clearable
-          size="small"
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
+<!--      <el-form-item label="地点信息" prop="locationName">-->
+<!--        <el-input-->
+<!--          v-model="queryParams.locationName"-->
+<!--          placeholder="请输入地点信息"-->
+<!--          clearable-->
+<!--          size="small"-->
+<!--          @keyup.enter.native="handleQuery"-->
+<!--        />-->
+<!--      </el-form-item>-->
       <el-form-item label="时间" prop="time">
         <el-date-picker clearable size="small"
                         v-model="queryParams.time"
@@ -85,7 +85,8 @@
       <el-table-column label="序号" type="index" align="center" show-overflow-tooltip width="50px">
       </el-table-column>
 <!--      <el-table-column label="日志ID" align="center" prop="logId" />-->
-<!--      <el-table-column label="用户姓名" align="center" prop="userName" width="100"/>-->
+      <el-table-column label="用户账号" align="center" prop="userName" width="100"/>
+      <el-table-column label="用户姓名" align="center" prop="user.nickName"/>
 <!--      <el-table-column label="地点信息" align="center" prop="locationName" />-->
       <el-table-column label="创建时间" align="center" prop="time" width="180">
         <template slot-scope="scope">
@@ -293,6 +294,7 @@
         this.form = {
           logId: null,
           userName: null,
+          nickName: null,
           locationId: null,
           time: null,
           logContents: null,
