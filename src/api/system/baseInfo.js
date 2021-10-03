@@ -3,7 +3,7 @@ import request from '@/utils/request'
 // 查询基地信息管理列表
 export function listBaseInfo(query) {
   return request({
-    url: '/baseInfo/baseInfo/list',
+    url: '/system/baseInfo/list',
     method: 'get',
     params: query
   })
@@ -12,7 +12,7 @@ export function listBaseInfo(query) {
 // 查询基地信息管理详细
 export function getBaseInfo(baseId) {
   return request({
-    url: '/baseInfo/baseInfo/' + baseId,
+    url: '/system/baseInfo/' + baseId,
     method: 'get'
   })
 }
@@ -20,7 +20,7 @@ export function getBaseInfo(baseId) {
 // 新增基地信息管理
 export function addBaseInfo(data) {
   return request({
-    url: '/baseInfo/baseInfo',
+    url: '/system/baseInfo',
     method: 'post',
     data: data
   })
@@ -29,7 +29,20 @@ export function addBaseInfo(data) {
 // 修改基地信息管理
 export function updateBaseInfo(data) {
   return request({
-    url: '/baseInfo/baseInfo',
+    url: '/system/baseInfo',
+    method: 'put',
+    data: data
+  })
+}
+
+// 修改基地信息状态
+export function changeBaseStatus(baseId,status) {
+  const data = {
+    baseId,
+    status
+  }
+  return request({
+    url: '/system/baseInfo/changeStatus',
     method: 'put',
     data: data
   })
@@ -38,7 +51,7 @@ export function updateBaseInfo(data) {
 // 删除基地信息管理
 export function delBaseInfo(baseId) {
   return request({
-    url: '/baseInfo/baseInfo/' + baseId,
+    url: '/system/baseInfo/' + baseId,
     method: 'delete'
   })
 }
@@ -46,8 +59,10 @@ export function delBaseInfo(baseId) {
 // 导出基地信息管理
 export function exportBaseInfo(query) {
   return request({
-    url: '/baseInfo/baseInfo/export',
+    url: '/system/baseInfo/export',
     method: 'get',
     params: query
   })
 }
+
+
