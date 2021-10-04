@@ -27,50 +27,7 @@
           placeholder="选择开始时间">
         </el-date-picker>
       </el-form-item>
-      <el-form-item label="结束时间" prop="endTime">
-        <el-date-picker clearable size="small"
-          v-model="queryParams.endTime"
-          type="date"
-          value-format="yyyy-MM-dd"
-          placeholder="选择结束时间">
-        </el-date-picker>
-      </el-form-item>
-      <el-form-item label="系统参考成绩" prop="sysScore">
-        <el-input
-          v-model="queryParams.sysScore"
-          placeholder="请输入系统参考成绩"
-          clearable
-          size="small"
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="实习单位评定成绩" prop="companyScore">
-        <el-input
-          v-model="queryParams.companyScore"
-          placeholder="请输入实习单位评定成绩"
-          clearable
-          size="small"
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="实习指导老师评定成绩" prop="teacherScore">
-        <el-input
-          v-model="queryParams.teacherScore"
-          placeholder="请输入实习指导老师评定成绩"
-          clearable
-          size="small"
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="最终成绩" prop="finalScore">
-        <el-input
-          v-model="queryParams.finalScore"
-          placeholder="请输入最终成绩"
-          clearable
-          size="small"
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
+
       <el-form-item label="状态" prop="status">
         <el-select v-model="queryParams.status" placeholder="请选择状态" clearable size="small">
           <el-option label="请选择字典生成" value="" />
@@ -131,22 +88,22 @@
 
     <el-table v-loading="loading" :data="practiceScoreList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="成绩ID" align="center" prop="scoreId" />
+      <el-table-column label="ID" align="center" prop="scoreId" width="40" />
       <el-table-column label="用户ID" align="center" prop="userId" />
       <el-table-column label="地点ID" align="center" prop="locationId" />
-      <el-table-column label="开始时间" align="center" prop="startTime" width="180">
+      <el-table-column label="开始时间" align="center" prop="startTime" width="110">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.startTime, '{y}-{m}-{d}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="结束时间" align="center" prop="endTime" width="180">
+      <el-table-column label="结束时间" align="center" prop="endTime" width="110">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.endTime, '{y}-{m}-{d}') }}</span>
         </template>
       </el-table-column>
       <el-table-column label="系统参考成绩" align="center" prop="sysScore" />
       <el-table-column label="实习单位评定成绩" align="center" prop="companyScore" />
-      <el-table-column label="实习指导老师评定成绩" align="center" prop="teacherScore" />
+      <el-table-column label="指导老师评定成绩" align="center" prop="teacherScore" />
       <el-table-column label="最终成绩" align="center" prop="finalScore" />
       <el-table-column label="实习鉴定表" align="center" prop="appraisal" />
       <el-table-column label="实习总结" align="center" prop="summary" />
@@ -154,7 +111,7 @@
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
-            size="mini"
+            size="primary"
             type="text"
             icon="el-icon-edit"
             @click="handleUpdate(scope.row)"
