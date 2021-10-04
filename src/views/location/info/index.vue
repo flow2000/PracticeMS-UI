@@ -10,37 +10,19 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
+      <el-form-item label="详细地址" prop="address">
+        <el-input
+          v-model="queryParams.address"
+          placeholder="请输入详细地址"
+          clearable
+          size="small"
+          @keyup.enter.native="handleQuery"
+        />
+      </el-form-item>
       <el-form-item label="联系人" prop="contacts">
         <el-input
           v-model="queryParams.contacts"
           placeholder="请输入联系人"
-          clearable
-          size="small"
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="联系电话" prop="phone">
-        <el-input
-          v-model="queryParams.phone"
-          placeholder="请输入联系电话"
-          clearable
-          size="small"
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="单位性质" prop="nature">
-        <el-input
-          v-model="queryParams.nature"
-          placeholder="请输入单位性质"
-          clearable
-          size="small"
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="法定代表" prop="leader">
-        <el-input
-          v-model="queryParams.leader"
-          placeholder="请输入法定代表"
           clearable
           size="small"
           @keyup.enter.native="handleQuery"
@@ -154,7 +136,14 @@
           <el-input v-model="form.companyName" placeholder="请输入单位名称" />
         </el-form-item>
         <el-form-item label="详细地址" prop="address">
-          <el-input v-model="form.address" type="textarea" placeholder="请输入内容" />
+          <el-input v-model="form.address" type="textarea" id="search" placeholder="请输入详细地址" />
+          <div class="tip-box" id="searchTip" style="z-index: 999999;"></div>
+          <el-amap class="amap-box" :amap-manager="amapManager" :vid="'amap-vue'" :zoom="zoom" :plugin="plugin" :center="center" :events="events">
+            <el-amap-marker v-for="(marker, index) in markers" :position="marker" :key="index"></el-amap-marker>
+          </el-amap>
+        </el-form-item>
+        <el-form-item label="经纬度" prop="tude" v-show="false">
+          <el-input v-model="form.tude" id="tude" />
         </el-form-item>
         <el-form-item label="联系人" prop="contacts">
           <el-input v-model="form.contacts" placeholder="请输入联系人" />
@@ -185,13 +174,57 @@
     </el-dialog>
   </div>
 </template>
+<style lang="scss" scoped>
+  .container {
+    width:100%;
+    height:600px;
+  }
 
+  .search-box {
+    position: absolute;
+    z-index: 5;
+    width: 70%;
+    left: 13%;
+    top: 10px;
+    height: 30px;
+  }
+
+  .search-box input {
+    float: left;
+    width: 59%;
+    height: 100%;
+    border: 1px solid #30ccc1;
+    padding: 0 8px;
+    outline: none;
+  }
+
+  .search-box button {
+    float: left;
+    width: 20%;
+    height: 100%;
+    background: #30ccc1;
+    border: 1px solid #30ccc1;
+    color: #fff;
+    outline: none;
+  }
+
+  .tip-box {
+    width: 100%;
+    max-height: 260px;
+    position: absolute;
+    top: 30px;
+    overflow-y: auto;
+    background-color: #fff;
+  }
+</style>
 <script>
-import { listInfo, getInfo, delInfo, addInfo, updateInfo, exportInfo, changeLocationStatus } from "@/api/location/info";
-
+import { getTude, listInfo, getInfo, delInfo, addInfo, updateInfo, exportInfo, changeLocationStatus } from "@/api/location/info";
+import {AMapManager, lazyAMapApiLoaderInstance} from 'vue-amap'
+let amapManager = new AMapManager()
 export default {
   name: "Info",
   data() {
+    let self = this
     return {
       // 遮罩层
       loading: true,
@@ -224,9 +257,6 @@ export default {
         companyName: null,
         address: null,
         contacts: null,
-        phone: null,
-        nature: null,
-        leader: null,
       },
       // 表单参数
       form: {},
@@ -238,11 +268,7 @@ export default {
         address: [
           { required: true, message: "详细地址不能为空", trigger: "blur" }
         ],
-        contacts: [
-          { required: true, message: "联系人不能为空", trigger: "blur" }
-        ],
         phone: [
-          { required: true, message: "联系电话不能为空", trigger: "blur" },
           { pattern: /^1[3|4|5|6|7|8|9][0-9]\d{8}$/, message: "请输入正确的手机号码", trigger: "blur" }
         ],
         nature: [
@@ -251,7 +277,125 @@ export default {
         leader: [
           { required: true, message: "法定代表不能为空", trigger: "blur" }
         ],
-      }
+      },
+      address: null,
+      searchKey: '',
+      amapManager,
+      markers: [[108.239658,22.849789],[108.242119,22.846575]],
+      searchOption: {
+        city: '全国',
+        citylimit: true
+      },
+      center: [108.239658,22.849789],
+      zoom: 17,
+      lng: 0,
+      lat: 0,
+      loaded: false,
+      markerEvent:{
+        click(e){
+          console.log("地址为:"+e);
+        }
+      },
+      events: {
+        init() {
+          lazyAMapApiLoaderInstance.load().then(() => {
+            self.initSearch()
+          })
+        },
+        // 点击获取地址的数据
+        click(e) {
+          self.markers = []
+          let {lng, lat} = e.lnglat
+          self.lng = lng
+          self.lat = lat
+          self.center = [lng, lat]
+          self.markers.push([lng, lat])
+          // 这里通过高德 SDK 完成。
+          let geocoder = new AMap.Geocoder({
+            radius: 1000,
+            extensions: 'all'
+          })
+          geocoder.getAddress([lng, lat], function (status, result) {
+            if (status === 'complete' && result.info === 'OK') {
+              if (result && result.regeocode) {
+                // console.log(result.regeocode.aois[0].location.lat)
+                // console.log(result.regeocode.aois[0].location.lng)
+                // console.log("地址为:"+result.regeocode.formattedAddress)
+                self.address = result.regeocode.formattedAddress
+                self.searchKey = result.regeocode.formattedAddress
+                self.$nextTick()
+              }
+            }
+          })
+        }
+      },
+      // 一些工具插件
+      plugin: [
+        {
+          // 定位
+          pName: 'Geolocation',
+          events: {
+            init(o) {
+              // o是高德地图定位插件实例
+              o.getCurrentPosition((status, result) => {
+                if (result && result.position) {
+                  // 设置经度
+                  self.lng = result.position.lng
+                  // 设置维度
+                  self.lat = result.position.lat
+                  // 设置坐标
+                  self.center = [self.lng, self.lat]
+                  self.markers.push([self.lng, self.lat])
+                  // load
+                  self.loaded = true
+                  // 页面渲染好后
+                  self.$nextTick()
+                }
+              })
+            },
+            click(e){
+              console.log(e);
+            }
+          }
+        },
+        {
+          // 工具栏
+          pName: 'ToolBar',
+          events: {
+            init(instance) {
+              console.log(instance);
+            }
+          }
+        },
+        {
+          // 鹰眼
+          pName: 'OverView',
+          events: {
+            init(instance) {
+              console.log(instance);
+            }
+          }
+        },
+        {
+          // 地图类型
+          pName: 'MapType',
+          defaultType: 0,
+          events: {
+            init(instance) {
+              console.log(instance);
+            }
+          }
+        },
+        {
+          // 搜索
+          pName: 'PlaceSearch',
+          events: {
+            init(instance) {
+              console.log(instance)
+            }
+          }
+        }
+      ]
     };
   },
   created() {
@@ -273,6 +417,56 @@ export default {
         this.loading = false;
       });
     },
+    /** 地点信息搜索 */
+    initSearch() {
+      let vm = this
+      let map = this.amapManager.getMap()
+      AMapUI.loadUI(['misc/PoiPicker'], function (PoiPicker) {
+        var poiPicker = new PoiPicker({
+          input: 'search',
+          placeSearchOptions: {
+            map: map,
+            pageSize: 10
+          },
+          suggestContainer: 'searchTip',
+          searchResultsContainer: 'searchTip'
+        })
+        vm.poiPicker = poiPicker
+        // 监听poi选中信息
+        poiPicker.on('poiPicked', function (poiResult) {
+          // console.log(poiResult)
+          let source = poiResult.source
+          let poi = poiResult.item
+          if (source !== 'search') {
+            poiPicker.searchByKeyword(poi.name)
+          } else {
+            poiPicker.clearSearchResults()
+            vm.markers = []
+            let lng = poi.location.lng
+            let lat = poi.location.lat
+            let address = poi.cityname + poi.adname + poi.name
+            vm.center = lng+","+lat
+            vm.$set(vm.form,'address',address)
+            vm.$set(vm.form,'tude',vm.center)
+            vm.markers.push([lng, lat])
+            vm.lng = lng
+            vm.lat = lat
+            vm.address = address
+            vm.searchKey = address
+          }
+        })
+      })
+    },
+    submitAddress(){
+      consoel.log('经纬度',this.center)
+      consoel.log('地址',this.address)
+    },
+    searchByHand() {
+      if (this.searchKey !== '') {
+        this.poiPicker.searchByKeyword(this.searchKey)
+      }
+    },
+
     // 状态字典翻译
     statusFormat(row, column) {
       return this.selectDictLabel(this.statusOptions, row.status);
@@ -307,6 +501,7 @@ export default {
         locationId: null,
         companyName: null,
         address: null,
+        tude: null,
         contacts: null,
         phone: null,
         nature: null,

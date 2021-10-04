@@ -9,6 +9,14 @@ export function listInfo(query) {
   })
 }
 
+// 获取地点信息所有经纬度
+export function getTude() {
+  return request({
+    url: '/location/info/selectLocationTude',
+    method: 'get'
+  })
+}
+
 // 查询地点信息详细
 export function getInfo(locationId) {
   return request({
