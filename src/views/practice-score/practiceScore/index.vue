@@ -30,7 +30,8 @@
 
       <el-form-item label="状态" prop="status">
         <el-select v-model="queryParams.status" placeholder="请选择状态" clearable size="small">
-          <el-option label="请选择字典生成" value="" />
+          <el-option label="有效" value="1" />
+          <el-option label="无效" value="0" />
         </el-select>
       </el-form-item>
       <el-form-item>
@@ -107,7 +108,13 @@
       <el-table-column label="最终成绩" align="center" prop="finalScore" />
       <el-table-column label="实习鉴定表" align="center" prop="appraisal" />
       <el-table-column label="实习总结" align="center" prop="summary" />
-      <el-table-column label="状态" align="center" prop="status" />
+      <el-table-column label="状态" align="center" prop="status" width="60" >
+        <template scope="scope">
+          <span v-if="scope.row.status==='1'" style="color: lightgreen;font-size: medium">有效</span>
+          <span v-else-if="scope.row.status==='0'" style="color: #ffce7f;font-size: medium">无效</span>
+          <span v-else style="color: red">状态异常</span>
+        </template>
+      </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
@@ -128,14 +135,14 @@
             size="mini"
             type="text"
             icon="el-icon-upload"
-            @click="uplaodAppraisal(scope.row)"
+            @click="openAppraisal(scope.row)"
             v-hasPermi="['practice-score:practiceScore:edit']"
           >上传实习鉴定</el-button>
           <el-button
             size="mini"
             type="text"
             icon="el-icon-upload"
-            @click="handleDelete(scope.row)"
+            @click="openSummery(scope.row)"
             v-hasPermi="['practice-score:practiceScore:edit']"
           >上传实习总结</el-button>
         </template>
@@ -151,8 +158,8 @@
     />
 
     <!-- 添加或修改实习成绩对话框 -->
-    <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
-      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
+    <el-dialog :title="title" :visible.sync="open" width="650px" append-to-body>
+      <el-form ref="form" :model="form" :rules="rules" label-width="180px">
         <el-form-item label="用户ID" prop="userId">
           <el-input v-model="form.userId" placeholder="请输入用户ID" />
         </el-form-item>
@@ -178,24 +185,25 @@
         <el-form-item label="系统参考成绩" prop="sysScore">
           <el-input v-model="form.sysScore" placeholder="请输入系统参考成绩" />
         </el-form-item>
-        <el-form-item label="实习单位评定成绩" prop="companyScore">
+        <el-form-item label="单位评定成绩" prop="companyScore">
           <el-input v-model="form.companyScore" placeholder="请输入实习单位评定成绩" />
         </el-form-item>
-        <el-form-item label="实习指导老师评定成绩" prop="teacherScore">
+        <el-form-item label="指导老师评定成绩" prop="teacherScore">
           <el-input v-model="form.teacherScore" placeholder="请输入实习指导老师评定成绩" />
         </el-form-item>
         <el-form-item label="最终成绩" prop="finalScore">
           <el-input v-model="form.finalScore" placeholder="请输入最终成绩" />
         </el-form-item>
-        <el-form-item label="实习鉴定表(PDF路径)" prop="appraisal">
+        <el-form-item label="实习鉴定表PDF路径" prop="appraisal">
           <el-input v-model="form.appraisal" type="textarea" placeholder="请输入内容" />
         </el-form-item>
-        <el-form-item label="实习总结(PDF路径)" prop="summary">
+        <el-form-item label="实习PDF路径" prop="summary">
           <el-input v-model="form.summary" type="textarea" placeholder="请输入内容" />
         </el-form-item>
         <el-form-item label="状态">
           <el-radio-group v-model="form.status">
-            <el-radio label="1">请选择字典生成</el-radio>
+            <el-radio label="1">有效</el-radio>
+            <el-radio label="0">无效</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-nitem label="删除标志" prop="delFlag">
@@ -209,6 +217,43 @@
     </el-dialog>
 
 
+    <el-dialog
+      title="上传实习鉴定"
+      :visible.sync="appraisalVisible"
+      width="28%"
+      style="top: 10%"
+      >
+      <el-upload
+        style="margin-left: 10%"
+        class="upload-demo"
+        drag
+        action="#"
+        multiple
+      >
+        <i class="el-icon-upload"></i>
+        <div class="el-upload__text">将文件拖到此处,或<em>点击上传</em></div>
+        <div class="el-upload__tip" slot="tip">只能上传PDF文件，且不超过10M</div>
+      </el-upload>
+    </el-dialog>
+
+    <el-dialog
+      title="上传实习总结"
+      :visible.sync="summeryVisible"
+      width="28%"
+      style="top: 10%"
+    >
+      <el-upload
+        style="margin-left: 10%"
+        class="upload-demo"
+        drag
+        action="#"
+        multiple
+      >
+        <i class="el-icon-upload"></i>
+        <div class="el-upload__text">将文件拖到此处,或<em>点击上传</em></div>
+        <div class="el-upload__tip" slot="tip">只能上传PDF文件，且不超过10M</div>
+      </el-upload>
+    </el-dialog>
 
   </div>
 </template>
@@ -240,6 +285,10 @@ export default {
       title: "",
       // 是否显示弹出层
       open: false,
+      /**实习鉴定窗口是否可见*/
+      appraisalVisible:false,
+      /**实习鉴定窗口是否可见*/
+      summeryVisible:false,
       // 查询参数
       queryParams: {
         pageNum: 1,
@@ -322,12 +371,35 @@ export default {
       this.single = selection.length!==1
       this.multiple = !selection.length
     },
+
+
+    /**打开上传文件对话框*/
+    openAppraisal(row){
+      this.appraisalVisible = true;
+      const scoreId = row.scoreId || this.ids;
+      getPracticeScore(scoreId).then(response => {
+        this.form = response.data;
+        console.log(response.data.summary)
+      });
+    },
     /** 上传实习鉴定按钮操作 */
     uplaodAppraisal(row){
+
+    },
+    /**打开上传文件对话框*/
+    openSummery(row){
+      this.summeryVisible = true;
+      const scoreId = row.scoreId || this.ids
+      console.log("ID为"+scoreId)
+    },
+    /** 上传实习鉴定按钮操作 */
+    uplaodSummery(row){
       this.reset();
       this.open = true;
       this.title = "上传实习鉴定";
     },
+
+
     /** 新增按钮操作 */
     handleAdd() {
       this.reset();
