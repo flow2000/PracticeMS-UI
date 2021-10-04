@@ -73,9 +73,26 @@
       </el-table-column>
       <el-table-column label="考勤标识" align="center" prop="attendanceId" width="155" height="30"/>
       <el-table-column label="用户账号" align="center" prop="userName" width="135"/>
-      <el-table-column label="姓名" align="center" prop="user.nickName" width="55"/>
+      <el-table-column label="姓名" align="center" prop="user.nickName" width="85"/>
       <el-table-column label="打卡地点" align="center" prop="location" />
       <el-table-column label="打卡时间" align="center" prop="createTime" width="155"/>
+      <el-table-column
+        align="center"
+        label="打卡结果"
+        width="140">
+        <template slot-scope="scope">
+          <el-popover trigger="hover" placement="top">
+            <p>标识: {{ scope.row.attendanceId }}</p>
+            <p>姓名: {{ scope.row.user.nickName }}</p>
+            <p>打卡地点: {{ scope.row.location }}</p>
+            <div slot="reference" class="name-wrapper">
+              <el-tag
+                :type="scope.row.status === '0' ? 'success' : 'danger'"
+                >{{ scope.row.status =='0' ? "打卡成功":"打卡失败" }}</el-tag>
+            </div>
+          </el-popover>
+        </template>
+      </el-table-column>
 <!--      <el-table-column label="状态" align="center" prop="status" />-->
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
