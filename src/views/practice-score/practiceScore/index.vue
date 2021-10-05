@@ -231,14 +231,19 @@
       <el-upload
         style="margin-left: 10%"
         class="upload-demo"
+        accept=".pdf"
+        :limit="1"
         drag
-        action="#"
+        action="https://jsonplaceholder.typicode.com/posts/"
+
         multiple
       >
         <i class="el-icon-upload"></i>
         <div class="el-upload__text">将文件拖到此处,或<em>点击上传</em></div>
         <div class="el-upload__tip" slot="tip">只能上传PDF文件，且不超过10M</div>
       </el-upload>
+
+
     </el-dialog>
 
     <el-dialog
@@ -253,6 +258,7 @@
         drag
         action="#"
         multiple
+
       >
         <i class="el-icon-upload"></i>
         <div class="el-upload__text">将文件拖到此处,或<em>点击上传</em></div>
@@ -264,10 +270,12 @@
 </template>
 
 <script>
-import { listPracticeScore, getPracticeScore, delPracticeScore, addPracticeScore, updatePracticeScore, exportPracticeScore } from "@/api/practice-score/practiceScore";
+import { listPracticeScore, getPracticeScore, delPracticeScore, addPracticeScore, updatePracticeScore, exportPracticeScore , updateScoreStatus} from "@/api/practice-score/practiceScore";
+import { getToken } from "@/utils/auth";
 
 export default {
   name: "PracticeScore",
+
   data() {
     return {
       // 遮罩层
@@ -294,6 +302,17 @@ export default {
       appraisalVisible:false,
       /**实习鉴定窗口是否可见*/
       summeryVisible:false,
+      // 上传参数
+      upload: {
+        // 是否禁用上传
+        isUploading: false,
+        // 设置上传的请求头部
+        headers: { Authorization: "Bearer " + getToken() },
+        // 上传的地址
+        url: process.env.VUE_APP_BASE_API + "/common/upload",
+        // 上传的文件列表
+        fileList: []
+      },
       // 查询参数
       queryParams: {
         pageNum: 1,
@@ -386,7 +405,7 @@ export default {
         cancelButtonText:"取消",
         type:"warning"
       }).then(function () {
-
+        return updateScoreStatus(row.scoreId,row.status)
       }).then(()=>{
         this.$message({
           message: '操作成功',
@@ -423,12 +442,27 @@ export default {
       this.title = "上传实习鉴定";
     },
 
+    // 文件提交处理
+    submitUpload() {
+      this.$refs.upload.submit();
+    },
+    // 文件上传中处理
+    handleFileUploadProgress(event, file, fileList) {
+      this.upload.isUploading = true;
+    },
+    // 文件上传成功处理
+    handleFileSuccess(response, file, fileList) {
+      this.upload.isUploading = false;
+      this.form.filePath = response.url;
+      this.msgSuccess(response.msg);
+    },
 
     /** 新增按钮操作 */
     handleAdd() {
       this.reset();
       this.open = true;
       this.title = "添加实习成绩";
+      this.upload.fileList = [];
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
@@ -439,6 +473,7 @@ export default {
         this.open = true;
         this.title = "修改实习成绩";
       });
+      this.upload.fileList = [{ name: this.form.fileName, url: this.form.filePath }];
     },
     /** 提交按钮 */
     submitForm() {

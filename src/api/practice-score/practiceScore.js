@@ -51,3 +51,16 @@ export function exportPracticeScore(query) {
     params: query
   })
 }
+
+// 修改实习成绩状态
+export function updateScoreStatus(scoreId,status) {
+  const data = {
+    scoreId,
+    status
+  }
+  return request({
+    url: '/practice-score/practiceScore/changeStatus',
+    method: 'put',
+    data: data
+  })
+}
