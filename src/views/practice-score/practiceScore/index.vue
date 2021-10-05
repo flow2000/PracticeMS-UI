@@ -90,7 +90,8 @@
     <el-table v-loading="loading" :data="practiceScoreList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="ID" align="center" prop="scoreId" width="40" />
-      <el-table-column label="用户ID" align="center" prop="userId" />
+      <el-table-column label="用户ID" align="center" prop="userId"  />
+      <el-table-column label="姓名" align="center" prop="nickname" width="60"/>
       <el-table-column label="地点ID" align="center" prop="locationId" />
       <el-table-column label="开始时间" align="center" prop="startTime" width="110">
         <template slot-scope="scope">
@@ -104,15 +105,21 @@
       </el-table-column>
       <el-table-column label="系统参考成绩" align="center" prop="sysScore" />
       <el-table-column label="实习单位评定成绩" align="center" prop="companyScore" />
-      <el-table-column label="指导老师评定成绩" align="center" prop="teacherScore" />
-      <el-table-column label="最终成绩" align="center" prop="finalScore" />
+      <el-table-column label="指导老师评定成绩" align="center" prop="teacherScore" />0
+..      <el-table-column label="最终成绩" align="center" prop="finalScore" />
       <el-table-column label="实习鉴定表" align="center" prop="appraisal" />
       <el-table-column label="实习总结" align="center" prop="summary" />
       <el-table-column label="状态" align="center" prop="status" width="60" >
         <template scope="scope">
-          <span v-if="scope.row.status==='1'" style="color: lightgreen;font-size: medium">有效</span>
-          <span v-else-if="scope.row.status==='0'" style="color: #ffce7f;font-size: medium">无效</span>
-          <span v-else style="color: red">状态异常</span>
+          <el-switch
+            v-model="scope.row.status"
+            active-color="#13ce66"
+            inactive-color="#46485f"
+            active-value="1"
+            inactive-value="0"
+            @change="changeStatus(scope.row)"
+          >
+          </el-switch>
         </template>
       </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
@@ -206,9 +213,7 @@
             <el-radio label="0">无效</el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-nitem label="删除标志" prop="delFlag">
-          <el-input v-model="form.delFlag" placeholder="请输入删除标志" />
-        </el-form-nitem>
+
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
@@ -373,6 +378,25 @@ export default {
     },
 
 
+    /** 状态改变操作 */
+    changeStatus(row) {
+      let text = row.status ==="1" ? "有效" : "无效";
+      this.$confirm('是否将ID为 '+row.scoreId+' 的实习状态改为'+text,"状态变更",{
+        confirmButtonText:"确定",
+        cancelButtonText:"取消",
+        type:"warning"
+      }).then(function () {
+
+      }).then(()=>{
+        this.$message({
+          message: '操作成功',
+          type: 'success'
+        });
+      }).catch(function () {
+        row.status = row.status==="0"?"1":"0";
+        this.$message('取消操作');
+      });
+    },
     /**打开上传文件对话框*/
     openAppraisal(row){
       this.appraisalVisible = true;
@@ -390,7 +414,7 @@ export default {
     openSummery(row){
       this.summeryVisible = true;
       const scoreId = row.scoreId || this.ids
-      console.log("ID为"+scoreId)
+      console.log("token   "+localStorage.token)
     },
     /** 上传实习鉴定按钮操作 */
     uplaodSummery(row){
