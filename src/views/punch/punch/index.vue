@@ -153,7 +153,7 @@
 </template>
 
 <script>
-import { listPunch, getPunch, delPunch, addPunch, updatePunch, exportPunch } from "@/api/punch/punch";
+  import { listPunch, getPunch, delPunch, addPunch, updatePunch, exportPunch } from "@/api/punch/punch";
 
 export default {
   name: "Punch",
@@ -250,6 +250,8 @@ export default {
         })
 
         geolocation.getCurrentPosition()
+        // localStorage.address='undefined'
+        // console.log("删除了addrss的local")
         AMap.event.addListener(geolocation, 'complete', onComplete);
         AMap.event.addListener(geolocation, 'error', onError);
         function onComplete(data) {
@@ -269,8 +271,8 @@ export default {
           // console.log("我来了"+data.formattedAddress)
           // console.log(localStorage.address)
           if(data.formattedAddress!='undefined'){
+            console.log(data.formattedAddress)
             localStorage.address= data.formattedAddress;
-
           }
           // this.address = data.formattedAddress;
         }
@@ -357,7 +359,7 @@ export default {
       this.getLocation()
        if(localStorage.address!='undefined'){
          addPunch(localStorage.address).then((response) => {
-           console.log(response.code)
+           console.log(localStorage.address)
            if(response.code==200){
              this.msgSuccess("打卡成功");
              this.open = false;
