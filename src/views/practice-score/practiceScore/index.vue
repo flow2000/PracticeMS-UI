@@ -105,10 +105,18 @@
       </el-table-column>
       <el-table-column label="系统参考成绩" align="center" prop="sysScore" />
       <el-table-column label="实习单位评定成绩" align="center" prop="companyScore" />
-      <el-table-column label="指导老师评定成绩" align="center" prop="teacherScore" />0
-..      <el-table-column label="最终成绩" align="center" prop="finalScore" />
-      <el-table-column label="实习鉴定表" align="center" prop="appraisal" />
-      <el-table-column label="实习总结" align="center" prop="summary" />
+      <el-table-column label="指导老师评定成绩" align="center" prop="teacherScore" />
+..    <el-table-column label="最终成绩" align="center" prop="finalScore" />
+      <el-table-column label="实习鉴定表" align="center" prop="appraisal" >
+        <template scope="scope">
+          <el-link type="primary" :href="scope.row.appraisal" target=_blank>{{scope.row.appraisal}}</el-link>
+        </template>
+      </el-table-column>
+      <el-table-column label="实习总结" align="center" prop="summary" >
+        <template scope="scope">
+          <el-link type="primary" :href="scope.row.summary" target=_blank>{{scope.row.summary}}</el-link>
+        </template>
+      </el-table-column>
       <el-table-column label="状态" align="center" prop="status" width="60" >
         <template scope="scope">
           <el-switch
@@ -234,12 +242,12 @@
         accept=".pdf"
         :limit="1"
         drag
-        :file-list="upload.fileList"
+        :file-list="upload.AppraisalFileList"
         :headers="upload.headers"
         :action="upload.AppraisalUrl"
         :on-progress="handleFileUploadProgress"
         :on-success="handleFileSuccess"
-        :data="{nick_name:upload.nick_name,user_id:upload.user_id }"
+        :data="{nick_name:upload.nick_name,user_id:upload.user_id,scoreId:upload.scoreId}"
         multiple
       >
         <i class="el-icon-upload"></i>
@@ -257,10 +265,16 @@
       <el-upload
         style="margin-left: 10%"
         class="upload-demo"
+        accept=".pdf"
+        :limit="1"
         drag
-        action="#"
+        :file-list="upload.SummaryFileList"
+        :headers="upload.headers"
+        :action="upload.SummaryUrl"
+        :on-progress="handleFileUploadProgress"
+        :on-success="handleFileSuccess"
+        :data="{nick_name:upload.nick_name,user_id:upload.user_id,scoreId:upload.scoreId}"
         multiple
-
       >
         <i class="el-icon-upload"></i>
         <div class="el-upload__text">将文件拖到此处,或<em>点击上传</em></div>
@@ -316,11 +330,14 @@ export default {
         AppraisalUrl: process.env.VUE_APP_BASE_API + "/common/uploadAppraisal",
         SummaryUrl:process.env.VUE_APP_BASE_API + "/common/uploadSummary",
         // 上传的文件列表
-        fileList: [],
+        AppraisalFileList: [],
+        SummaryFileList: [],
         //传递文件所需要用到的参数 姓名
         nick_name:"",
-        //同上 学号
-        user_id:""
+        // 学号
+        user_id:"",
+        //成绩编号
+        scoreId:""
       },
       // 查询参数
       queryParams: {
@@ -428,12 +445,15 @@ export default {
     /**打开上传文件对话框*/
     openAppraisal(row){
       this.appraisalVisible = true;
+      this.upload.AppraisalFileList = [];
       const scoreId = row.scoreId || this.ids;
       getPracticeScore(scoreId).then(response => {
         this.form = response.data;
         //提前确定这一行的姓名，学号，等下传递参数的时候要用到
         this.upload.nick_name = response.data.nickname;
         this.upload.user_id = response.data.userId;
+        this.upload.scoreId = response.data.scoreId;
+        //console.log(response.data);
       });
     },
     /** 上传实习鉴定按钮操作 */
@@ -443,8 +463,16 @@ export default {
     /**打开上传文件对话框*/
     openSummery(row){
       this.summeryVisible = true;
+      this.upload.SummaryFileList = [];
       const scoreId = row.scoreId || this.ids
-      console.log("token   "+localStorage.token)
+      getPracticeScore(scoreId).then(response => {
+        this.form = response.data;
+        //提前确定这一行的姓名，学号，等下传递参数的时候要用到
+        this.upload.nick_name = response.data.nickname;
+        this.upload.user_id = response.data.userId;
+        this.upload.scoreId = response.data.scoreId;
+        //console.log(response.data);
+      });
     },
     /** 上传实习鉴定按钮操作 */
     uplaodSummery(row){
