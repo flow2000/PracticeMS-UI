@@ -234,12 +234,15 @@
         accept=".pdf"
         :limit="1"
         drag
-        action="https://jsonplaceholder.typicode.com/posts/"
-
+        :file-list="upload.fileList"
+        :headers="upload.headers"
+        :action="upload.url"
+        :on-progress="handleFileUploadProgress"
+        :on-success="handleFileSuccess"
         multiple
       >
         <i class="el-icon-upload"></i>
-        <div class="el-upload__text">将文件拖到此处,或<em>点击上传</em></div>
+        <div class="el-upload__text" >将文件拖到此处,或<em>点击上传</em></div>
         <div class="el-upload__tip" slot="tip">只能上传PDF文件，且不超过10M</div>
       </el-upload>
 
@@ -309,7 +312,7 @@ export default {
         // 设置上传的请求头部
         headers: { Authorization: "Bearer " + getToken() },
         // 上传的地址
-        url: process.env.VUE_APP_BASE_API + "/common/upload",
+        url: process.env.VUE_APP_BASE_API + "/common/uploadAppraisal",
         // 上传的文件列表
         fileList: []
       },
