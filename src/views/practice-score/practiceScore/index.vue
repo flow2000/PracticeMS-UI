@@ -236,17 +236,16 @@
         drag
         :file-list="upload.fileList"
         :headers="upload.headers"
-        :action="upload.url"
+        :action="upload.AppraisalUrl"
         :on-progress="handleFileUploadProgress"
         :on-success="handleFileSuccess"
+        :data="{nick_name:upload.nick_name,user_id:upload.user_id }"
         multiple
       >
         <i class="el-icon-upload"></i>
         <div class="el-upload__text" >将文件拖到此处,或<em>点击上传</em></div>
         <div class="el-upload__tip" slot="tip">只能上传PDF文件，且不超过10M</div>
       </el-upload>
-
-
     </el-dialog>
 
     <el-dialog
@@ -310,11 +309,18 @@ export default {
         // 是否禁用上传
         isUploading: false,
         // 设置上传的请求头部
-        headers: { Authorization: "Bearer " + getToken() },
+        headers: {
+          Authorization: "Bearer " + getToken()
+        },
         // 上传的地址
-        url: process.env.VUE_APP_BASE_API + "/common/uploadAppraisal",
+        AppraisalUrl: process.env.VUE_APP_BASE_API + "/common/uploadAppraisal",
+        SummaryUrl:process.env.VUE_APP_BASE_API + "/common/uploadSummary",
         // 上传的文件列表
-        fileList: []
+        fileList: [],
+        //传递文件所需要用到的参数 姓名
+        nick_name:"",
+        //同上 学号
+        user_id:""
       },
       // 查询参数
       queryParams: {
@@ -425,7 +431,9 @@ export default {
       const scoreId = row.scoreId || this.ids;
       getPracticeScore(scoreId).then(response => {
         this.form = response.data;
-        console.log(response.data.summary)
+        //提前确定这一行的姓名，学号，等下传递参数的时候要用到
+        this.upload.nick_name = response.data.nickname;
+        this.upload.user_id = response.data.userId;
       });
     },
     /** 上传实习鉴定按钮操作 */
@@ -441,8 +449,7 @@ export default {
     /** 上传实习鉴定按钮操作 */
     uplaodSummery(row){
       this.reset();
-      this.open = true;
-      this.title = "上传实习鉴定";
+
     },
 
     // 文件提交处理
