@@ -270,16 +270,13 @@ export default {
           // })
           // console.log("我来了"+data.formattedAddress)
           // console.log(localStorage.address)
-          if(data.formattedAddress!='undefined'){
-            console.log(data.formattedAddress)
             localStorage.address= data.formattedAddress;
-          }
           // this.address = data.formattedAddress;
         }
 
         function onError(data) {
           // 定位出错
-          console.log('定位失败错误：', data);
+          // console.log('定位失败错误：', data);
           // 调用ip定位
           self.getLngLatLocation();
         }
@@ -292,7 +289,7 @@ export default {
         citySearch.getLocalCity(function (status, result) {
           if (status === 'complete' && result.info === 'OK') {
             // 查询成功，result即为当前所在城市信息
-            console.log('通过ip获取当前城市：', result)
+            // console.log('通过ip获取当前城市：', result)
             //逆向地理编码
             AMap.plugin('AMap.Geocoder', function () {
               var geocoder = new AMap.Geocoder({
@@ -304,7 +301,8 @@ export default {
               geocoder.getAddress(lnglat, function (status, data) {
                 if (status === 'complete' && data.info === 'OK') {
                   // result为对应的地理位置详细信息
-                  console.log(data)
+                  localStorage.address= data.regeocode.formattedAddress;
+                  // console.log(localStorage.address)
                 }
               })
             })
@@ -358,6 +356,7 @@ export default {
     handleAdd() {
       this.getLocation()
        if(localStorage.address!='undefined'){
+         console.log(localStorage.address)
          addPunch(localStorage.address).then((response) => {
            console.log(localStorage.address)
            if(response.code==200){
