@@ -91,7 +91,8 @@
     <el-table v-loading="loading" :data="practiceScoreList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="ID" align="center" prop="scoreId" width="40" />
-      <el-table-column label="用户ID" align="center" prop="userId"  />
+      <el-table-column label="用户ID" align="center" prop="userId"  width="70"/>
+      <el-table-column label="学号" align="center" prop="username" />
       <el-table-column label="姓名" align="center" prop="nickname" width="60"/>
       <el-table-column label="地点ID" align="center" prop="locationId" />
       <el-table-column label="开始时间" align="center" prop="startTime" width="110">
@@ -453,7 +454,7 @@ export default {
         this.form = response.data;
         //提前确定这一行的姓名，学号，等下传递参数的时候要用到
         this.upload.nick_name = response.data.nickname;
-        this.upload.user_id = response.data.userId;
+        this.upload.user_id = response.data.username;
         this.upload.scoreId = response.data.scoreId;
         //console.log(response.data);
       });
@@ -471,7 +472,7 @@ export default {
         this.form = response.data;
         //提前确定这一行的姓名，学号，等下传递参数的时候要用到
         this.upload.nick_name = response.data.nickname;
-        this.upload.user_id = response.data.userId;
+        this.upload.user_id = response.data.username;
         this.upload.scoreId = response.data.scoreId;
         //console.log(response.data);
       });
