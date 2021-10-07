@@ -1,11 +1,12 @@
 <template>
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px">
+    <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px"  v-hasPermi="['practice-score:practiceScore:edit']">
       <el-form-item label="用户ID" prop="userId">
         <el-input
           v-model="queryParams.userId"
           placeholder="请输入用户ID"
           clearable
+          v-hasPermi="['practice-score:practiceScore:edit']"
           size="small"
           @keyup.enter.native="handleQuery"
         />
@@ -117,14 +118,15 @@
           <el-link type="primary" :href="scope.row.summary" target=_blank>{{scope.row.summary}}</el-link>
         </template>
       </el-table-column>
-      <el-table-column label="状态" align="center" prop="status" width="60" >
-        <template scope="scope">
+      <el-table-column label="状态" align="center" prop="status" width="60">
+        <template scope="scope" >
           <el-switch
             v-model="scope.row.status"
             active-color="#13ce66"
             inactive-color="#46485f"
             active-value="1"
             inactive-value="0"
+
             @change="changeStatus(scope.row)"
           >
           </el-switch>
@@ -151,14 +153,14 @@
             type="text"
             icon="el-icon-upload"
             @click="openAppraisal(scope.row)"
-            v-hasPermi="['practice-score:practiceScore:edit']"
+            v-hasPermi="['practice-score:practiceScore:upload']"
           >上传实习鉴定</el-button>
           <el-button
             size="mini"
             type="text"
             icon="el-icon-upload"
             @click="openSummery(scope.row)"
-            v-hasPermi="['practice-score:practiceScore:edit']"
+            v-hasPermi="['practice-score:practiceScore:upload']"
           >上传实习总结</el-button>
         </template>
       </el-table-column>
