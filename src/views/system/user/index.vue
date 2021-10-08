@@ -1,12 +1,12 @@
 <template>
   <div class="app-container">
     <el-row :gutter="20">
-      <!--部门数据-->
+      <!--院校数据-->
       <el-col :span="4" :xs="24">
         <div class="head-container">
           <el-input
             v-model="deptName"
-            placeholder="请输入部门名称"
+            placeholder="请输入院校名称"
             clearable
             size="small"
             prefix-icon="el-icon-search"
@@ -380,11 +380,11 @@ export default {
       userList: null,
       // 弹出层标题
       title: "",
-      // 部门树选项
+      // 院校树选项
       deptOptions: undefined,
       // 是否显示弹出层
       open: false,
-      // 部门名称
+      // 院校名称
       deptName: undefined,
       // 默认密码
       initPassword: undefined,
@@ -468,7 +468,7 @@ export default {
     };
   },
   watch: {
-    // 根据名称筛选部门树
+    // 根据名称筛选院校树
     deptName(val) {
       this.$refs.tree.filter(val);
     }
@@ -497,7 +497,7 @@ export default {
         }
       );
     },
-    /** 查询部门下拉树结构 */
+    /** 查询院校下拉树结构 */
     getTreeselect() {
       treeselect().then(response => {
         this.deptOptions = response.data;
