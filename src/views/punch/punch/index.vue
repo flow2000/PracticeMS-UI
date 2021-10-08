@@ -18,7 +18,12 @@
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
       </el-form-item>
+      <el-form-item style="margin-left: 50%">
+        <el-image src='http://chuyinweilai.store/apk/qr.png' style="float: right;width: 100px; height: 100px"></el-image>
+      </el-form-item>
+
     </el-form>
+
 
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
