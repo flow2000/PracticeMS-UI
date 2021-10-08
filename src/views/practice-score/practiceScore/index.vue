@@ -123,8 +123,6 @@
         <template scope="scope" >
           <el-switch
             v-model="scope.row.status"
-            active-color="#13ce66"
-            inactive-color="#46485f"
             active-value="1"
             inactive-value="0"
 
@@ -290,7 +288,10 @@
 
 <script>
 import { listPracticeScore, getPracticeScore, delPracticeScore, addPracticeScore, updatePracticeScore, exportPracticeScore , updateScoreStatus} from "@/api/practice-score/practiceScore";
-import { getToken } from "@/utils/auth";
+import { getToken , getInfo} from "@/utils/auth";
+import { getUserProfile } from "@/api/system/user";
+
+import Cookies from "js-cookie";
 
 export default {
   name: "PracticeScore",
@@ -447,6 +448,10 @@ export default {
     },
     /**打开上传文件对话框*/
     openAppraisal(row){
+      console.log(getUserProfile().then(PromiseValue =>
+        console.log(PromiseValue)
+      ))
+
       this.appraisalVisible = true;
       this.upload.AppraisalFileList = [];
       const scoreId = row.scoreId || this.ids;

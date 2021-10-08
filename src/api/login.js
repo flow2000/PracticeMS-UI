@@ -21,6 +21,7 @@ export function getInfo() {
     url: '/getInfo',
     method: 'get'
   })
+
 }
 
 // 退出方法
