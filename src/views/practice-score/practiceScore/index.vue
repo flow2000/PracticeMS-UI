@@ -111,12 +111,12 @@
 ..    <el-table-column label="最终成绩" align="center" prop="finalScore" />
       <el-table-column label="实习鉴定表" align="center" prop="appraisal" >
         <template scope="scope">
-          <el-link type="primary" :href="scope.row.appraisal" target=_blank>{{scope.row.appraisal}}</el-link>
+          <el-link type="primary" :href="scope.row.appraisal" target=_blank>{{scope.row.appraisal==""?"未上传":scope.row.nickname+"的实习鉴定"}}</el-link>
         </template>
       </el-table-column>
       <el-table-column label="实习总结" align="center" prop="summary" >
         <template scope="scope">
-          <el-link type="primary" :href="scope.row.summary" target=_blank>{{scope.row.summary}}</el-link>
+          <el-link type="primary" :href="scope.row.summary" target=_blank>{{scope.row.summary==""?"未上传":scope.row.nickname+"的实习总结"}}</el-link>
         </template>
       </el-table-column>
       <el-table-column label="状态" align="center" prop="status" width="60">
@@ -319,6 +319,8 @@ export default {
       // 是否显示弹出层
       open: false,
       /**实习鉴定窗口是否可见*/
+      permissionLis:[],
+      /**实习鉴定窗口是否可见*/
       appraisalVisible:false,
       /**实习鉴定窗口是否可见*/
       summeryVisible:false,
@@ -379,6 +381,15 @@ export default {
     /** 查询实习成绩列表 */
     getList() {
       this.loading = true;
+      // getUserProfile().then(PromiseValue =>{
+      //     console.log(PromiseValue.data.userId);
+      //     this.permissionLis = PromiseValue.data.roles;
+      //     for (var i = 0;i<this.permissionLis.length;i++){
+      //       if(this.permissionLis[i].roleKey=="student")
+      //         this.queryParams.userId=PromiseValue.data.userId;
+      //     }
+      //   }
+      // );
       listPracticeScore(this.queryParams).then(response => {
         this.practiceScoreList = response.rows;
         this.total = response.total;
@@ -448,9 +459,7 @@ export default {
     },
     /**打开上传文件对话框*/
     openAppraisal(row){
-      console.log(getUserProfile().then(PromiseValue =>
-        console.log(PromiseValue)
-      ))
+
 
       this.appraisalVisible = true;
       this.upload.AppraisalFileList = [];
