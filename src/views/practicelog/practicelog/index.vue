@@ -1,5 +1,6 @@
 <template>
   <div class="app-container">
+
     <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px">
       <el-form-item label="用户姓名" prop="userName">
         <el-input
@@ -85,8 +86,8 @@
       <el-table-column label="序号" type="index" align="center" show-overflow-tooltip width="50px">
       </el-table-column>
 <!--      <el-table-column label="日志ID" align="center" prop="logId" />-->
-      <el-table-column label="用户账号" align="center" prop="userName" width="150"/>
-      <el-table-column label="用户姓名" align="center" prop="user.nickName"width="80"/>
+      <el-table-column label="学号" align="center" prop="userName" width="150"/>
+      <el-table-column label="姓名" align="center" prop="user.nickName"width="80"/>
 <!--      <el-table-column label="地点信息" align="center" prop="locationName" />-->
       <el-table-column label="创建时间" align="center" prop="time" width="120">
         <template slot-scope="scope">
@@ -150,7 +151,6 @@
           <el-input v-model="form.logContents"
                     type="textarea"
                     placeholder="请输入内容"
-                    :rows="5"
           />
         </el-form-item>
 <!--        <el-form-item label="删除标志" prop="delFlag">-->

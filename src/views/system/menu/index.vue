@@ -1,17 +1,17 @@
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch">
-      <el-form-item label="菜单名称" prop="menuName">
+      <el-form-item label="权限名称" prop="menuName">
         <el-input
           v-model="queryParams.menuName"
-          placeholder="请输入菜单名称"
+          placeholder="请输入权限名称"
           clearable
           size="small"
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
       <el-form-item label="状态" prop="status">
-        <el-select v-model="queryParams.status" placeholder="菜单状态" clearable size="small">
+        <el-select v-model="queryParams.status" placeholder="权限状态" clearable size="small">
           <el-option
             v-for="dict in statusOptions"
             :key="dict.dictValue"
@@ -46,7 +46,7 @@
       row-key="menuId"
       :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
     >
-      <el-table-column prop="menuName" label="菜单名称" :show-overflow-tooltip="true" width="160"></el-table-column>
+      <el-table-column prop="menuName" label="权限名称" :show-overflow-tooltip="true" width="160"></el-table-column>
       <el-table-column prop="icon" label="图标" align="center" width="100">
         <template slot-scope="scope">
           <svg-icon :icon-class="scope.row.icon" />
@@ -63,16 +63,16 @@
       </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <el-button size="mini" 
-            type="text" 
-            icon="el-icon-edit" 
+          <el-button size="mini"
+            type="text"
+            icon="el-icon-edit"
             @click="handleUpdate(scope.row)"
             v-hasPermi="['system:menu:edit']"
           >修改</el-button>
-          <el-button 
-            size="mini" 
-            type="text" 
-            icon="el-icon-plus" 
+          <el-button
+            size="mini"
+            type="text"
+            icon="el-icon-plus"
             @click="handleAdd(scope.row)"
             v-hasPermi="['system:menu:add']"
           >新增</el-button>
@@ -103,7 +103,7 @@
             </el-form-item>
           </el-col>
           <el-col :span="24">
-            <el-form-item label="菜单类型" prop="menuType">
+            <el-form-item label="权限类型" prop="menuType">
               <el-radio-group v-model="form.menuType">
                 <el-radio label="M">目录</el-radio>
                 <el-radio label="C">菜单</el-radio>
@@ -112,7 +112,7 @@
             </el-form-item>
           </el-col>
           <el-col :span="24">
-            <el-form-item v-if="form.menuType != 'F'" label="菜单图标">
+            <el-form-item v-if="form.menuType != 'F'" label="权限图标">
               <el-popover
                 placement="bottom-start"
                 width="460"
@@ -134,8 +134,8 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="菜单名称" prop="menuName">
-              <el-input v-model="form.menuName" placeholder="请输入菜单名称" />
+            <el-form-item label="权限名称" prop="menuName">
+              <el-input v-model="form.menuName" placeholder="请输入权限名称" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
@@ -178,7 +178,7 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item v-if="form.menuType != 'F'" label="菜单状态">
+            <el-form-item v-if="form.menuType != 'F'" label="权限状态">
               <el-radio-group v-model="form.status">
                 <el-radio
                   v-for="dict in statusOptions"
@@ -243,10 +243,10 @@ export default {
       // 表单校验
       rules: {
         menuName: [
-          { required: true, message: "菜单名称不能为空", trigger: "blur" }
+          { required: true, message: "权限名称不能为空", trigger: "blur" }
         ],
         orderNum: [
-          { required: true, message: "菜单顺序不能为空", trigger: "blur" }
+          { required: true, message: "权限顺序不能为空", trigger: "blur" }
         ],
         path: [
           { required: true, message: "路由地址不能为空", trigger: "blur" }
@@ -350,7 +350,7 @@ export default {
         this.form.parentId = 0;
       }
       this.open = true;
-      this.title = "添加菜单";
+      this.title = "添加权限";
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
@@ -359,7 +359,7 @@ export default {
       getMenu(row.menuId).then(response => {
         this.form = response.data;
         this.open = true;
-        this.title = "修改菜单";
+        this.title = "修改权限";
       });
     },
     /** 提交按钮 */

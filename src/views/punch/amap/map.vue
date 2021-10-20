@@ -5,6 +5,8 @@
 
   import { getTude } from '@/api/location/info'
   import { getBaseTude } from '@/api/system/baseInfo'
+  import  location from '@/assets/images/location.png'
+  import  locationRed from '@/assets/images/location-red.png'
 
   export default {
 
@@ -90,12 +92,13 @@
             // initMarkerClusterer()
             // cluster.setMaxZoom(15);
 // 添加自定义标记
+//             imageIcon=require("../../../assets/images/location.png")
             function customMark(longit, lat, title) {
               // let lonlat = [108.365386,22.843292];
               // 创建 AMap.Icon 实例：
               let icon = new AMap.Icon({
                 size: new AMap.Size(58, 70),    // 图标尺寸
-                image: 'http://chuyinweilai.store/apk/location.png',  // Icon的图像
+                image: location,  // Icon的图像
                 imageSize: new AMap.Size(28, 30)   // 根据所设置的大小拉伸或压缩图片
               })
 
@@ -114,13 +117,37 @@
                 offset: new AMap.Pixel(20, -10), //显示位置
                 content: msg_label //显示内容
               })
+
+              var markerContent =`<div class="description">
+              <span class="title">${title}</span>
+              <br />
+              <div class="mt-3 detail">
+                <a href="#">今日在岗学生：1名</a> <br />
+                <a href="#">今日离岗学生：2名</a> <br />
+                <a href="#">今日共有学生：3名</a>
+              </div>
+            </div>`
+
               marker.on('mouseover', function(e) {
+                marker.setLabel({
+                  offset: new AMap.Pixel(0, -30), //显示位置
+                  content: markerContent //显示内容
+                })
                 marker.setTop(true)
               })
+
               marker.on('mouseout', function() {
+                //  鼠标离开标注地点事件
                 marker.setTop(false)
+                marker.setLabel({
+                  offset: new AMap.Pixel(20, -10)  , //显示位置
+                  content: msg_label //显示内容
+                })
               })
 
+              marker.on("click", function (e) {
+              //  点击标注地点事件
+              });
               // var lonlat=longit+","+lat
               // markerEvent(marker,lonlat)
               map.add(marker)
@@ -153,7 +180,7 @@
               // 创建 AMap.Icon 实例：
               let icon = new AMap.Icon({
                 size: new AMap.Size(58, 70),    // 图标尺寸
-                image: 'http://chuyinweilai.store/apk/index_calen.png',  // Icon的图像
+                image: 'https://chuyinweilai.store/apk/index_calen.png',  // Icon的图像
                 imageSize: new AMap.Size(58, 70)   // 根据所设置的大小拉伸或压缩图片
               })
 
@@ -237,8 +264,8 @@
               lonlats.push(tude)
               companyNames.push(response.data[i].companyName)
             }
-            console.log(companyNames)
-            console.log(lonlats)
+            // console.log(companyNames)
+            // console.log(lonlats)
 
 
             // let lonlat = [[108.365386, 22.843292], [108.238089, 22.848063], [108.244248, 22.852298]]
@@ -269,7 +296,7 @@
               // 创建 AMap.Icon 实例：
               var icon = new AMap.Icon({
                 size: new AMap.Size(58, 70),    // 图标尺寸
-                image: 'http://chuyinweilai.store/apk/location-red.png',  // Icon的图像
+                image: locationRed,  // Icon的图像
                 imageSize: new AMap.Size(28, 30)   // 根据所设置的大小拉伸或压缩图片
               })
 
@@ -287,10 +314,29 @@
                 offset: new AMap.Pixel(20, -10), //显示位置
                 content: msg_label //显示内容
               })
+
+              var markerContent =`<div class="description">
+              <span class="title">${title}</span>
+              <br />
+              <div class="mt-3 detail">
+                <a href="#">今日在岗学生：1名</a> <br />
+                <a href="#">今日离岗学生：2名</a> <br />
+                <a href="#">今日共有学生：3名</a>
+              </div>
+            </div>`
+
               marker.on('mouseover', function(e) {
+                marker.setLabel({
+                  offset: new AMap.Pixel(0, -30), //显示位置
+                  content: markerContent //显示内容
+                })
                 marker.setTop(true)
               })
               marker.on('mouseout', function() {
+                marker.setLabel({
+                  offset: new AMap.Pixel(20, -10)  , //显示位置
+                  content: msg_label //显示内容
+                })
                 marker.setTop(false)
               })
 

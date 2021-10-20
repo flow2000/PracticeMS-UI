@@ -83,7 +83,6 @@
 
     <el-table v-loading="loading" :data="infoList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="地点ID" align="center" prop="locationId" />
       <el-table-column label="单位名称" align="center" prop="companyName" />
       <el-table-column label="详细地址" align="center" prop="address" />
       <el-table-column label="联系人" align="center" prop="contacts" />
