@@ -19,23 +19,23 @@
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
       </el-form-item>
       <el-form-item style="margin-left: 50%">
-        <el-image src='http://chuyinweilai.store/apk/qr.png' style="float: right;width: 100px; height: 100px"></el-image>
+        <el-image :src="qrCode" style="float: right;width: 100px; height: 100px"></el-image>
       </el-form-item>
 
     </el-form>
 
 
     <el-row :gutter="10" class="mb8">
-      <el-col :span="1.5">
-        <el-button
-          type="primary"
-          plain
-          icon="el-icon-plus"
-          size="mini"
-          @click="handleAdd"
-          v-hasPermi="['punch:punch:add']"
-        >打卡</el-button>
-      </el-col>
+<!--      <el-col :span="1.5">-->
+<!--        <el-button-->
+<!--          type="primary"-->
+<!--          plain-->
+<!--          icon="el-icon-plus"-->
+<!--          size="mini"-->
+<!--          @click="handleAdd"-->
+<!--          v-hasPermi="['punch:punch:add']"-->
+<!--        >打卡</el-button>-->
+<!--      </el-col>-->
       <el-col :span="1.5">
         <el-button
           type="success"
@@ -76,8 +76,8 @@
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="序号" type="index" align="center"  width="50px" height="30">
       </el-table-column>
-      <el-table-column label="考勤标识" align="center" prop="attendanceId" width="155" height="30"/>
-      <el-table-column label="用户账号" align="center" prop="userName" width="135"/>
+<!--      <el-table-column label="考勤标识" align="center" prop="attendanceId" width="155" height="30"/>-->
+      <el-table-column label="学号" align="center" prop="userName" width="135"/>
       <el-table-column label="姓名" align="center" prop="user.nickName" width="85"/>
       <el-table-column label="打卡地点" align="center" prop="location" />
       <el-table-column label="打卡时间" align="center" prop="createTime" width="155"/>
@@ -159,6 +159,7 @@
 
 <script>
   import { listPunch, getPunch, delPunch, addPunch, updatePunch, exportPunch } from "@/api/punch/punch";
+  import qr from '@/assets/images/qr.png'
 
 export default {
   name: "Punch",
@@ -204,6 +205,8 @@ export default {
         }],
       // 遮罩层
       loading: true,
+        //二维码
+      qrCode: qr,
       // 导出遮罩层
       exportLoading: false,
       // 选中数组
