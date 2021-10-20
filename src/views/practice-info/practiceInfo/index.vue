@@ -110,7 +110,7 @@
       <el-table-column label="实习地点" align="center" prop="baseInfo.baseName" />
       <el-table-column label="岗位名称" align="center" prop="postName" />
       <el-table-column label="实习人数" align="center" prop="number" />
-	  <el-table-column label="岗位余量" align="center" prop="surplus" />
+	    <el-table-column label="岗位余量" align="center" prop="surplus" />
       <el-table-column label="进点时间" align="center" prop="entryTime" width="180">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.entryTime, '{y}-{m}-{d}') }}</span>
@@ -132,12 +132,12 @@
             @click="handleUpdate(scope.row)"
             v-hasPermi="['practice-info:practiceInfo:edit']"
           >修改</el-button>
-		  <el-button
-		    size="mini"
-		    type="text"
-		    icon="el-icon-s-grid"
-		    @click="handleDelete(scope.row)"
-		  >分配</el-button>
+          <el-button
+            size="mini"
+            type="text"
+            icon="el-icon-s-grid"
+            @click="handleAllocation(scope.row)"
+          >分配</el-button>
           <el-button
             size="mini"
             type="text"
@@ -161,19 +161,131 @@
     <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
 
-        <el-form-item label="地点ID" prop="locationId">
-          <el-input v-model="form.locationId" placeholder="请输入地点ID" />
-          <el-button type="text" @click="openMap()">获取实习基地信息</el-button>
+        <el-form-item label="实习基地" prop="locationId">
+          <el-select v-model="form.locationId" filterable placeholder="请选择">
+            <el-option
+              v-for="baseInfo in baseInfos"
+              :key="parseInt(baseInfo.value)"
+              :label="baseInfo.label"
+              :value="parseInt(baseInfo.value)">
+            </el-option>
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="实习学生" prop="studentIds" v-if="this.title =='实习分配'">
+          <el-input :value="'已选择 ' + this.studentIds.length + ' 名学生'" placeholder="请输入实习学生" />
+          <el-button type="text" @click="openStudentSelect()">选择实习学生</el-button>
           <el-dialog
-            title="地址选择"
-            :visible.sync="dialogVisible"
-            width="80%"
-            :append-to-body='true'
-            :before-close="handleClose">
-            <div id="my_container"></div>
-            <span slot="footer" class="dialog-footer">
+              title="选择实习学生"
+              :visible.sync="dialogVisible"
+              v-if="dialogVisible"
+              width="80%"
+              height="80%"
+              :append-to-body='true'
+              style="height:100%"
+              :before-close="handleClose">
+            <div class="app-container">
+              <el-row :gutter="20">
+                <!--院校数据-->
+                <el-col :span="4" :xs="24">
+                  <div class="head-container">
+                    <el-input
+                      v-model="deptName"
+                      placeholder="请输入院校名称"
+                      clearable
+                      size="small"
+                      prefix-icon="el-icon-search"
+                      style="margin-bottom: 20px"
+                    />
+                  </div>
+                  <div class="head-container">
+                    <el-tree
+                      :data="deptOptions"
+                      :props="defaultProps"
+                      :expand-on-click-node="false"
+                      :filter-node-method="filterNode"
+                      ref="tree"
+                      default-expand-all
+                      @node-click="handleNodeClick"
+                    />
+                  </div>
+                </el-col>
+                <!--用户数据-->
+                <el-col :span="20" :xs="24">
+                  <el-form :model="queryParams" ref="studentQueryForm" :inline="true" v-show="showSearch" label-width="68px">
+                    <el-form-item label="用户名称" prop="userName">
+                      <el-input
+                        v-model="queryParams.userName"
+                        placeholder="请输入用户名称"
+                        clearable
+                        size="small"
+                        style="width: 240px"
+                        @keyup.enter.native="handleQuery"
+                      />
+                    </el-form-item>
+                    <el-form-item label="手机号码" prop="phonenumber">
+                      <el-input
+                        v-model="queryParams.phonenumber"
+                        placeholder="请输入手机号码"
+                        clearable
+                        size="small"
+                        style="width: 240px"
+                        @keyup.enter.native="handleQuery"
+                      />
+                    </el-form-item>
+                    <el-form-item label="创建时间" prop="createTime">
+                      <el-date-picker
+                        v-model="dateRange"
+                        size="small"
+                        style="width: 240px"
+                        value-format="yyyy-MM-dd"
+                        type="daterange"
+                        range-separator="-"
+                        start-placeholder="开始日期"
+                        end-placeholder="结束日期"
+                      ></el-date-picker>
+                    </el-form-item>
+                    <el-form-item>
+                      <el-button type="primary" icon="el-icon-search" size="mini" @click="handleUserQuery">搜索</el-button>
+                      <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+                    </el-form-item>
+                  </el-form>
+
+
+                  <el-table ref="table" v-loading="loading" :row-key="getRowKey" :data="userList" @selection-change="handleUserSelectionChange">
+                    <el-table-column type="selection" width="50" align="center" :reserve-selection="true" />
+                    <el-table-column label="用户编号" align="center" key="userId" prop="userId" v-if="columns[0].visible" />
+                    <el-table-column label="用户名称" align="center" key="userName" prop="userName" v-if="columns[1].visible" :show-overflow-tooltip="true" />
+                    <el-table-column label="用户昵称" align="center" key="nickName" prop="nickName" v-if="columns[2].visible" :show-overflow-tooltip="true" />
+                    <el-table-column label="专业" align="center" key="deptName" prop="dept.deptName" v-if="columns[3].visible" :show-overflow-tooltip="true" />
+                    <el-table-column label="手机号码" align="center" key="phonenumber" prop="phonenumber" v-if="columns[4].visible" width="120" />
+                    <el-table-column label="状态" align="center" key="status" prop="status" v-if="columns[5].visible" :show-overflow-tooltip="true" >
+                      <template slot-scope="scope">
+                        <span v-if="scope.row.status == 0">启用</span>
+                        <span v-if="scope.row.status == 1">禁用</span>
+                      </template>
+                    </el-table-column>
+                    <el-table-column label="创建时间" align="center" prop="createTime" v-if="columns[6].visible" width="160">
+                      <template slot-scope="scope">
+                        <span>{{ parseTime(scope.row.createTime) }}</span>
+                      </template>
+                    </el-table-column>
+                  </el-table>
+
+                  <pagination
+                    v-show="total>0"
+                    :total="total"
+                    :page.sync="queryParams.pageNum"
+                    :limit.sync="queryParams.pageSize"
+                    @pagination="getUserList"
+                  />
+                </el-col>
+              </el-row>
+
+            </div>
+                    <span slot="footer" class="dialog-footer">
             <el-button @click="dialogVisible = false">取 消</el-button>
-            <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
+            <el-button type="primary" @click="confirmStudent()">确 定</el-button>
           </span>
           </el-dialog>
         </el-form-item>
@@ -184,127 +296,58 @@
         <el-form-item label="实习人数" prop="number">
           <el-input v-model="form.number" placeholder="请输入实习人数" />
         </el-form-item>
-		<el-form-item label="岗位余量" v-if="this.title =='添加实习信息' ">
+		<el-form-item label="岗位余量" v-if="this.title =='添加实习信息' " prop="surplus">
 		  <el-input v-model="form.number" :disabled="true" />
 		</el-form-item>
-		<el-form-item label="岗位余量" v-if="this.title =='修改实习信息' ">
+		<el-form-item label="岗位余量" v-else prop="surplus">
 		  <el-input v-model="form.surplus" :disabled="true" />
 		</el-form-item>
-        <el-form-item label="进点时间" prop="entryTime">
-          <el-date-picker clearable size="small"
-            v-model="form.entryTime"
-            type="date"
-            value-format="yyyy-MM-dd"
-            placeholder="选择进点时间">
-          </el-date-picker>
-        </el-form-item>
-		<el-form-item label="指导老师" prop="teacherId">
+    <el-form-item label="进点时间" prop="entryTime" v-if="this.title =='修改实习信息'">
+      <el-date-picker clearable size="small"
+        v-model="form.entryTime"
+        type="date"
+        value-format="yyyy-MM-dd"
+        placeholder="选择进点时间">
+      </el-date-picker>
+    </el-form-item>
+		<el-form-item label="指导老师" prop="teacherId" v-if="this.title =='修改实习信息'">
 		  <el-select v-model="form.teacherId" filterable placeholder="请选择">
 		      <el-option
-		        v-for="item in teachers"
-		        :key="item.value"
-		        :label="item.label"
-		        :value="item.value">
+		        v-for="teacher in teachers"
+		        :key="parseInt(teacher.value)"
+		        :label="teacher.label"
+		        :value="parseInt(teacher.value)">
 		      </el-option>
 		    </el-select>
 		</el-form-item>
 
-        <el-form-item label="状态">
-          <el-radio-group v-model="form.status">
-            <el-radio label="0">启用</el-radio>
-			<el-radio label="1">禁用</el-radio>
-          </el-radio-group>
-        </el-form-item>
+    <el-form-item label="状态" v-if="this.title =='修改实习信息'" prop="status">
+      <el-radio-group v-model="form.status">
+        <el-radio label="0">启用</el-radio>
+        <el-radio label="1">禁用</el-radio>
+      </el-radio-group>
+    </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
-        <el-button @click="cancel">取 消</el-button>
+        <el-button v-if="this.title == '实习分配'" type="primary" @click="submitAllocation">确 定</el-button>
+        <el-button v-else type="primary" @click="submitForm">确 定</el-button>
+        <el-button v-if="this.title =='修改实习信息'" @click="updateCancel">取 消</el-button>
+        <el-button v-else @click="allocationCancel">取 消</el-button>
       </div>
     </el-dialog>
   </div>
 </template>
 
-<style scoped>
-#my_container {
-  height: 500px;
-}
-
-/**
-* 信息窗口主体
-*/
-.infoWindow {
-  position: relative !important;
-  box-shadow: none;
-  bottom: 0;
-  left: 0;
-  width: 15.75rem;
-  height: 13.5rem;
-  padding: 0;
-  color: #fff;
-  font-size: 12px;
-}
-
-/**
-* 信息窗口外壳
-*/
-.amap-info-contentContainer .amap-info-sharp {
-  border-top: 8px solid rgba(0, 44, 71, .5);
-}
-
-/**
-* 信息窗口箭头
-*/
-.amap-info-content {
-  background-color: rgba(0, 44, 71, .5);
-}
-
-/**
-* 关闭按钮
-*/
-.amap-info-close {
-  right: 10px;
-  color: #fff;
-}
-
-#my_container .amap-marker-label {
-  border: 0 none;
-  background-color: #fff;
-  white-space: nowrap;
-  box-shadow: 0 0 5px 0 rgba(0, 0, 0, .3);
-  border-radius: 5px;
-}
-
-#my_container .amap-marker-label:after {
-  position: absolute;
-  border: 5px solid transparent;
-  border-top-color: #fff;
-  top: 19px;
-  left: 43%;
-  content: '';
-  width: 0;
-  height: 0;
-}
-
-.icon-s {
-  display: block;
-  margin: 0 auto;
-  width: 0;
-  height: 0;
-  border-style: solid;
-  border-width: 40px;
-  border-top-color: red;
-  border-right-color: blue;
-  border-bottom-color: yellow;
-  border-left-color: black;
-}
-
-</style>
-
 <script>
-import { listPracticeInfo, getPracticeInfo, delPracticeInfo,listTeacherInfo, addPracticeInfo, updatePracticeInfo, exportPracticeInfo } from "@/api/practice-info/practiceInfo";
+import { listPracticeInfo, getPracticeInfo, delPracticeInfo,listUserInfoByRole, addPracticeInfo, updatePracticeInfo, exportPracticeInfo } from "@/api/practice-info/practiceInfo";
+import { listUser } from "@/api/system/user";
 import { getBaseTude } from '@/api/system/baseInfo'
+import { treeselect } from "@/api/system/dept";
+import Treeselect from '@riophae/vue-treeselect'
+import "@riophae/vue-treeselect/dist/vue-treeselect.css";
 export default {
   name: "PracticeInfo",
+  components: { Treeselect },
   data() {
     return {
       // 遮罩层
@@ -313,16 +356,44 @@ export default {
       exportLoading: false,
       // 选中数组
       ids: [],
+      //学生选中数组
+      studentIds : [],
+      //已经选择的id组成的数组
+      hasSelectList:[],
       // 非单个禁用
       single: true,
       // 非多个禁用
       multiple: true,
       // 显示搜索条件
       showSearch: true,
+      defaultProps: {
+        children: "children",
+        label: "label"
+      },
+      // 院校名称
+      deptName: undefined,
+      // 默认密码
+      initPassword: undefined,
+      // 日期范围
+      dateRange: [],
+      // 状态数据字典
+      statusOptions: [],
+      // 性别状态字典
+      sexOptions: [],
+      // 岗位选项
+      postOptions: [],
+      // 角色选项
+      roleOptions: [],
+      // 院校树选项
+      deptOptions: undefined,
+      // 用户表格数据
+      userList: null,
       // 总条数
       total: 0,
 	  //指导老师数
 	  ttotal : 0 ,
+      //实习基地数
+      btotal : 0 ,
       // 实习信息表格数据
       practiceInfoList: [],
       // 弹出层标题
@@ -331,22 +402,37 @@ export default {
       open: false,
       // 实习人数字典
       numberOptions: [],
-	  //指导老师
-	  teachers : [],
+      //指导老师
+      teachers : [1],
+      //实习学生
+      students : [],
+      //实习基地
+      baseInfos : [0],
         value: '',
+      // 列信息
+      columns: [
+        { key: 0, label: `用户编号`, visible: true },
+        { key: 1, label: `用户名称`, visible: true },
+        { key: 2, label: `用户昵称`, visible: true },
+        { key: 3, label: `专业`, visible: true },
+        { key: 4, label: `手机号码`, visible: true },
+        { key: 5, label: `状态`, visible: true },
+        { key: 6, label: `创建时间`, visible: true }
+      ],
       // 查询参数
-      queryParams: {
+        queryParams: {
         pageNum: 1,
         pageSize: 10,
         locationId: null,
         postName: null,
         number: null,
-		surplus: null,
+		    surplus: null,
         entryTime: null,
         status: null,
         teacherId: null,
-		locationName : null,
-		teacherName : null
+          baseId : null ,
+		    locationName : null,
+		    teacherName : null
 	  },
 	  userQueryParams : {
 		  roleName : null
@@ -369,36 +455,35 @@ export default {
         ],
         teacherId: [
           { required: true, message: "指导老师不能为空", trigger: "change" }
+        ],
+        baseId: [
+          { required: true, message: "实习基地不能为空", trigger: "change" }
+        ],
+        studentId: [
+          { required: true, message: "实习学生不能为空", trigger: "change" }
         ]
       },
       dialogVisible: false,
-      ruleForm: {
-        name: '',
-        phone: '',
-        addr: '',
-        long: '',
-        lat: '',
-        start_work_time: '',
-        end_work_time: ''
-      }
+    }
+  },
+  watch: {
+    // 根据名称筛选院校树
+    deptName(val) {
+      this.$refs.tree.filter(val);
     }
   },
   created() {
     this.getList();
-	  this.getTeacherList();
+    this.initUser();
+    this.$nextTick(function () {
+      this.getTeacherList();
+      this.getBaseInfos();
+    })
     this.getDicts("sys_show_hide").then(response => {
       this.numberOptions = response.data;
     });
   },
   methods: {
-    /** 查询实习信息列表 */
-    openMap(){
-      this.dialogVisible = true
-      var that = this
-      this.$nextTick(function () {
-        this.initMap(that)
-      })
-    },
     getList() {
       this.loading = true;
       listPracticeInfo(this.queryParams).then(response => {
@@ -407,6 +492,16 @@ export default {
         this.loading = false;
       });
     },
+    /** 查询用户列表 */
+    getUserList() {
+      this.loading = true;
+      listUser(this.addDateRange(this.queryParams, this.dateRange)).then(response => {
+          this.userList = response.rows;
+          this.total = response.total;
+          this.loading = false;
+        }
+      )
+    },
     handleClose(done) {
       this.$confirm('确认关闭？')
         .then(_ => {
@@ -414,63 +509,137 @@ export default {
         })
         .catch(_ => {});
     },
-	getTeacherList() {
-	  this.loading = true;
-	  this.userQueryParams.roleName = 'teacher'
-	  listTeacherInfo(this.userQueryParams).then(response => {
-	    this.teachers = response.rows;
-	    this.ttotal = response.total;
-		var param = '[{'+'"value" : "'+response.rows[0].userId+'","label" : "' + response.rows[0].nickName + '"}'
-		for(var i = 1 ; i < this.ttotal ; i++){
-			param += ',{'+'"value" : "'+response.rows[i].userId+'","label" : "' + response.rows[i].nickName + '"}'
-		}
-		param += ']'
-		console.log(param)
-		var dataMap = JSON.parse(param);  //这是一个json数组 ，原数组
-		var optionArr = [];  //定义一个数组用来存放
-	　　/* dataMap.map((item,index)=>{    //  把原数组循环一下
-	　　　　 optionArr.push(
-	　　　　　　Object.assign(item,{value:response.rows[index].userId , label:response.rows[index].nickName })     //  数组的每一行添加一个 disabled:'true'  属性
-	　　　　)
-		}); */
-		optionArr.push(dataMap)
-		console.log(optionArr[0])
-		this.teachers = optionArr[0]
-	    this.loading = false;
-	  });
-	},
-	dataFilter(val){
-		this.value=val
-		if(val){
-			this.options=this.optionsCopy.filter((item=>{
-				if (!!~item.label.indexOf(val) || !!~item.label.toUpperCase().indexOf(val.toUpperCase())) {
-					return true
-				}
-			}))
-		}else{
-			this.options=this.optionsCopy
-		}
-	},
+    checked(){
+      //首先el-table添加ref="table"引用标识
+      this.userList.forEach((row) => {
+        this.studentIds.forEach((item) => {
+          if(row.userId == item){
+            this.$refs.table.toggleRowSelection(row,true);
+          }
+        })
+      });
+    },
+    confirmStudent(){
+      this.dialogVisible = false;
+      this.form.surplus = this.form.number - this.studentIds.length;
+    },
+    initUser(){
+      this.getUserList();
+      this.getTreeselect();
+      this.getDicts("sys_normal_disable").then(response => {
+        this.statusOptions = response.data;
+      });
+      this.getDicts("sys_user_sex").then(response => {
+        this.sexOptions = response.data;
+      });
+      this.getConfigKey("sys.user.initPassword").then(response => {
+        this.initPassword = response.msg;
+      });
+    },
+    openStudentSelect(){
+      this.dialogVisible = true
+      this.$nextTick(() => {
+        this.checked()
+      })
+    },
+    /** 查询院校下拉树结构 */
+    getTreeselect() {
+      treeselect().then(response => {
+        this.deptOptions = response.data;
+      });
+    },
+    getRowKey (row) {
+      return row.userId
+    },
+    getTeacherList() {
+      this.loading = true;
+      this.userQueryParams.roleName = 'teacher'
+      listUserInfoByRole(this.userQueryParams).then(response => {
+        this.teachers = response.rows;
+        this.ttotal = response.total;
+      var param = '[{'+'"value" : "'+response.rows[0].userId+'","label" : "' + response.rows[0].nickName + '"}'
+      for(var i = 1 ; i < this.ttotal ; i++){
+        param += ',{'+'"value" : "'+response.rows[i].userId+'","label" : "' + response.rows[i].nickName + '"}'
+      }
+      param += ']'
+      var dataMap = JSON.parse(param);  //这是一个json数组 ，原数组
+      var optionArr = [];  //定义一个数组用来存放
+      optionArr.push(dataMap)
+      this.teachers = optionArr[0]
+        this.loading = false;
+      });
+    },
+    getBaseInfos() {
+      this.loading = true;
+      getBaseTude().then(response => {
+        this.baseInfos = response.data
+        this.btotal = response.data.length
+        var param = '[{'+'"value" : "'+ this.baseInfos[0].baseId+'","label" : "' + this.baseInfos[0].baseName + '"}'
+        for(var i = 1 ; i < this.btotal ; i++){
+          param += ',{'+'"value" : "'+this.baseInfos[0].baseId+'","label" : "' + this.baseInfos[0].baseName + '"}'
+        }
+        param += ']'
+        var dataMap = JSON.parse(param);  //这是一个json数组 ，原数组
+        var optionArr = [];  //定义一个数组用来存放
+        optionArr.push(dataMap)
+        this.baseInfos = optionArr[0]
+        this.loading = false;
+      });
+    },
+    getStudents() {
+      this.loading = true;
+      this.userQueryParams.roleName = 'student'
+      listUserInfoByRole(this.userQueryParams).then(response => {
+        this.teachers = response.rows;
+        this.ttotal = response.total;
+        var param = '[{'+'"value" : "'+response.rows[0].userId+'","label" : "' + response.rows[0].nickName + ' : '+ response.rows[0].userName + '"}'
+        for(var i = 1 ; i < this.ttotal ; i++){
+          param += ',{'+'"value" : "'+response.rows[i].userId+'","label" : "' + response.rows[i].nickName + ' : '+ response.rows[i].userName + '"}'
+        }
+        param += ']'
+        var dataMap = JSON.parse(param);  //这是一个json数组 ，原数组
+        var optionArr = [];  //定义一个数组用来存放
+        optionArr.push(dataMap)
+        this.students = optionArr[0]
+        this.loading = false;
+      });
+    },
     // 实习人数字典翻译
     numberFormat(row, column) {
       return this.selectDictLabel(this.numberOptions, row.number);
     },
     // 取消按钮
-    cancel() {
+    updateCancel() {
       this.open = false;
-      this.reset();
+      this.updateReset();
+    },
+    // 取消按钮
+    allocationCancel() {
+      this.open = false;
+      this.allocationReset();
     },
     // 表单重置
-    reset() {
+    updateReset() {
       this.form = {
-        infoId: null,
-        locationId: null,
+        baseId: null,
         postName: null,
         number: null,
-		surplus: null,
+		    surplus: null,
         entryTime: null,
         status: "0",
-        delFlag: null,
+        teacherId: null
+      };
+      this.resetForm("form");
+    },
+    // 表单重置
+    allocationReset() {
+      this.form = {
+        baseId: null,
+        postName: null,
+        number: null,
+        surplus: null,
+        entryTime: null,
+        status: "0",
         teacherId: null
       };
       this.resetForm("form");
@@ -479,6 +648,11 @@ export default {
     handleQuery() {
       this.queryParams.pageNum = 1;
       this.getList();
+    },
+    /** 用户搜索按钮操作 */
+    handleUserQuery() {
+      this.queryParams.pageNum = 1;
+      this.getUserList();
     },
     /** 重置按钮操作 */
     resetQuery() {
@@ -493,19 +667,41 @@ export default {
     },
     /** 新增按钮操作 */
     handleAdd() {
-      this.reset();
+      this.allocationReset();
       this.open = true;
       this.title = "添加实习信息";
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
-      this.reset();
+      this.updateReset();
       const infoId = row.infoId || this.ids
       getPracticeInfo(infoId).then(response => {
         this.form = response.data;
         this.open = true;
         this.title = "修改实习信息";
       });
+    },
+    /** 分配按钮操作 */
+    handleAllocation(row) {
+      this.allocationReset();
+      const infoId = row.infoId || this.ids
+      getPracticeInfo(infoId).then(response => {
+        this.form = response.data;
+        this.studentIds = this.form.studentsId;
+        this.open = true;
+        this.title = "实习分配";
+        this.form.surplus = this.form.number - this.studentIds.length;
+      });
+    },
+    submitAllocation(){
+      this.form.studentIds = this.studentIds
+      if (this.form.infoId != null) {
+        updatePracticeInfo(this.form).then(response => {
+          this.msgSuccess("分配成功");
+          this.open = false;
+          this.getList();
+        });
+      }
     },
     /** 提交按钮 */
     submitForm() {
@@ -541,6 +737,16 @@ export default {
           this.msgSuccess("删除成功");
         }).catch(() => {});
     },
+    // 筛选节点
+    filterNode(value, data) {
+      if (!value) return true;
+      return data.label.indexOf(value) !== -1;
+    },
+    // 节点单击事件
+    handleNodeClick(data) {
+      this.queryParams.deptId = data.id;
+      this.getUserList();
+    },
     /** 导出按钮操作 */
     handleExport() {
       const queryParams = this.queryParams;
@@ -556,205 +762,12 @@ export default {
           this.exportLoading = false;
         }).catch(() => {});
     },
-    initMap(that) {
-      let markers = [] // 点聚合数组
-      // console.log(that.companyNames)
-      var map = new AMap.Map('my_container', {
-        resizeEnable: true,
-        zoom: 8,
-        center: [108.365386, 22.843292] // 中心点坐标,广西民族大学
-      })
-      AMap.plugin('AMap.Geolocation', function() { //异步加载插件
-        var geolocation = new AMap.Geolocation()
-        map.addControl(geolocation)
-      })
-
-      initBaseInfo(that);
-      initMarkerClusterer();
-      function initBaseInfo(that){
-        getBaseTude().then(response => {
-          var i = 0
-          var lonlats = []
-          var companyNames = []
-          for (; i < response.data.length; i++) {
-            var str = response.data[i].tude.split(',')
-            // var strComs = response.data[i].companyName.split(',')
-            //产生经纬度数组
-            var tude = [];
-            var name = [];
-            var longit = parseFloat(str[0])
-            var lat = parseFloat(str[1])
-            tude.push(longit)
-            tude.push(lat)
-            lonlats.push(tude)
-            companyNames.push(response.data[i].companyName)
-          }
-          console.log(companyNames)
-          console.log(lonlats)
-
-          // let lonlat = [[108.365386, 22.843292], [108.238089, 22.848063], [108.244248, 22.852298]]
-          for (let i = 0; i < lonlats.length; i++) {
-            //获得地点信息
-            var geocoder = new AMap.Geocoder({
-              /// city 指定进行编码查询的城市，支持传入城市名、adcode 和 citycode
-              radius: 10
-            })
-            geocoder.getAddress(lonlats[i], function(status, result) {
-              // console.log(status,result)
-              if (status === 'complete' && result.info === 'OK') {
-                // result为对应的地理位置详细信息
-                //             console.log(result.regeocode.formattedAddress)
-                customMark(lonlats[i][0], lonlats[i][1], companyNames[i])
-                // console.log(address)
-                // this.addresses = address
-              }
-            })
-            // console.log(this.addresses)
-            //添加标记
-            // customMark(lonlat[i][0],lonlat[i][1],address)
-          }
-          // initMarkerClusterer()
-          // cluster.setMaxZoom(15);
-// 添加自定义标记
-          function customMark(longit, lat, title) {
-            // let lonlat = [108.365386,22.843292];
-            // 创建 AMap.Icon 实例：
-            let icon = new AMap.Icon({
-              size: new AMap.Size(58, 70),    // 图标尺寸
-              image: 'http://chuyinweilai.store/apk/location.png',  // Icon的图像
-              imageSize: new AMap.Size(28, 30)   // 根据所设置的大小拉伸或压缩图片
-            })
-
-            // 将 Icon 实例添加到 marker 上:
-            let marker = new AMap.Marker({
-              position: new AMap.LngLat(longit, lat),
-              offset: new AMap.Pixel(-10, -10),
-              icon: icon, // 添加 Icon 实例
-              title: '实习地点：'+title,
-              zoom: 13
-            })
-            var msg_label =
-              '<div style="border-radius:200px;background: #00afff"></div><span >'+title+'</span></div>'
-
-            marker.setLabel({
-              offset: new AMap.Pixel(20, -10), //显示位置
-              content: msg_label //显示内容
-            })
-            marker.on('mouseover', function(e) {
-              marker.setTop(true)
-            })
-            marker.on('mouseout', function() {
-              marker.setTop(false)
-            })
-
-            // var lonlat=longit+","+lat
-            // markerEvent(marker,lonlat)
-            map.add(marker)
-
-            markers.push(marker)
-          }
-
-          // markerEvent在创建点标记后调用，这里不写了
-          function markerEvent(marker, lonlats) {
-            // AMap.event.addListener(marker, 'click', function () {
-            //   openInfo(marker, lonlat);
-            // })
-          }
-
-// 初始化点聚合k
-          function initMarkerClusterer() {
-            //添加聚合组件
-            map.plugin(['AMap.MarkerClusterer'], function() {
-              var cluster = new AMap.MarkerClusterer(
-                map,     // 地图实例
-                markers)
-              cluster.setMaxZoom(12)
-            })
-          }
-
-// 添加点标记至点聚合中
-          function addMarkerClusterer() {
-            // let lonlat = [Math.random() + 113, Math.random() + 23]
-            // console.log(lonlat)
-            // 创建 AMap.Icon 实例：
-            let icon = new AMap.Icon({
-              size: new AMap.Size(58, 70),    // 图标尺寸
-              image: 'http://chuyinweilai.store/apk/index_calen.png',  // Icon的图像
-              imageSize: new AMap.Size(58, 70)   // 根据所设置的大小拉伸或压缩图片
-            })
-
-            // 将 Icon 实例添加到 marker 上:
-            let marker = new AMap.Marker({
-              position: new AMap.LngLat(lonlats[0], lonlats[1]),
-              offset: new AMap.Pixel(-10, -10),
-              icon: icon, // 添加 Icon 实例
-              title: "111",
-              zoom: 13
-            })
-            markerEvent(marker, lonlats)
-            cluster.addMarker(marker)
-          }
-
-          var geocoder, marker
-          // function regeocoder(lnglatXY,that) {
-          //   AMap.plugin('AMap.Geocoder',function(){
-          //     var geocoder = new AMap.Geocoder({
-          //       radius: 1000,
-          //       extensions: "all"
-          //     });
-          //     var address;
-          //     geocoder.getAddress(lnglatXY, function(status, result) {
-          //       if (status === 'complete' && result.info === 'OK') {
-          //         address = result.regeocode.formattedAddress;
-          //         console.log("address"+address)
-          //         that.ruleForm.addr = address
-          //       }
-          //     });
-          //     if(!marker){
-          //       var marker = new AMap.Marker({
-          //         position: new AMap.LngLat(113.397428, 23.2,112.397428, 23.2),   // 经纬度对象，也可以是经纬度构成的一维数组[116.39, 39.9]
-          //         title: '默认图标'
-          //       });
-          //       var msg_label = '<span>'+ "测试"+'</span>';
-          //       marker.setLabel({
-          //         offset: new AMap.Pixel(20, -10), //显示位置
-          //         content: msg_label //显示内容
-          //       });
-          //       var msg_title = '测试使用的title';
-          //       marker.setTitle(msg_title);
-          //       marker.on("mouseover", function(e) {
-          //         marker.setTop(true);
-          //       });
-          //       marker.on("mouseout", function() {
-          //         marker.setTop(false);
-          //       });
-          //       map.add(marker);
-          //     }
-          //     // marker.setMap(mapObj);
-          //     marker.setPosition(lnglatXY);
-          //   })
-          // }
-          // var that = this
-          // map.on('click', function(e) {
-          //   var lnglatXY = [e.lnglat.getLng(),e.lnglat.getLat()];
-          //   regeocoder(lnglatXY,that)
-          //   that.ruleForm.long = e.lnglat.getLng()
-          //   that.ruleForm.lat = e.lnglat.getLat()
-          // });
-        })
-      }
-
-      function initMarkerClusterer() {
-        //添加聚合组件
-        map.plugin(['AMap.MarkerClusterer'], function() {
-          var cluster = AMap.MarkerClusterer(
-            map,     // 地图实例
-            markers)
-          cluster.setMaxZoom(12)
-        })
-      }
-
-    }
+    // 多选框选中数据
+    handleUserSelectionChange(selection) {
+      this.studentIds = selection.map(item => item.userId);
+      this.single = selection.length != 1;
+      this.multiple = !selection.length;
+    },
   }
 };
 </script>

@@ -9,8 +9,8 @@ export function listPracticeInfo(query) {
   })
 }
 
-// 查询指导老师信息
-export function listTeacherInfo(query) {
+// 查询特定角色信息
+export function listUserInfoByRole(query) {
 	console.log(query)
   return request({
     url: '/system/user/listByRole',
