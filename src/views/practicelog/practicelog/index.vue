@@ -1,5 +1,6 @@
 <template>
   <div class="app-container">
+
     <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px">
       <el-form-item label="用户姓名" prop="userName">
         <el-input
@@ -150,7 +151,6 @@
           <el-input v-model="form.logContents"
                     type="textarea"
                     placeholder="请输入内容"
-                    :rows="5"
           />
         </el-form-item>
 <!--        <el-form-item label="删除标志" prop="delFlag">-->

@@ -68,7 +68,7 @@ export function exportBaseInfo(query) {
 // 获取地点信息所有经纬度
 export function getBaseTude() {
   return request({
-    url: '/system/baseInfo/selectBaseTude',
+    url: '/system/baseInfo/selectBaseTudeAndID',
     method: 'get'
   })
 }
