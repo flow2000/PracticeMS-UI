@@ -52,3 +52,12 @@ export function exportPunch(query) {
     params: query
   })
 }
+
+// 查询在岗学生
+export function serachDuty(query) {
+  return request({
+    url: '/punch/punch/serachDuty',
+    method: 'put',
+    params: query
+  })
+}
