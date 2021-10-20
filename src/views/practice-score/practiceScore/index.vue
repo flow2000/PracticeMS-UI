@@ -1,20 +1,20 @@
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px"  v-hasPermi="['practice-score:practiceScore:edit']">
-      <el-form-item label="用户ID" prop="userId">
+      <el-form-item label="学号" prop="userId">
         <el-input
-          v-model="queryParams.userId"
-          placeholder="请输入用户ID"
+          v-model="queryParams.username"
+          placeholder="请输入学号"
           clearable
           v-hasPermi="['practice-score:practiceScore:edit']"
           size="small"
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="地点ID" prop="locationId">
+      <el-form-item label="姓名" prop="locationId">
         <el-input
-          v-model="queryParams.locationId"
-          placeholder="请输入地点ID"
+          v-model="queryParams.nickname"
+          placeholder="请输入姓名"
           clearable
           size="small"
           @keyup.enter.native="handleQuery"
@@ -90,11 +90,11 @@
 
     <el-table v-loading="loading" :data="practiceScoreList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="ID" align="center" prop="scoreId" width="40" />
-      <el-table-column label="用户ID" align="center" prop="userId"  width="70"/>
+<!--      <el-table-column label="ID" align="center" prop="scoreId" width="40" />-->
+<!--      <el-table-column label="用户ID" align="center" prop="userId"  width="70"/>-->
       <el-table-column label="学号" align="center" prop="username" />
-      <el-table-column label="姓名" align="center" prop="nickname" width="60"/>
-      <el-table-column label="地点ID" align="center" prop="locationId" />
+      <el-table-column label="姓名" align="center" prop="nickname" width="80"/>
+<!--      <el-table-column label="地点ID" align="center" prop="locationId" />-->
       <el-table-column label="开始时间" align="center" prop="startTime" width="110">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.startTime, '{y}-{m}-{d}') }}</span>
