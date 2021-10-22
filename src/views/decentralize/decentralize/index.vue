@@ -100,7 +100,13 @@
         </template>
       </el-table-column>
       <el-table-column label="备注" align="center" prop="notes" />
-      <el-table-column label="状态" align="center" prop="status" />
+      <el-table-column label="状态" align="center" prop="status" >
+        <template slot-scope="scope">
+          <span v-if="scope.row.status == 0">未审核</span>
+          <span v-if="scope.row.status == 1">已通过</span>
+          <span v-if="scope.row.status == -1">未通过</span>
+        </template>
+      </el-table-column>
       <el-table-column label="实习证明" align="center" prop="acceptanceCertificate" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">

@@ -51,3 +51,11 @@ export function exportDecentralize(query) {
     params: query
   })
 }
+
+// 查询学生实习信息
+export function getStudentPracticeInfo() {
+  return request({
+    url: '/arrangement/arrangement/getPracticeInfo',
+    method: 'get'
+  })
+}

@@ -28,12 +28,6 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-	  <el-form-item label="学生意见" prop="stuOption">
-	    <el-select v-model="queryParams.stuOption" placeholder="请输入学生意见" clearable size="small">
-	      <el-option label="同意" value="0" />
-		  <el-option label="拒绝" value="1" />
-	    </el-select>
-	  </el-form-item>
       <el-form-item label="状态" prop="status">
         <el-select v-model="queryParams.status" placeholder="请选择状态" clearable size="small">
           <el-option label="启用" value="0" />
@@ -100,13 +94,6 @@
 	  <el-table-column label="学生姓名" align="center" prop="user.nickName" />
       <el-table-column label="实习岗位" align="center" prop="info.postName" />
       <el-table-column label="备注" align="center" prop="notes" />
-      <el-table-column label="学生意见" align="center" prop="stuOption" >
-		  <template slot-scope="scope">
-			<span v-if="scope.row.stuOption == 0+''">同意</span>
-		    <span v-else-if="scope.row.stuOption == 1+''">拒绝</span>
-			<span v-else="scope.row.stuOption == ''">未确认</span>
-		  </template>
-	  </el-table-column>
       <el-table-column label="状态" align="center" prop="status" >
 		  <template slot-scope="scope">
 			<span v-show="scope.row.status == 0+''">启用</span>
@@ -161,12 +148,6 @@
 		</el-form-item>
         <el-form-item label="备注" prop="notes">
           <el-input v-model="form.notes" type="textarea" placeholder="请输入内容" />
-        </el-form-item>
-        <el-form-item label="学生意见">
-		  <el-radio-group v-model="form.stuOption">
-		    <el-radio label="0">同意</el-radio>
-		  	<el-radio label="1">拒绝</el-radio>
-		  </el-radio-group>
         </el-form-item>
         <el-form-item label="状态">
           <el-radio-group v-model="form.status">
