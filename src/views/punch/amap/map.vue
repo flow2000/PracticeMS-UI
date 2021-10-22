@@ -122,27 +122,19 @@
               <span class="title">${title}</span>
               <br />
               <div class="mt-3 detail">
-                <a href="#">今日在岗学生：1名</a> <br />
-                <a href="#">今日离岗学生：2名</a> <br />
+                <a href="#">今日在岗学生：0名</a> <br />
+                <a href="#">今日离岗学生：0名</a> <br />
                 <a href="#">今日共有学生：3名</a>
               </div>
             </div>`
 
               marker.on('mouseover', function(e) {
-                marker.setLabel({
-                  offset: new AMap.Pixel(0, -30), //显示位置
-                  content: markerContent //显示内容
-                })
                 marker.setTop(true)
               })
 
               marker.on('mouseout', function() {
                 //  鼠标离开标注地点事件
                 marker.setTop(false)
-                marker.setLabel({
-                  offset: new AMap.Pixel(20, -10)  , //显示位置
-                  content: msg_label //显示内容
-                })
               })
 
               marker.on("click", function (e) {
@@ -319,24 +311,16 @@
               <span class="title">${title}</span>
               <br />
               <div class="mt-3 detail">
-                <a href="#">今日在岗学生：1名</a> <br />
-                <a href="#">今日离岗学生：2名</a> <br />
+                <a href="#">今日在岗学生：0名</a> <br />
+                <a href="#">今日离岗学生：0名</a> <br />
                 <a href="#">今日共有学生：3名</a>
               </div>
             </div>`
 
               marker.on('mouseover', function(e) {
-                marker.setLabel({
-                  offset: new AMap.Pixel(0, -30), //显示位置
-                  content: markerContent //显示内容
-                })
                 marker.setTop(true)
               })
               marker.on('mouseout', function() {
-                marker.setLabel({
-                  offset: new AMap.Pixel(20, -10)  , //显示位置
-                  content: msg_label //显示内容
-                })
                 marker.setTop(false)
               })
 
