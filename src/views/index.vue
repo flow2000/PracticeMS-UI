@@ -29,19 +29,57 @@
       <div class="mc-ui-grid-item right-mid">
         <p style="text-align: left;color: #7f7f7f;font-size:larger;margin: 0px">公告栏</p>
         <hr/>
-        <el-popover
+        <el-table
+          :data="noticeList"
+          style="width: 100%"
+          v-loading="noticeloading"
+          @row-click="noticeOpenRow"
+          height="250">
+            <el-table-column
+              prop="noticeTitle"
+              align="center"
+              label="标题"
+              width="500">
+            </el-table-column>
+            <el-table-column
+              align="center"
+              prop="nickname"
+              label="发布人"
+              sortable
+              width="150">
+            </el-table-column>
+            <el-table-column
+              align="center"
+              class-name="small-padding fixed-width"
+              prop="createTime"
+              sortable
+              label="发布时间"
+              >
+            </el-table-column>
+        </el-table>
+<!--        <el-popover-->
+<!--          v-for="item in noticeList"-->
+<!--          placement="top-start"-->
+<!--          :title="item.noticeTitle"-->
+<!--          width="600"-->
+<!--          trigger="hover"-->
+<!--          :content="item.noticeContent">-->
+<!--          <el-table :data="item" slot="reference"  style="width: 90%;height: 40px;margin-top: 12px;font-size: medium">-->
 
-          v-for="item in noticeList"
-          placement="top-start"
-          title="标题"
-          width="200"
-          trigger="hover"
-          content="这是一段内容,这是一段内容,这是一段内容,这是一段内容。">
-          <el-tag  slot="reference"  style="width: 100%;height: 40px">
-           {{item}}
-          </el-tag>
-        </el-popover>
+<!--          </el-table>-->
+<!--        </el-popover>-->
       </div>
+
+      <el-dialog
+        style="top: 30%"
+        :title="noticeTitle"
+        :visible.sync="noticeVisible"
+        width="30%">
+        <div v-html="noticeContent"></div>
+        <span slot="footer" class="dialog-footer">
+
+       </span>
+      </el-dialog>
     </div>
   </div>
 </template>
@@ -60,6 +98,10 @@ export default {
       version: "3.6.0",
       // 用户信息
       user: {},
+      //通知的可视
+      noticeVisible:false,
+      noticeTitle: '',
+      noticeContent: '',
       //通知列表
       noticeList: [],
       //列表加载
@@ -92,7 +134,7 @@ export default {
       window.open(href, "_blank");
     },
 
-    /** 查询公告列表 */
+    /* 查询公告列表 */
     getNoticeList() {
       this.noticeloading = true;
       listNotice(this.noticeParams).then(response => {
@@ -101,8 +143,17 @@ export default {
         this.noticeloading = false;
         console.log(this.noticeList);
       });
+    },
+
+    /* 公告表单的行事件 */
+    noticeOpenRow(row) {
+      this.noticeVisible = true;
+      this.noticeTitle = row.noticeTitle;
+      this.noticeContent = row.noticeContent;
+      // console.log(row);
 
     },
+
     // 获取当前用户信息
     getUser() {
       getUserProfile().then(response => {
