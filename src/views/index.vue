@@ -29,6 +29,18 @@
       <div class="mc-ui-grid-item right-mid">
         <p style="text-align: left;color: #7f7f7f;font-size:larger;margin: 0px">公告栏</p>
         <hr/>
+        <el-popover
+
+          v-for="item in noticeList"
+          placement="top-start"
+          title="标题"
+          width="200"
+          trigger="hover"
+          content="这是一段内容,这是一段内容,这是一段内容,这是一段内容。">
+          <el-tag  slot="reference"  style="width: 100%;height: 40px">
+           {{item}}
+          </el-tag>
+        </el-popover>
       </div>
     </div>
   </div>
@@ -38,6 +50,7 @@
 
 import { getUserProfile } from '../api/system/user'
 import * as echarts from 'echarts'
+import { listNotice, getNotice, delNotice, addNotice, updateNotice } from "@/api/system/notice";
 export default {
 
   name: "index",
@@ -47,12 +60,27 @@ export default {
       version: "3.6.0",
       // 用户信息
       user: {},
+      //通知列表
+      noticeList: [],
+      //列表加载
+      noticeloading:true,
+      //通知条数
+      noticetotal:0,
+      // 查询参数
+      noticeParams: {
+        pageNum: 1,
+        pageSize: 10,
+        noticeTitle: undefined,
+        createBy: undefined,
+        status: undefined
+      },
       roleGroup: {},
     };
   },
   created() {
     // 获取当前用户信息
     this.getUser();
+    this.getNoticeList();
 
   },
   mounted(){
@@ -64,13 +92,24 @@ export default {
       window.open(href, "_blank");
     },
 
+    /** 查询公告列表 */
+    getNoticeList() {
+      this.noticeloading = true;
+      listNotice(this.noticeParams).then(response => {
+        this.noticeList = response.rows;
+        this.noticetotal = response.total;
+        this.noticeloading = false;
+        console.log(this.noticeList);
+      });
+
+    },
     // 获取当前用户信息
     getUser() {
       getUserProfile().then(response => {
         this.user = response.data;
         this.roleGroup = response.roleGroup;
-        console.log(this.user.nickName)
-        console.log(this.roleGroup)
+        //console.log(this.user.nickName)
+        //console.log(this.roleGroup)
       });
     },
 
