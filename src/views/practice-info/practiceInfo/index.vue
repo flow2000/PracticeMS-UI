@@ -106,14 +106,19 @@
 
     <el-table v-loading="loading" :data="practiceInfoList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="25" align="center" />
-      <el-table-column label="实习信息ID" align="center" prop="infoId" />
+      <el-table-column label="实习信息ID" align="center" prop="infoId" v-if="1 == 2"/>
       <el-table-column label="实习地点" align="center" prop="baseInfo.baseName" />
       <el-table-column label="岗位名称" align="center" prop="postName" />
       <el-table-column label="实习人数" align="center" prop="number" />
 	    <el-table-column label="岗位余量" align="center" prop="surplus" />
-      <el-table-column label="进点时间" align="center" prop="entryTime" width="180">
+      <el-table-column label="实习时间" align="center" prop="entryTime" width="180">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.entryTime, '{y}-{m}-{d}') }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="结束时间" align="center" prop="endingTime" width="180">
+        <template slot-scope="scope">
+          <span>{{ parseTime(scope.row.endingTime, '{y}-{m}-{d}') }}</span>
         </template>
       </el-table-column>
       <el-table-column label="状态" align="center" prop="status" >
@@ -173,7 +178,8 @@
         </el-form-item>
 
         <el-form-item label="实习学生" prop="studentIds" v-if="this.title =='实习分配'">
-          <el-input :value="'已选择 ' + this.studentIds.length + ' 名学生'" placeholder="请输入实习学生" />
+          <el-input v-if="this.studentIds != null" :value="'已选择 ' + this.studentIds.length + ' 名学生'" placeholder="请输入实习学生" />
+          <el-input v-else :value="'未选择学生'" placeholder="请输入实习学生" />
           <el-button type="text" @click="openStudentSelect()">选择实习学生</el-button>
           <el-dialog
               title="选择实习学生"
@@ -302,12 +308,22 @@
 		<el-form-item label="岗位余量" v-else prop="surplus">
 		  <el-input v-model="form.surplus" :disabled="true" />
 		</el-form-item>
-    <el-form-item label="进点时间" prop="entryTime" v-if="this.title =='修改实习信息'">
+    <el-form-item label="实习时间" prop="entryTime" >
       <el-date-picker clearable size="small"
         v-model="form.entryTime"
         type="date"
+        @blur="setEndingTime"
         value-format="yyyy-MM-dd"
-        placeholder="选择进点时间">
+        placeholder="选择实习时间">
+      </el-date-picker>
+    </el-form-item>
+    <el-form-item label="结束时间" prop="entryTime" >
+      <el-date-picker clearable size="small"
+        v-model="form.endingTime"
+        :disabled="true"
+        type="date"
+        value-format="yyyy-MM-dd"
+        placeholder="选择结束时间">
       </el-date-picker>
     </el-form-item>
 		<el-form-item label="指导老师" prop="teacherId" v-if="this.title =='修改实习信息'">
@@ -358,6 +374,8 @@ export default {
       ids: [],
       //学生选中数组
       studentIds : [],
+      //记录应回显的学生
+      studentIds_h : [],
       //已经选择的id组成的数组
       hasSelectList:[],
       // 非单个禁用
@@ -403,11 +421,11 @@ export default {
       // 实习人数字典
       numberOptions: [],
       //指导老师
-      teachers : [1],
+      teachers : [],
       //实习学生
       students : [],
       //实习基地
-      baseInfos : [0],
+      baseInfos : [],
         value: '',
       // 列信息
       columns: [
@@ -428,6 +446,7 @@ export default {
         number: null,
 		    surplus: null,
         entryTime: null,
+          endingTime: null,
         status: null,
         teacherId: null,
           baseId : null ,
@@ -451,10 +470,7 @@ export default {
           { required: true, message: "实习人数不能为空", trigger: "blur" }
         ],
         entryTime: [
-          { required: true, message: "进点时间不能为空", trigger: "blur" }
-        ],
-        teacherId: [
-          { required: true, message: "指导老师不能为空", trigger: "change" }
+          { required: true, message: "实习时间不能为空", trigger: "blur" }
         ],
         baseId: [
           { required: true, message: "实习基地不能为空", trigger: "change" }
@@ -511,8 +527,9 @@ export default {
     },
     checked(){
       //首先el-table添加ref="table"引用标识
+      if(this.userList == null || this.studentIds_h == null) return;
       this.userList.forEach((row) => {
-        this.studentIds.forEach((item) => {
+        this.studentIds_h.forEach((item) => {
           if(row.userId == item){
             this.$refs.table.toggleRowSelection(row,true);
           }
@@ -522,6 +539,11 @@ export default {
     confirmStudent(){
       this.dialogVisible = false;
       this.form.surplus = this.form.number - this.studentIds.length;
+      this.studentIds_h = this.studentIds
+    },
+    setEndingTime(){
+      let entry_date = new Date(this.form.entryTime)
+      this.form.endingTime = new Date(entry_date.setDate(entry_date.getDate() + 60))
     },
     initUser(){
       this.getUserList();
@@ -576,7 +598,7 @@ export default {
         this.btotal = response.data.length
         var param = '[{'+'"value" : "'+ this.baseInfos[0].baseId+'","label" : "' + this.baseInfos[0].baseName + '"}'
         for(var i = 1 ; i < this.btotal ; i++){
-          param += ',{'+'"value" : "'+this.baseInfos[0].baseId+'","label" : "' + this.baseInfos[0].baseName + '"}'
+          param += ',{'+'"value" : "'+this.baseInfos[i].baseId+'","label" : "' + this.baseInfos[i].baseName + '"}'
         }
         param += ']'
         var dataMap = JSON.parse(param);  //这是一个json数组 ，原数组
@@ -626,6 +648,7 @@ export default {
         number: null,
 		    surplus: null,
         entryTime: null,
+        endingTime: null,
         status: "0",
         teacherId: null
       };
@@ -639,6 +662,7 @@ export default {
         number: null,
         surplus: null,
         entryTime: null,
+        endingTime:null,
         status: "0",
         teacherId: null
       };
@@ -685,16 +709,22 @@ export default {
     handleAllocation(row) {
       this.allocationReset();
       const infoId = row.infoId || this.ids
-      getPracticeInfo(infoId).then(response => {
-        this.form = response.data;
-        this.studentIds = this.form.studentsId;
-        this.open = true;
-        this.title = "实习分配";
-        this.form.surplus = this.form.number - this.studentIds.length;
-      });
+      this.open = true;
+      this.$nextTick(function () {
+        getPracticeInfo(infoId).then(response => {
+          this.form = response.data;
+          console.log(this.form)
+          this.studentIds = this.form.studentsId;
+          this.studentIds_h = this.form.studentsId
+          this.title = "实习分配";
+          this.form.surplus = this.form.number - this.studentIds.length;
+        });
+      })
     },
     submitAllocation(){
       this.form.studentIds = this.studentIds
+      this.form.stuStrings = this.studentIds.join(',')
+      this.form.teacherId = null
       if (this.form.infoId != null) {
         updatePracticeInfo(this.form).then(response => {
           this.msgSuccess("分配成功");
