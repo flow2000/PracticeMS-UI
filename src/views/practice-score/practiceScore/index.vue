@@ -236,6 +236,7 @@
       :visible.sync="appraisalVisible"
       width="28%"
       style="top: 10%"
+      @close="this.getList"
       >
       <el-upload
         style="margin-left: 10%"
@@ -262,6 +263,7 @@
       :visible.sync="summeryVisible"
       width="28%"
       style="top: 10%"
+      @close="this.getList"
     >
       <el-upload
         style="margin-left: 10%"
@@ -459,8 +461,6 @@ export default {
     },
     /**打开上传文件对话框*/
     openAppraisal(row){
-
-
       this.appraisalVisible = true;
       this.upload.AppraisalFileList = [];
       const scoreId = row.scoreId || this.ids;
@@ -507,9 +507,11 @@ export default {
     },
     // 文件上传成功处理
     handleFileSuccess(response, file, fileList) {
+
       this.upload.isUploading = false;
       this.form.filePath = response.url;
       this.msgSuccess(response.msg);
+
     },
 
     /** 新增按钮操作 */
