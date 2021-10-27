@@ -10,15 +10,37 @@
 
         <!--通知栏-->
         <div style="position: relative;float: left;width: 60%;padding:0 8%">
-          <div style="text-align: center;font-size:larger;color: #959595;margin-bottom: 1.5%" >系统通知</div>
-          <template>
+          <div style="text-align: center;font-size:larger;color: #959595;" >系统通知</div>
             <el-carousel height="35px" direction="vertical" :autoplay="true" indicator-position="none">
-              <el-carousel-item v-for="item in 3" :key="item">
-                <h3 class="medium">{{ item }}</h3>
+              <el-carousel-item v-for="item in noticeList">
+                <p class="noticeSlim" @click="showNoticeDetail(item.noticeId)">
+                  {{item.noticeTitle}}&nbsp;[{{(item.updateTime.split(" "))[0]}}]
+                </p>
               </el-carousel-item>
             </el-carousel>
-          </template>
         </div>
+        <!--公告详细信息-->
+        <el-dialog
+          title="系统通知"
+          :visible.sync="noticeDetail.visible"
+          width="35%"
+          >
+          <p style="text-align: center;font-size: 20px;margin-top: 0">{{noticeDetail.title}}</p>
+          <div style="font-size: 15px;color: #717171;
+          width: 50%;float: left;
+          text-align: left;padding-left: 5%">
+            发布者：{{noticeDetail.publisher}}
+          </div>
+          <div style="font-size: 15px;color: #717171;
+          width: 50%;float: right;
+          text-align: right;;padding-right: 5%">
+            发布时间：{{noticeDetail.updateTime}}
+          </div>
+          <br />
+          <div style="font-size: 16px;padding: 5% 10%" v-html="noticeDetail.content"></div>
+        </el-dialog>
+
+
       </div>
 
       <div class="mc-ui-grid-item left-mid1" >
@@ -74,8 +96,13 @@
 
 import { getUserProfile } from '../api/system/user'
 import * as echarts from 'echarts'
+import { listNotice } from "@/api/system/notice";
+import ScrollPane from '../layout/components/TagsView/ScrollPane'
+import request from '@/utils/request'
+
 export default {
   name: "index",
+  components: { ScrollPane },
   data() {
     return {
       // 版本号
@@ -83,12 +110,36 @@ export default {
       // 用户信息
       user: {},
       roleGroup: {},
+      //通知列表
+      noticeList: [],
+      noticeSlims:[],
+      //通知条数
+      noticetotal:0,
+      //通知详细窗口
+      noticeDetail:{
+        visible:false,
+        title:null,
+        content:null,
+        updateTime:null,
+        publisher:null,
+      },
+      // 查询参数
+      noticeParams: {
+        pageNum: 1,
+        pageSize: 5,
+        status: '1',
+      },
     };
   },
   created() {
     // 获取当前用户信息
     this.getUser();
 
+    // 获取最近的公告
+    this.getNoticeList();
+
+    // 展示网络时间
+    // this.showNetDateTime();
   },
   mounted(){
     // 绘图
@@ -99,6 +150,30 @@ export default {
       window.open(href, "_blank");
     },
 
+    /* 查询公告列表 */
+    getNoticeList() {
+      this.noticeloading = true;
+      listNotice(this.noticeParams).then(response => {
+        this.noticeList = response.rows;
+        this.noticetotal = response.total;
+        this.noticeloading = false;
+        console.log(this.noticeList);
+        for(let item of this.noticeList){
+          let day=item.updateTime.split(' ');
+          this.noticeSlims.push(item.noticeTitle+" ["+day[0]+"]")
+        }
+      });
+    },
+
+    /* 查看公告详细信息 */
+    showNoticeDetail(noticeId){
+      let index=checkNoticeId(this.noticeList,noticeId);
+      this.noticeDetail.visible=true;
+      this.noticeDetail.title=this.noticeList[index].noticeTitle;
+      this.noticeDetail.content=this.noticeList[index].noticeContent;
+      this.noticeDetail.updateTime=this.noticeList[index].updateTime;
+      this.noticeDetail.publisher=this.noticeList[index].nickname;
+    },
     // 获取当前用户信息
     getUser() {
       getUserProfile().then(response => {
@@ -109,6 +184,12 @@ export default {
       });
     },
 
+    /* 展示网络时间 */
+    showNetDateTime(){
+      getNetDateTime().then(response=>{
+        console.log(response);
+      })
+    },
     // 绘图
     drawLine(){
       // 基于准备好的dom，初始化echarts实例
@@ -283,6 +364,21 @@ export default {
     }
   }
 };
+/* 通过noticeId搜索通知列表获取索引值 */
+function checkNoticeId(list,id){
+  let i=0;
+  for(let item of list){
+    if(item.noticeId===id) return i;
+    i++;
+  }
+}
+/* 获取网络时间 */
+function getNetDateTime() {
+  return request({
+    url: 'http://api.m.taobao.com/rest/api3.do?api=mtop.common.getTimestamp',
+    method: 'get'
+  })
+}
 </script>
 
 <style scoped lang="scss">
@@ -455,20 +551,24 @@ export default {
     margin-bottom: 1%
   }
 
-  .el-carousel__item h3 {
-    color: #475669;
-    font-size: 14px;
-    opacity: 0.75;
-    line-height: 200px;
-    margin: 0;
-  }
+  /*公告栏样式*/
+  .el-carousel__item{
 
+  }
   .el-carousel__item:nth-child(2n) {
-    background-color: #99a9bf;
+  }
+  .el-carousel__item:nth-child(2n+1) {
   }
 
-  .el-carousel__item:nth-child(2n+1) {
-    background-color: #d3dce6;
+  .noticeSlim{
+    color: #f34f4f;
+    font-size: 16px;
+    text-align: center;
+    margin: 2%
+  }
+  .noticeSlim:hover{
+    color: #0ab685;
+    cursor: pointer;
   }
 
   .title1{
