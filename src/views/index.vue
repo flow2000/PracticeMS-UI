@@ -1,35 +1,71 @@
 <template>
-  <div id="magicalDragScene" class="mc-root mc-ui-absolute-pane" style="height: 1000px;" mcnetline="100">
-    <div id="main-panel" class="mc-ui-grid-pane" style="height: 1000px; width: auto;margin: 1% 1%">
+  <div id="magicalDragScene" class="mc-root mc-ui-absolute-pane" style="height: 1100px;min-height: 1100px;min-width: 1700px" mcnetline="100">
+    <div id="main-panle" class="mc-ui-grid-pane" style="height: 1100px; width: auto;margin:1%;min-height: 1100px;min-width: 1500px">
 
-      <div class="mc-ui-grid-item top-panel">
-        <div style="font-size:xx-large;color: #1c84c6">|欢迎使用本系统！</div>
-        <div style="font-size: x-large;color: #0eaa8b">-{{roleGroup}}：{{user.nickName}}</div>
+      <div class="mc-ui-grid-item top-panle">
+        <div style="font-size:xx-large;color: #1c84c6;width: 20%;position: relative;float: left">
+          |欢迎使用本系统！<br />
+          <div style="font-size: x-large;color: #0eaa8b;">-{{roleGroup}}：{{user.nickName}}</div>
+        </div>
+
+        <!--通知栏-->
+        <div style="position: relative;float: left;width: 60%;padding:0 8%">
+          <div style="text-align: center;font-size:larger;color: #959595;margin-bottom: 1.5%" >系统通知</div>
+          <template>
+            <el-carousel height="35px" direction="vertical" :autoplay="true" indicator-position="none">
+              <el-carousel-item v-for="item in 3" :key="item">
+                <h3 class="medium">{{ item }}</h3>
+              </el-carousel-item>
+            </el-carousel>
+          </template>
+        </div>
       </div>
 
-      <div class="mc-ui-grid-item right-top">
-        <div id="chart1" style="width: 100%;height: 100%"></div>
-      </div>
-
-      <div class="mc-ui-grid-item left-top1" >
-        <p style="text-align: left;color: #7f7f7f;font-size:large;margin: 10px">管理用户数量</p>
+      <div class="mc-ui-grid-item left-mid1" >
+        <p class="title1">管理实习学生人数</p>
         <hr/>
-        <p style="text-align: center;color:#2495b8;font-size: 50px;margin: 40px">56</p>
+        <p class="text1">56</p>
       </div>
-      <div class="mc-ui-grid-item left-top2" >
-        <p style="text-align: left;color: #7f7f7f;font-size:large;margin: 10px">今日打卡人数</p>
+      <div class="mc-ui-grid-item left-mid2" >
+        <p class="title1">今日打卡人数</p>
         <hr/>
-        <p style="text-align: center;color:#2495b8;font-size: 50px;margin: 40px">48</p>
+        <p class="text1">48</p>
+      </div>
+      <div class="mc-ui-grid-item left-mid3" >
+        <p class="title1">今日日志提交份数</p>
+        <hr/>
+        <p class="text1">48</p>
       </div>
 
-      <div class="mc-ui-grid-item left-mid">
-        <div id="chart2" style="width:100%;height: 100%"></div>
+      <div class="mc-ui-grid-item mid-mid">
+        <div id="map" style="width: 100%;height: 100%;">
+
+
+        </div>
       </div>
 
-      <div class="mc-ui-grid-item right-mid">
-        <p style="text-align: left;color: #7f7f7f;font-size:larger;margin: 0px">公告栏</p>
+      <div class="mc-ui-grid-item right-mid1">
+        <p class="title1">本周实习打卡统计</p>
         <hr/>
+        <div id="chart3" style="
+        width: 100%;height: 90%;position:relative;
+        top: -10%;z-index: -99;
+        "></div>
       </div>
+      <div class="mc-ui-grid-item right-mid2">
+
+      </div>
+
+
+      <div class="mc-ui-grid-item left-bottom" >
+        <div id="chart2" style="width: 100%;height: 100%;padding-top: 10%"></div>
+      </div>
+      <!--<div class="mc-ui-grid-item mid-bottom">
+      </div>-->
+      <div class="mc-ui-grid-item right-bottom" >
+        <div id="chart1" style="width: 95%;height: 100%"></div>
+      </div>
+
     </div>
   </div>
 </template>
@@ -39,7 +75,6 @@
 import { getUserProfile } from '../api/system/user'
 import * as echarts from 'echarts'
 export default {
-
   name: "index",
   data() {
     return {
@@ -79,6 +114,7 @@ export default {
       // 基于准备好的dom，初始化echarts实例
       let chart1 = echarts.init(document.getElementById('chart1'))
       let chart2 =echarts.init(document.getElementById('chart2'))
+      let chart3 =echarts.init(document.getElementById('chart3'))
       // 绘制图表
       chart1.setOption({
         tooltip: {
@@ -228,6 +264,21 @@ export default {
             }
           }
         ]
+      });
+      chart3.setOption({
+        xAxis: {
+          type: 'category',
+          data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+        },
+        yAxis: {
+          type: 'value'
+        },
+        series: [
+          {
+            data: [120, 200, 150, 80, 70, 110, 130],
+            type: 'bar'
+          }
+        ]
       })
     }
   }
@@ -300,65 +351,138 @@ export default {
 
 <!--首页元素布局-->
 <style type="text/css">
-  #main-panel{
+  #main-panle{
     display: grid;
-    grid-template-columns: 0.7fr 1.3fr;
-    grid-template-rows:0.2fr 0.5fr 0.5fr 0.8fr;
-    gap: 2% 2%;
+    grid-template-columns: 0.2fr 0.5fr 0.75fr 0.5fr;
+    grid-template-rows:0.1fr 0.25fr 0.25fr 0.25fr 0.8fr;
+    gap: 1% 1%;
     grid-template-areas:
-      "top-panel top-panel"
-      "left-top1 right-top"
-      "left-top2 right-top"
-      "left-mid right-mid"
-      ". .";
+      "top-panle top-panle top-panle top-panle"
+      "left-mid1 mid-mid mid-mid right-mid1 "
+      "left-mid2 mid-mid mid-mid right-mid1"
+      "left-mid3 mid-mid mid-mid right-mid2"
+      "left-bottom left-bottom right-bottom right-bottom"
+    ;
+
   }
-  .top-panel{
-    grid-area: top-panel;
-    padding: 1.5%;
+  .top-panle{
+    grid-area: top-panle;
+    padding: 1% 1.5%;
     border: 1px solid #e0e0e0;
     border-radius: 10px;
     box-shadow: 3px 3px 10px 0px rgba(1,1,1,0.2);
+    max-height: 110px;
   }
 
-  .right-top {
-    grid-area: right-top;
+  .left-mid1 {
+    grid-area: left-mid1;
     padding: 2%;
     border: 1px solid #e0e0e0;
     border-radius: 10px;
     box-shadow: 3px 3px 10px 0px rgba(1,1,1,0.2);
   }
 
-  .left-top1 {
-    grid-area: left-top1;
-    padding: 1.5%;
-    border: 1px solid #e0e0e0;
-    border-radius: 10px;
-    box-shadow: 3px 3px 10px 0px rgba(1,1,1,0.2);
-  }
-
-  .left-top2 {
-    grid-area: left-top2;
-    padding: 1.5%;
-    border: 1px solid #e0e0e0;
-    border-radius: 10px;
-    box-shadow: 3px 3px 10px 0px rgba(1,1,1,0.2);
-  }
-
-  .left-mid {
-    grid-area: left-mid;
+  .left-mid2 {
+    grid-area: left-mid2;
     padding: 2%;
     border: 1px solid #e0e0e0;
     border-radius: 10px;
     box-shadow: 3px 3px 10px 0px rgba(1,1,1,0.2);
   }
 
-  .right-mid {
-    grid-area: right-mid;
+  .left-mid3 {
+    grid-area: left-mid3;
     padding: 2%;
     border: 1px solid #e0e0e0;
     border-radius: 10px;
     box-shadow: 3px 3px 10px 0px rgba(1,1,1,0.2);
   }
 
+  .mid-mid {
+    grid-area: mid-mid;
+    padding: 2%;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    box-shadow: 3px 3px 10px 0px rgba(1,1,1,0.2);
+
+  }
+
+  .right-mid1 {
+    grid-area: right-mid1;
+    padding: 2%;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    box-shadow: 3px 3px 10px 0px rgba(1,1,1,0.2);
+  }
+
+  .right-mid2 {
+    grid-area: right-mid2;
+    padding: 2%;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    box-shadow: 3px 3px 10px 0px rgba(1,1,1,0.2);
+  }
+
+  .right-mid3 {
+    grid-area: right-mid3;
+    padding: 2%;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    box-shadow: 3px 3px 10px 0px rgba(1,1,1,0.2);
+  }
+
+  .left-bottom{
+    grid-area: left-bottom;
+    padding: 2%;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    box-shadow: 3px 3px 10px 0px rgba(1,1,1,0.2);
+    margin-bottom: 2%
+  }
+  .mid-bottom{
+    grid-area: mid-bottom;
+    padding: 2%;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    box-shadow: 3px 3px 10px 0px rgba(1,1,1,0.2);
+  }
+  .right-bottom{
+    grid-area: right-bottom;
+    padding: 2%;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    box-shadow: 3px 3px 10px 0px rgba(1,1,1,0.2);
+    margin-bottom: 1%
+  }
+
+  .el-carousel__item h3 {
+    color: #475669;
+    font-size: 14px;
+    opacity: 0.75;
+    line-height: 200px;
+    margin: 0;
+  }
+
+  .el-carousel__item:nth-child(2n) {
+    background-color: #99a9bf;
+  }
+
+  .el-carousel__item:nth-child(2n+1) {
+    background-color: #d3dce6;
+  }
+
+  .title1{
+    text-align: left;
+    color: #7f7f7f;
+    font-size:15px;
+    margin: 8px;
+    z-index: 1;
+  }
+  .text1{
+    text-align: center;
+    color:#2495b8;
+    font-size: 50px;
+    margin: 10px
+  }
 </style>
 
