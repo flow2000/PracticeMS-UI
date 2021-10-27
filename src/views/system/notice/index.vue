@@ -10,7 +10,7 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="操作人员" prop="createBy">
+      <el-form-item label="操作人员用户名" prop="createBy" label-width="130px">
         <el-input
           v-model="queryParams.createBy"
           placeholder="请输入操作人员"
@@ -80,15 +80,9 @@
         prop="noticeTitle"
         :show-overflow-tooltip="true"
       />
-      <el-table-column
-        label="公告类型"
-        align="center"
-        prop="noticeType"
-        :formatter="typeFormat"
-        width="100"
-      />
 
-      <el-table-column label="创建者用户名" align="center" prop="createBy" width="100" />
+
+      <el-table-column label="操作人员用户名" align="center" prop="createBy" width="150" />
       <el-table-column label="创建人姓名" align="center" prop="nickname" width="100" />
       <el-table-column label="创建时间" align="center" prop="createTime" width="120">
         <template slot-scope="scope">
@@ -96,12 +90,20 @@
         </template>
       </el-table-column>
       <el-table-column
+        label="公告类型"
+        align="center"
+        prop="noticeType"
+        :formatter="typeFormat"
+        width="180"
+      />
+      <el-table-column
         label="状态"
         align="center"
         prop="status"
         :formatter="statusFormat"
         width="100"
       >
+
         <template scope="scope">
           <p v-if="scope.row.status=='0'" style="color:#f47920">待审核</p>
           <p v-if="scope.row.status=='1'" style="color:#45b97c">审核通过</p>

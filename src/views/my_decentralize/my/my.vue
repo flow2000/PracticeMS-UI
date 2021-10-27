@@ -22,85 +22,102 @@
         <i class="el-icon-location-outline"></i>
         指导老师
       </template>
-      <span v-if="practiceInfo != null">{{ practiceInfo.info.teacher.nickName }}</span>
-      <span v-if="practiceInfo == null">暂无</span>
+      <span v-if="practiceInfo.info != null">{{ practiceInfo.info.teacher.nickName }}</span>
+      <span v-if="practiceInfo.info == null">暂无</span>
     </el-descriptions-item>
     <el-descriptions-item>
       <template slot="label">
         <i class="el-icon-office-building"></i>
         实习单位
       </template>
-      <span v-if="practiceInfo != null">{{ practiceInfo.info.baseInfo.baseName }}</span>
-      <span v-if="practiceInfo == null">暂无</span>
+      <span v-if="practiceInfo.info != null">{{ practiceInfo.info.baseInfo.baseName }}</span>
+      <span v-if="practiceInfo.info == null">暂无</span>
     </el-descriptions-item>
     <el-descriptions-item>
       <template slot="label">
         <i class="el-icon-tickets"></i>
         实习岗位
       </template>
-      <span v-if="practiceInfo != null">{{ practiceInfo.info.postName }}</span>
-      <span v-if="practiceInfo == null">暂无</span>
+      <span v-if="practiceInfo.info != null">{{ practiceInfo.info.postName }}</span>
+      <span v-if="practiceInfo.info == null">暂无</span>
     </el-descriptions-item>
     <el-descriptions-item>
       <template slot="label">
         <i class="el-icon-office-building"></i>
         实习公司
       </template>
-      <span v-if="practiceInfo != null">{{ practiceInfo.info.baseInfo.companyName }}</span>
-      <span v-if="practiceInfo == null">暂无</span>
+      <span v-if="practiceInfo.info != null">{{ practiceInfo.info.baseInfo.companyName }}</span>
+      <span v-if="practiceInfo.info == null">暂无</span>
     </el-descriptions-item>
     <el-descriptions-item>
       <template slot="label">
         <i class="el-icon-office-building"></i>
         实习详细地点
       </template>
-      <span v-if="practiceInfo != null">{{ practiceInfo.info.baseInfo.baseAddress }}</span>
-      <span v-if="practiceInfo == null">暂无</span>
+      <span v-if="practiceInfo.info != null">{{ practiceInfo.info.baseInfo.baseAddress }}</span>
+      <span v-if="practiceInfo.info == null">暂无</span>
     </el-descriptions-item>
   </el-descriptions>
 
-    <div v-if="practiceInfo == null"><span>您还未进行实习，<el-button type="text" @click="dialogVisible = true">点击此处</el-button>申请分散实习</span></div>
+    <div v-if="practiceInfo.info == null"><span>您还未进行实习，<el-button type="text" @click="dialogVisible = true">点击此处</el-button>申请分散实习</span></div>
 
-    <el-dialog :visible.sync="dialogVisible" :title="title" width="500px" append-to-body>
-      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="学生编号" prop="stuId">
-          <el-input v-model="form.stuId" placeholder="请输入实习学生学号" />
+    <el-dialog :visible.sync="dialogVisible" :title="title" width="600px" append-to-body>
+      <el-form ref="form" :model="form" label-width="80px">
+        <el-form-item label="学生编号" prop="stuId" v-show="false">
+          <el-input v-model="form.user.stuId" placeholder="请输入实习学生编号" :disabled="true" />
+        </el-form-item>
+        <el-form-item label="学号" prop="userName" >
+          <el-input v-model="form.user.userName" placeholder="请输入实习学生学号" :disabled="true" />
+        </el-form-item>
+        <el-form-item label="姓名" prop="nickName" >
+          <el-input v-model="form.user.nickName" placeholder="请输入实习姓名" :disabled="true" />
         </el-form-item>
         <el-form-item label="经营范围" prop="businessScope">
-          <el-input v-model="form.businessScope" type="textarea" placeholder="请输入内容" />
+          <el-input v-model="form.businessScope" placeholder="请输入内容" />
         </el-form-item>
-        <el-form-item label="备注" prop="notes">
-          <el-input v-model="form.notes" type="textarea" placeholder="请输入内容" />
+        <el-form-item label="单位名称" prop="companyName">
+          <el-input v-model="form.companyName" placeholder="请输入单位名称" />
         </el-form-item>
-        <el-form-item label="审核人" prop="auditorName">
-          <el-input v-model="form.auditorId" placeholder="请输入审核人ID" />
+        <el-form-item label="详细地址" prop="address">
+          <el-input v-model="form.address" type="textarea" id="search" placeholder="请输入详细地址" />
+          <div class="tip-box" id="searchTip" style="z-index: 999999;"></div>
+          <el-amap class="amap-box" :amap-manager="amapManager" :vid="'amap-vue'" :zoom="zoom" :plugin="plugin" :center="center" :events="events">
+            <el-amap-marker v-for="(marker, index) in markers" :position="marker" :key="index"></el-amap-marker>
+          </el-amap>
         </el-form-item>
-        <el-form-item label="审核时间" prop="auditTime">
-          <el-date-picker clearable size="small"
-                          v-model="form.auditTime"
-                          type="date"
-                          value-format="yyyy-MM-dd"
-                          placeholder="选择审核时间">
-          </el-date-picker>
+        <el-form-item label="经纬度" prop="tude" v-show="false">
+          <el-input v-model="form.tude" id="tude" />
         </el-form-item>
-        <el-form-item label="删除标志" prop="delFlag">
-          <el-input v-model="form.delFlag" placeholder="请输入删除标志" />
+        <el-form-item label="联系人" prop="contacts">
+          <el-input v-model="form.contacts" placeholder="请输入联系人" />
         </el-form-item>
-        <el-form-item label="实习地点" prop="locationId">
-          <el-input v-model="form.locationId" placeholder="请输入实习地点编号" />
+        <el-form-item label="联系电话" prop="phone">
+          <el-input v-model="form.phone" placeholder="请输入联系电话" />
         </el-form-item>
-        <el-form-item label="实习单位接收实习证明" prop="acceptanceCertificate">
+        <el-form-item label="单位性质" prop="nature">
+          <el-input v-model="form.nature" placeholder="请输入单位性质" />
+        </el-form-item>
+        <el-form-item label="法定代表" prop="leader">
+          <el-input v-model="form.leader" placeholder="请输入法定代表" />
+        </el-form-item>
+        <el-form-item label="实习证明" prop="acceptanceCertificate">
           <el-upload
-            :action="uploadUrl"
-            :on-success="handleUploadSuccess"
-            :on-error="handleUploadError"
-            name="file"
-            :show-file-list="false"
-            :headers="headers"
-            style="display: none"
+            class="upload-demo"
             ref="upload"
-            v-if="this.type == 'url'"
+            accept=".pdf"
+            :file-list="upload.SummaryFileList"
+            :headers="upload.headers"
+            :action="upload.CertificateUrl"
+            :on-progress="handleFileUploadProgress"
+            :on-success="handleFileSuccess"
+            :show-file-list="true"
+            :auto-upload="false"
+            :data="[{nick_name:upload.nick_name,user_id:upload.user_id,scoreId:upload.scoreId}]"
+            multiple
           >
+            <i class="el-icon-upload"></i>
+            <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
+            <div slot="tip" class="el-upload__tip">只能上传PDF文件，且不超过10M</div>
           </el-upload>
         </el-form-item>
       </el-form>
@@ -114,42 +131,155 @@
 
 <script>
 import { getStudentPracticeInfo } from "@/api/decentralize/decentralize";
+import { getToken} from "@/utils/auth";
+import {AMapManager, lazyAMapApiLoaderInstance} from 'vue-amap'
+let amapManager = new AMapManager()
 
 export default {
-  props: {
-    /* 编辑器的内容 */
-    value: {
-      type: String,
-      default: "",
-    },
-    /* 高度 */
-    height: {
-      type: Number,
-      default: null,
-    },
-    /* 最小高度 */
-    minHeight: {
-      type: Number,
-      default: null,
-    },
-    /* 只读 */
-    readOnly: {
-      type: Boolean,
-      default: false,
-    },
-    /* 类型（base64格式、url格式） */
-    type: {
-      type: String,
-      default: "url",
-    }
-  },
   data() {
+    let self = this
     return {
-      uploadUrl: process.env.VUE_APP_BASE_API + "/common/upload", // 上传的图片服务器地址
       size: '',
       practiceInfo : [],
       dialogVisible: false,
-      form : []
+      form : [],
+      title: "",
+      upload: {
+        // 是否禁用上传
+        isUploading: false,
+        // 设置上传的请求头部
+        headers: {
+          Authorization: "Bearer " + getToken()
+        },
+        // 上传的地址
+        CertificateUrl: process.env.VUE_APP_BASE_API + "/uploadCertificate",
+        // 上传的文件列表
+        AppraisalFileList: [],
+        SummaryFileList: [],
+        //传递文件所需要用到的参数 姓名
+        nick_name:"",
+        // 学号
+        user_id:"",
+        //成绩编号
+        scoreId:""
+      },
+      address: null,
+      searchKey: '',
+      amapManager,
+      markers: [[108.239658,22.849789],[108.242119,22.846575]],
+      searchOption: {
+        city: '全国',
+        citylimit: true
+      },
+      center: [108.239658,22.849789],
+      zoom: 17,
+      lng: 0,
+      lat: 0,
+      markerEvent:{
+        click(e){
+          console.log("地址为:"+e);
+        }
+      },
+      events: {
+        init() {
+          lazyAMapApiLoaderInstance.load().then(() => {
+            self.initSearch()
+          })
+        },
+        // 点击获取地址的数据
+        click(e) {
+          self.markers = []
+          let {lng, lat} = e.lnglat
+          self.lng = lng
+          self.lat = lat
+          self.center = [lng, lat]
+          self.markers.push([lng, lat])
+          // 这里通过高德 SDK 完成。
+          let geocoder = new AMap.Geocoder({
+            radius: 1000,
+            extensions: 'all'
+          })
+          geocoder.getAddress([lng, lat], function (status, result) {
+            if (status === 'complete' && result.info === 'OK') {
+              if (result && result.regeocode) {
+                // console.log(result.regeocode.aois[0].location.lat)
+                // console.log(result.regeocode.aois[0].location.lng)
+                // console.log("地址为:"+result.regeocode.formattedAddress)
+                self.address = result.regeocode.formattedAddress
+                self.searchKey = result.regeocode.formattedAddress
+                self.$nextTick()
+              }
+            }
+          })
+        }
+      },
+      // 一些工具插件
+      plugin: [
+        {
+          // 定位
+          pName: 'Geolocation',
+          events: {
+            init(o) {
+              // o是高德地图定位插件实例
+              o.getCurrentPosition((status, result) => {
+                if (result && result.position) {
+                  // 设置经度
+                  self.lng = result.position.lng
+                  // 设置维度
+                  self.lat = result.position.lat
+                  // 设置坐标
+                  self.center = [self.lng, self.lat]
+                  self.markers.push([self.lng, self.lat])
+                  // load
+                  self.loaded = true
+                  // 页面渲染好后
+                  self.$nextTick()
+                }
+              })
+            },
+            click(e){
+              console.log(e);
+            }
+          }
+        },
+        {
+          // 工具栏
+          pName: 'ToolBar',
+          events: {
+            init(instance) {
+              console.log(instance);
+            }
+          }
+        },
+        {
+          // 鹰眼
+          pName: 'OverView',
+          events: {
+            init(instance) {
+              console.log(instance);
+            }
+          }
+        },
+        {
+          // 地图类型
+          pName: 'MapType',
+          defaultType: 0,
+          events: {
+            init(instance) {
+              console.log(instance);
+            }
+          }
+        },
+        {
+          // 搜索
+          pName: 'PlaceSearch',
+          events: {
+            init(instance) {
+              console.log(instance)
+            }
+          }
+        }
+      ]
     }
   },
   created() {
@@ -161,6 +291,7 @@ export default {
       this.loading = true;
       getStudentPracticeInfo().then(response => {
         this.practiceInfo = response.data;
+        this.form = response.data
         console.log(this.practiceInfo)
         this.loading = false;
       });
@@ -171,7 +302,75 @@ export default {
           done();
         })
         .catch(_ => {});
-    }
+    },
+    // 取消按钮
+    cancel() {
+      this.open = false;
+      this.reset();
+    },
+    /** 地点信息搜索 */
+    initSearch() {
+      let vm = this
+      let map = this.amapManager.getMap()
+      AMapUI.loadUI(['misc/PoiPicker'], function (PoiPicker) {
+        var poiPicker = new PoiPicker({
+          input: 'search',
+          placeSearchOptions: {
+            map: map,
+            pageSize: 10
+          },
+          suggestContainer: 'searchTip',
+          searchResultsContainer: 'searchTip'
+        })
+        vm.poiPicker = poiPicker
+        // 监听poi选中信息
+        poiPicker.on('poiPicked', function (poiResult) {
+          // console.log(poiResult)
+          let source = poiResult.source
+          let poi = poiResult.item
+          if (source !== 'search') {
+            poiPicker.searchByKeyword(poi.name)
+          } else {
+            poiPicker.clearSearchResults()
+            vm.markers = []
+            let lng = poi.location.lng
+            let lat = poi.location.lat
+            let address = poi.cityname + poi.adname + poi.name
+            vm.center = lng+","+lat
+            vm.$set(vm.form,'address',address)
+            vm.$set(vm.form,'tude',vm.center)
+            vm.markers.push([lng, lat])
+            vm.lng = lng
+            vm.lat = lat
+            vm.address = address
+            vm.searchKey = address
+          }
+        })
+      })
+    },
+    searchByHand() {
+      if (this.searchKey !== '') {
+        this.poiPicker.searchByKeyword(this.searchKey)
+      }
+    },
+    /** 提交上传按钮 */
+    submitForm() {
+      this.$refs["form"].validate(valid => {
+        if (valid) {
+          this.$refs.upload.submit();
+        }
+      });
+    },
+    // 文件上传中处理
+    handleFileUploadProgress(event, file, fileList) {
+      this.upload.isUploading = true;
+    },
+    // 文件上传成功处理
+    handleFileSuccess(response, file, fileList) {
+      this.upload.isUploading = false;
+      this.form.filePath = response.url;
+      this.msgSuccess(response.msg);
+    },
   }
 }
 
