@@ -47,6 +47,26 @@
       </el-col>
       <el-col :span="1.5">
         <el-button
+          type="primary"
+          plain
+          icon="el-icon-upload"
+          size="mini"
+          @click="openAppraisal"
+          v-hasPermi="['practicelog:practicelog:export']"
+        >上传实习鉴定</el-button>
+      </el-col>
+      <el-col :span="1.5">
+        <el-button
+          type="primary"
+          plain
+          icon="el-icon-upload2"
+          size="mini"
+          @click="handleExport"
+          v-hasPermi="['practicelog:practicelog:export']"
+        >上传实习总结</el-button>
+      </el-col>
+      <el-col :span="1.5">
+        <el-button
           type="success"
           plain
           icon="el-icon-edit"
@@ -78,6 +98,8 @@
           v-hasPermi="['practicelog:practicelog:export']"
         >导出</el-button>
       </el-col>
+
+
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
@@ -198,6 +220,26 @@
 <!--      </div>-->
     </el-dialog>
 
+    <el-dialog
+      title="上传实习鉴定"
+      :visible.sync="appraisalVisible"
+      width="28%"
+      style="top: 10%"
+      @close="this.getList"
+    >
+      <el-upload
+        style="margin-left: 10%"
+        class="upload-demo"
+        accept=".pdf"
+        :limit="1"
+        drag
+        multiple
+      >
+        <i class="el-icon-upload"></i>
+        <div class="el-upload__text" >将文件拖到此处,或<em>点击上传</em></div>
+        <div class="el-upload__tip" slot="tip">只能上传PDF文件，且不超过10M</div>
+      </el-upload>
+    </el-dialog>
 
   </div>
 </template>
@@ -211,6 +253,10 @@
       return {
         edit: true,
         disabledMore: true,
+        //实习鉴定窗口是否可见
+        appraisalVisible:false,
+        //实习鉴定窗口是否可见
+        summeryVisible:false,
         // 遮罩层
         loading: true,
         // 导出遮罩层
@@ -275,6 +321,9 @@
         this.selectTime = yearn+"-"+monthn+"-"+dayn;
       },
 
+      openAppraisal(){
+        this.appraisalVisible = true;
+      },
       /** 查询实习日志列表 */
       getList() {
         this.loading = true;
@@ -302,6 +351,7 @@
         };
         this.resetForm("form");
       },
+
       /** 搜索按钮操作 */
       handleQuery() {
         this.queryParams.pageNum = 1;

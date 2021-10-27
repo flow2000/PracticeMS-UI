@@ -10,7 +10,7 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="操作人员" prop="createBy">
+      <el-form-item label="操作人员用户名" prop="createBy" label-width="130px">
         <el-input
           v-model="queryParams.createBy"
           placeholder="请输入操作人员"
@@ -80,12 +80,21 @@
         prop="noticeTitle"
         :show-overflow-tooltip="true"
       />
+
+
+      <el-table-column label="操作人员用户名" align="center" prop="createBy" width="150" />
+      <el-table-column label="创建人姓名" align="center" prop="nickname" width="100" />
+      <el-table-column label="创建时间" align="center" prop="createTime" width="120">
+        <template slot-scope="scope">
+          <span>{{ parseTime(scope.row.createTime, '{y}-{m}-{d}') }}</span>
+        </template>
+      </el-table-column>
       <el-table-column
         label="公告类型"
         align="center"
         prop="noticeType"
         :formatter="typeFormat"
-        width="100"
+        width="180"
       />
       <el-table-column
         label="状态"
@@ -93,11 +102,12 @@
         prop="status"
         :formatter="statusFormat"
         width="100"
-      />
-      <el-table-column label="创建者" align="center" prop="createBy" width="100" />
-      <el-table-column label="创建时间" align="center" prop="createTime" width="100">
-        <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.createTime, '{y}-{m}-{d}') }}</span>
+      >
+
+        <template scope="scope">
+          <p v-if="scope.row.status=='0'" style="color:#f47920">待审核</p>
+          <p v-if="scope.row.status=='1'" style="color:#45b97c">审核通过</p>
+          <p v-if="scope.row.status=='-1'" style="color:#d71345">审核不通过</p>
         </template>
       </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
@@ -151,12 +161,16 @@
           </el-col>
           <el-col :span="24">
             <el-form-item label="状态">
-              <el-radio-group v-model="form.status">
-                <el-radio
-                  v-for="dict in statusOptions"
-                  :key="dict.dictValue"
-                  :label="dict.dictValue"
-                >{{dict.dictLabel}}</el-radio>
+              <el-radio-group v-model="noticeStatus">
+                <el-radio-button
+                  v-for="dict in [
+                  {value: '0',label:'待审核'},
+                  {value: '1',label:'审核通过'},
+                  {value: '2',label:'审核不通过'}]"
+                  :key="dict.value"
+                  v-model="dict.value"
+                  :label="dict.label"
+                ></el-radio-button>
               </el-radio-group>
             </el-form-item>
           </el-col>
@@ -198,6 +212,10 @@ export default {
       noticeList: [],
       // 弹出层标题
       title: "",
+      // 对应某个通知的状态
+      noticeStatus: '待审核',
+      //通知类型
+      noticeType:"",
       // 是否显示弹出层
       open: false,
       // 类型数据字典
@@ -242,6 +260,7 @@ export default {
         this.noticeList = response.rows;
         this.total = response.total;
         this.loading = false;
+
       });
     },
     // 公告状态字典翻译
@@ -296,6 +315,11 @@ export default {
       const noticeId = row.noticeId || this.ids
       getNotice(noticeId).then(response => {
         this.form = response.data;
+        if(this.form.status=='0')
+          this.noticeStatus ='待审核';
+        else if(this.form.status=='1')
+          this.noticeStatus ='审核通过'
+        else this.noticeStatus ='审核不通过'
         this.open = true;
         this.title = "修改公告";
       });
@@ -305,6 +329,13 @@ export default {
       this.$refs["form"].validate(valid => {
         if (valid) {
           if (this.form.noticeId != undefined) {
+            if(this.noticeStatus=='待审核')
+              this.form.status='0'
+            if(this.noticeStatus=='审核通过')
+              this.form.status='1'
+            if(this.noticeStatus=='审核不通过')
+              this.form.status='-1'
+            console.log(this.form);
             updateNotice(this.form).then(response => {
               this.msgSuccess("修改成功");
               this.open = false;
