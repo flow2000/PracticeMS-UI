@@ -29,45 +29,8 @@
       <div class="mc-ui-grid-item right-mid">
         <p style="text-align: left;color: #7f7f7f;font-size:larger;margin: 0px">公告栏</p>
         <hr/>
-        <el-table
-          :data="noticeList"
-          style="width: 100%"
-          v-loading="noticeloading"
-          @row-click="noticeOpenRow"
-          height="250">
-            <el-table-column
-              prop="noticeTitle"
-              align="center"
-              label="标题"
-              width="500">
-            </el-table-column>
-            <el-table-column
-              align="center"
-              prop="nickname"
-              label="发布人"
-              sortable
-              width="150">
-            </el-table-column>
-            <el-table-column
-              align="center"
-              class-name="small-padding fixed-width"
-              prop="createTime"
-              sortable
-              label="发布时间"
-              >
-            </el-table-column>
-        </el-table>
-<!--        <el-popover-->
-<!--          v-for="item in noticeList"-->
-<!--          placement="top-start"-->
-<!--          :title="item.noticeTitle"-->
-<!--          width="600"-->
-<!--          trigger="hover"-->
-<!--          :content="item.noticeContent">-->
-<!--          <el-table :data="item" slot="reference"  style="width: 90%;height: 40px;margin-top: 12px;font-size: medium">-->
 
-<!--          </el-table>-->
-<!--        </el-popover>-->
+
       </div>
 
       <el-dialog
