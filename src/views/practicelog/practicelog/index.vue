@@ -61,7 +61,7 @@
           plain
           icon="el-icon-upload2"
           size="mini"
-          @click="handleExport"
+          @click="openSummery"
           v-hasPermi="['practicelog:practicelog:export']"
         >上传实习总结</el-button>
       </el-col>
@@ -241,6 +241,27 @@
       </el-upload>
     </el-dialog>
 
+    <el-dialog
+      title="上传实习总结"
+      :visible.sync="summeryVisible"
+      width="28%"
+      style="top: 10%"
+      @close="this.getList"
+    >
+      <el-upload
+        style="margin-left: 10%"
+        class="upload-demo"
+        accept=".pdf"
+        :limit="1"
+        drag
+        multiple
+      >
+        <i class="el-icon-upload"></i>
+        <div class="el-upload__text" >将文件拖到此处,或<em>点击上传</em></div>
+        <div class="el-upload__tip" slot="tip">只能上传PDF文件，且不超过10M</div>
+      </el-upload>
+    </el-dialog>
+
   </div>
 </template>
 
@@ -320,9 +341,13 @@
         var dayn = now.getDate();
         this.selectTime = yearn+"-"+monthn+"-"+dayn;
       },
-
+      //打开实习鉴定页面
       openAppraisal(){
         this.appraisalVisible = true;
+      },
+      //打开实习总结页面
+      openSummery(){
+        this.summeryVisible = true;
       },
       /** 查询实习日志列表 */
       getList() {
