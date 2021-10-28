@@ -1,12 +1,20 @@
 <template>
   <div class="app-container">
-  <el-descriptions class="margin-top" title="实习基本信息" :column="3" :size="size" border>
+
+    <el-steps v-if="practiceInfo.status != 2" :active="practiceInfo.status" finish-status="success" simple style="margin-top: 20px">
+      <el-step title="已提交" ></el-step>
+      <el-step title="审核中" ></el-step>
+      <el-step title="已通过" ></el-step>
+    </el-steps>
+
+  <el-descriptions v-if="practiceInfo.info != null || practiceInfo.location != null" class="margin-top" title="实习基本信息" :column="3" :size="size" border>
     <el-descriptions-item>
       <template slot="label">
         <i class="el-icon-user"></i>
         姓名
       </template>
-      <span v-if="practiceInfo != null">{{ practiceInfo.user.nickName }}</span>
+      <span v-if="practiceInfo.user != null">{{ practiceInfo.user.nickName }}</span>
+      <span v-if="practiceInfo.student != null">{{ practiceInfo.student.nickName }}</span>
       <span v-if="practiceInfo == null">暂无</span>
     </el-descriptions-item>
     <el-descriptions-item>
@@ -14,16 +22,17 @@
         <i class="el-icon-mobile-phone"></i>
         手机号
       </template>
-      <span v-if="practiceInfo != null">{{ practiceInfo.user.phonenumber }}</span>
-      <span v-if="practiceInfo == null">暂无</span>
+      <span v-if="practiceInfo.user != null">{{ practiceInfo.user.phonenumber }}</span>
+      <span v-if="practiceInfo.student != null">{{ practiceInfo.student.phonenumber }}</span>
+      <span v-if="practiceInfo == null ">暂无</span>
     </el-descriptions-item>
     <el-descriptions-item>
       <template slot="label">
         <i class="el-icon-location-outline"></i>
         指导老师
       </template>
-      <span v-if="practiceInfo.info != null">{{ practiceInfo.info.teacher.nickName }}</span>
-      <span v-if="practiceInfo.info == null">暂无</span>
+      <span v-if="practiceInfo.info != null && practiceInfo.info.teacher != null">{{ practiceInfo.info.teacher.nickName }}</span>
+      <span v-if="practiceInfo.info != null && practiceInfo.info.teacher == null">暂无</span>
     </el-descriptions-item>
     <el-descriptions-item>
       <template slot="label">
@@ -31,7 +40,8 @@
         实习单位
       </template>
       <span v-if="practiceInfo.info != null">{{ practiceInfo.info.baseInfo.baseName }}</span>
-      <span v-if="practiceInfo.info == null">暂无</span>
+      <span v-if="practiceInfo.location != null">{{ practiceInfo.location.companyName }}</span>
+      <span v-if="practiceInfo.info == null && practiceInfo.location == null">暂无</span>
     </el-descriptions-item>
     <el-descriptions-item>
       <template slot="label">
@@ -39,7 +49,7 @@
         实习岗位
       </template>
       <span v-if="practiceInfo.info != null">{{ practiceInfo.info.postName }}</span>
-      <span v-if="practiceInfo.info == null">暂无</span>
+      <span v-if="practiceInfo.info == null && practiceInfo.location == null">暂无</span>
     </el-descriptions-item>
     <el-descriptions-item>
       <template slot="label">
@@ -47,7 +57,8 @@
         实习公司
       </template>
       <span v-if="practiceInfo.info != null">{{ practiceInfo.info.baseInfo.companyName }}</span>
-      <span v-if="practiceInfo.info == null">暂无</span>
+      <span v-if="practiceInfo.location != null">{{ practiceInfo.location.companyName }}</span>
+      <span v-if="practiceInfo.info == null && practiceInfo.location == null">暂无</span>
     </el-descriptions-item>
     <el-descriptions-item>
       <template slot="label">
@@ -55,25 +66,23 @@
         实习详细地点
       </template>
       <span v-if="practiceInfo.info != null">{{ practiceInfo.info.baseInfo.baseAddress }}</span>
-      <span v-if="practiceInfo.info == null">暂无</span>
+      <span v-if="practiceInfo.location != null">{{ practiceInfo.location.address }}</span>
+      <span v-if="practiceInfo.info == null && practiceInfo.location == null">暂无</span>
     </el-descriptions-item>
   </el-descriptions>
 
-    <div v-if="practiceInfo.info == null"><span>您还未进行实习，<el-button type="text" @click="dialogVisible = true">点击此处</el-button>申请分散实习</span></div>
+    <div v-if="practiceInfo.info == null && practiceInfo.location == null && prePracticeInfo == null"><span>您还未进行实习，<el-button type="text" @click="dialogVisible = true">点击此处</el-button>申请分散实习</span></div>
 
     <el-dialog :visible.sync="dialogVisible" :title="title" width="600px" append-to-body>
-      <el-form ref="form" :model="form" label-width="80px">
-        <el-form-item label="学生编号" prop="stuId" v-show="false">
-          <el-input v-model="form.user.stuId" placeholder="请输入实习学生编号" :disabled="true" />
+      <el-form ref="form" :model="form" label-width="80px" v-if="practiceInfo.info == null && practiceInfo.location == null && prePracticeInfo == null">
+        <el-form-item label="学生编号" prop="userId" v-show="false">
+          <el-input v-model="form.user.userId" placeholder="请输入实习学生编号" :disabled="true" />
         </el-form-item>
         <el-form-item label="学号" prop="userName" >
           <el-input v-model="form.user.userName" placeholder="请输入实习学生学号" :disabled="true" />
         </el-form-item>
         <el-form-item label="姓名" prop="nickName" >
           <el-input v-model="form.user.nickName" placeholder="请输入实习姓名" :disabled="true" />
-        </el-form-item>
-        <el-form-item label="经营范围" prop="businessScope">
-          <el-input v-model="form.businessScope" placeholder="请输入内容" />
         </el-form-item>
         <el-form-item label="单位名称" prop="companyName">
           <el-input v-model="form.companyName" placeholder="请输入单位名称" />
@@ -100,8 +109,16 @@
         <el-form-item label="法定代表" prop="leader">
           <el-input v-model="form.leader" placeholder="请输入法定代表" />
         </el-form-item>
+        <el-form-item label="经营范围" prop="businessScope">
+          <el-input v-model="form.businessScope" placeholder="请输入内容" />
+        </el-form-item>
+        <el-form-item label="备注" prop="notes">
+          <el-input v-model="form.notes" placeholder="请输入内容" />
+        </el-form-item>
         <el-form-item label="实习证明" prop="acceptanceCertificate">
+          <!--    上传分散实习证明      -->
           <el-upload
+            v-if="practiceInfo.info == null"
             class="upload-demo"
             ref="upload"
             accept=".pdf"
@@ -112,13 +129,17 @@
             :on-success="handleFileSuccess"
             :show-file-list="true"
             :auto-upload="false"
-            :data="[{nick_name:upload.nick_name,user_id:upload.user_id,scoreId:upload.scoreId}]"
+            :data="{companyName:form.companyName,address:form.address,
+            tude:form.tude,contacts:form.contacts,phone:form.phone,
+            nature:form.nature,leader:form.leader,
+            businessScope:form.businessScope,notes:form.notes,stuId:form.user.userId,nickName:form.user.nickName}"
             multiple
           >
             <i class="el-icon-upload"></i>
             <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
             <div slot="tip" class="el-upload__tip">只能上传PDF文件，且不超过10M</div>
           </el-upload>
+
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -141,6 +162,7 @@ export default {
     return {
       size: '',
       practiceInfo : [],
+      prePracticeInfo : [],
       dialogVisible: false,
       form : [],
       title: "",
@@ -152,7 +174,7 @@ export default {
           Authorization: "Bearer " + getToken()
         },
         // 上传的地址
-        CertificateUrl: process.env.VUE_APP_BASE_API + "/uploadCertificate",
+        CertificateUrl: process.env.VUE_APP_BASE_API + "/decentralize/decentralize/uploadCertificate",
         // 上传的文件列表
         AppraisalFileList: [],
         SummaryFileList: [],
@@ -291,8 +313,14 @@ export default {
       this.loading = true;
       getStudentPracticeInfo().then(response => {
         this.practiceInfo = response.data;
+        if(response.data.status == '1'){
+          this.practiceInfo.status = parseInt(this.practiceInfo.status)
+          this.prePracticeInfo = response.data;
+          this.practiceInfo.info = null
+          this.practiceInfo.location = null
+        }
         this.form = response.data
-        console.log(this.practiceInfo)
+        console.log(this.prePracticeInfo)
         this.loading = false;
       });
     },
