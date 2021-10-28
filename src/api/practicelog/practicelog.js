@@ -51,3 +51,11 @@ export function exportPracticelog(query) {
     params: query
   })
 }
+
+// 获得当天的填写日志人数
+export function getTodayPracLogList() {
+  return request({
+    url: '/practicelog/practicelog/getTodayPracLogList',
+    method: 'get'
+  })
+}
