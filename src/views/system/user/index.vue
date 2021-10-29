@@ -5,13 +5,13 @@
       <el-col :span="4" :xs="24">
         <div class="head-container">
           <el-form>
-            <el-form-item label="用户类型" prop="role">
+            <el-form-item  prop="role">
               <el-select
                 v-model="queryParams.role"
                 placeholder="用户类型"
                 clearable
                 size="small"
-                style="width: 65%"
+                style="width: 100%"
               >
                 <el-option
                   v-for="dict in roleOptions"
@@ -52,13 +52,23 @@
       <!--用户数据-->
       <el-col :span="20" :xs="24">
         <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px">
-          <el-form-item label="用户名称" prop="userName">
+          <el-form-item label="账号" prop="userName">
             <el-input
               v-model="queryParams.userName"
-              placeholder="请输入用户名称"
+              placeholder="请输入账号"
               clearable
               size="small"
               style="width: 160px"
+              @keyup.enter.native="handleQuery"
+            />
+          </el-form-item>
+          <el-form-item label="姓名" prop="nickName">
+            <el-input
+              v-model="queryParams.nickName"
+              placeholder="请输入姓名"
+              clearable
+              size="small"
+              style="width: 120px"
               @keyup.enter.native="handleQuery"
             />
           </el-form-item>
@@ -75,7 +85,7 @@
           <el-form-item label="状态" prop="status">
             <el-select
               v-model="queryParams.status"
-              placeholder="用户状态"
+              placeholder="账号状态"
               clearable
               size="small"
               style="width: 120px"
@@ -161,12 +171,11 @@
 
         <el-table v-loading="loading" :data="userList" @selection-change="handleSelectionChange">
           <el-table-column type="selection" width="50" align="center"/>
-          <el-table-column label="用户编号" align="center" key="userId" prop="userId" v-if="columns[0].visible"/>
-          <el-table-column label="用户名称" align="center" key="userName" prop="userName" v-if="columns[1].visible"
+          <el-table-column label="账号" align="center" key="userName" prop="userName" v-if="columns[1].visible"
                            :show-overflow-tooltip="true"/>
-          <el-table-column label="用户昵称" align="center" key="nickName" prop="nickName" v-if="columns[2].visible"
+          <el-table-column label="姓名" align="center" key="nickName" prop="nickName" v-if="columns[2].visible"
                            :show-overflow-tooltip="true"/>
-          <el-table-column label="专业" align="center" key="deptName" prop="dept.deptName" v-if="columns[3].visible"
+          <el-table-column label="院系班级" align="center" key="deptName" prop="dept.deptName" v-if="columns[3].visible"
                            :show-overflow-tooltip="true"/>
           <el-table-column label="手机号码" align="center" key="phonenumber" prop="phonenumber" v-if="columns[4].visible"
                            width="120"/>
@@ -235,8 +244,8 @@
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
         <el-row>
           <el-col :span="12">
-            <el-form-item label="用户昵称" prop="nickName">
-              <el-input v-model="form.nickName" placeholder="请输入用户昵称" maxlength="30"/>
+            <el-form-item label="姓名" prop="nickName">
+              <el-input v-model="form.nickName" placeholder="请输入姓名" maxlength="30"/>
             </el-form-item>
           </el-col>
           <el-col :span="12">
@@ -259,19 +268,19 @@
         </el-row>
         <el-row>
           <el-col :span="12">
-            <el-form-item v-if="form.userId == undefined" label="用户名称" prop="userName">
-              <el-input v-model="form.userName" placeholder="请输入用户名称" maxlength="30"/>
+            <el-form-item v-if="form.userId == undefined" label="账号" prop="userName">
+              <el-input v-model="form.userName" placeholder="请输入账号" maxlength="30"/>
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item v-if="form.userId == undefined" label="用户密码" prop="password">
-              <el-input v-model="form.password" placeholder="请输入用户密码" type="password" maxlength="20"/>
+            <el-form-item v-if="form.userId == undefined" label="密码" prop="password">
+              <el-input v-model="form.password" placeholder="请输入密码" type="password" maxlength="20"/>
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col :span="12">
-            <el-form-item label="用户性别">
+            <el-form-item label="性别">
               <el-select v-model="form.sex" placeholder="请选择">
                 <el-option
                   v-for="dict in sexOptions"
@@ -453,8 +462,8 @@
         // 列信息
         columns: [
           { key: 0, label: `用户编号`, visible: true },
-          { key: 1, label: `用户名称`, visible: true },
-          { key: 2, label: `用户昵称`, visible: true },
+          { key: 1, label: `账号`, visible: true },
+          { key: 2, label: `姓名`, visible: true },
           { key: 3, label: `专业`, visible: true },
           { key: 4, label: `手机号码`, visible: true },
           { key: 5, label: `状态`, visible: true },
@@ -463,17 +472,17 @@
         // 表单校验
         rules: {
           userName: [
-            { required: true, message: '用户名称不能为空', trigger: 'blur' }
+            { required: true, message: '账号不能为空', trigger: 'blur' }
           ],
           nickName: [
-            { required: true, message: '用户昵称不能为空', trigger: 'blur' }
+            { required: true, message: '姓名不能为空', trigger: 'blur' }
           ],
           deptId: [
             { required: true, message: '归属院系不能为空', trigger: 'blur' }
           ],
           password: [
-            { required: true, message: '用户密码不能为空', trigger: 'blur' },
-            { min: 5, max: 20, message: '用户密码长度必须介于 5 和 20 之间', trigger: 'blur' }
+            { required: true, message: '密码不能为空', trigger: 'blur' },
+            { min: 5, max: 20, message: '密码长度必须介于 5 和 20 之间', trigger: 'blur' }
           ],
           email: [
             {
@@ -551,7 +560,7 @@
       // 用户状态修改
       handleStatusChange(row) {
         let text = row.status === '0' ? '启用' : '停用'
-        this.$confirm('确认要"' + text + '""' + row.userName + '"用户吗?', '警告', {
+        this.$confirm('确认要"' + text + '""' + row.userName + '"账号吗?', '警告', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
@@ -651,7 +660,7 @@
           cancelButtonText: '取消',
           closeOnClickModal: false,
           inputPattern: /^.{5,20}$/,
-          inputErrorMessage: '用户密码长度必须介于 5 和 20 之间'
+          inputErrorMessage: '密码长度必须介于 5 和 20 之间'
         }).then(({ value }) => {
           resetUserPwd(row.userId, value).then(response => {
             this.msgSuccess('修改成功，新密码是：' + value)
@@ -687,7 +696,7 @@
       /** 删除按钮操作 */
       handleDelete(row) {
         const userIds = row.userId || this.ids
-        this.$confirm('是否确认删除用户编号为"' + userIds + '"的数据项?', '警告', {
+        this.$confirm('是否确认删除?', '警告', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
