@@ -1,13 +1,14 @@
 <template>
   <div class="app-container">
 
-    <el-steps v-if="practiceInfo.status != 2" :active="practiceInfo.status" finish-status="success" simple style="margin-top: 20px">
+    <el-steps v-if="practiceInfo.status != 2 " :active="practiceInfo.status" finish-status="success" simple style="margin-top: 20px">
       <el-step title="已提交" ></el-step>
       <el-step title="审核中" ></el-step>
-      <el-step title="已通过" ></el-step>
+      <el-step v-if="practiceInfo.status != 3" title="已通过" ></el-step>
+      <el-step v-if="practiceInfo.status == 3" title="已拒绝" ></el-step>
     </el-steps>
 
-  <el-descriptions v-if="practiceInfo.info != null || practiceInfo.location != null" class="margin-top" title="实习基本信息" :column="3" :size="size" border>
+  <el-descriptions v-if="(practiceInfo.info != null || practiceInfo.location != null) &&  practiceInfo.status != 3" class="margin-top" title="实习基本信息" :column="3" :size="size" border>
     <el-descriptions-item>
       <template slot="label">
         <i class="el-icon-user"></i>
@@ -71,18 +72,18 @@
     </el-descriptions-item>
   </el-descriptions>
 
-    <div v-if="practiceInfo.info == null && practiceInfo.location == null && prePracticeInfo == null"><span>您还未进行实习，<el-button type="text" @click="dialogVisible = true">点击此处</el-button>申请分散实习</span></div>
-
+    <div v-if="practiceInfo.info == null && practiceInfo.location == null && this.prePracticeInfo.length == 0"><span>您还未进行实习，<el-button type="text" @click="dialogVisible = true">点击此处</el-button>申请分散实习</span></div>
+    <div v-if="practiceInfo.status == 3"><span>您的申请被拒绝，<el-button type="text" @click="dialogVisible = true">点击此处</el-button>重新申请分散实习</span></div>
     <el-dialog :visible.sync="dialogVisible" :title="title" width="600px" append-to-body>
-      <el-form ref="form" :model="form" label-width="80px" v-if="practiceInfo.info == null && practiceInfo.location == null && prePracticeInfo == null">
+      <el-form ref="form" :model="form" label-width="80px" v-if="(practiceInfo.info == null && practiceInfo.location == null && this.prePracticeInfo.length == 0) || practiceInfo.status == 3">
         <el-form-item label="学生编号" prop="userId" v-show="false">
-          <el-input v-model="form.user.userId" placeholder="请输入实习学生编号" :disabled="true" />
+          <el-input v-model="this.practiceInfo.student.userId" placeholder="请输入实习学生编号" :disabled="true" />
         </el-form-item>
         <el-form-item label="学号" prop="userName" >
-          <el-input v-model="form.user.userName" placeholder="请输入实习学生学号" :disabled="true" />
+          <el-input v-model="practiceInfo.student.userName" placeholder="请输入实习学生学号" :disabled="true" />
         </el-form-item>
         <el-form-item label="姓名" prop="nickName" >
-          <el-input v-model="form.user.nickName" placeholder="请输入实习姓名" :disabled="true" />
+          <el-input v-model="practiceInfo.student.nickName" placeholder="请输入实习姓名" :disabled="true" />
         </el-form-item>
         <el-form-item label="单位名称" prop="companyName">
           <el-input v-model="form.companyName" placeholder="请输入单位名称" />
@@ -131,8 +132,8 @@
             :auto-upload="false"
             :data="{companyName:form.companyName,address:form.address,
             tude:form.tude,contacts:form.contacts,phone:form.phone,
-            nature:form.nature,leader:form.leader,
-            businessScope:form.businessScope,notes:form.notes,stuId:form.user.userId,nickName:form.user.nickName}"
+            nature:form.nature,leader:form.leader,flag:remark,
+            businessScope:form.businessScope,notes:form.notes,stuId:practiceInfo.student.userId,nickName:practiceInfo.student.nickName}"
             multiple
           >
             <i class="el-icon-upload"></i>
@@ -164,6 +165,7 @@ export default {
       practiceInfo : [],
       prePracticeInfo : [],
       dialogVisible: false,
+      remark : null,
       form : [],
       title: "",
       upload: {
@@ -313,14 +315,15 @@ export default {
       this.loading = true;
       getStudentPracticeInfo().then(response => {
         this.practiceInfo = response.data;
+        if(this.practiceInfo.location != null) this.practiceInfo.status = parseInt(this.practiceInfo.status)
         if(response.data.status == '1'){
-          this.practiceInfo.status = parseInt(this.practiceInfo.status)
           this.prePracticeInfo = response.data;
           this.practiceInfo.info = null
           this.practiceInfo.location = null
         }
-        this.form = response.data
-        console.log(this.prePracticeInfo)
+        if(response.data.status == '3'){
+          this.remark = "reset";
+        }
         this.loading = false;
       });
     },
