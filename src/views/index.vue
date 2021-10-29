@@ -157,7 +157,6 @@ export default {
         this.noticeList = response.rows;
         this.noticetotal = response.total;
         this.noticeloading = false;
-        console.log(this.noticeList);
         for(let item of this.noticeList){
           let day=item.updateTime.split(' ');
           this.noticeSlims.push(item.noticeTitle+" ["+day[0]+"]")
@@ -179,8 +178,6 @@ export default {
       getUserProfile().then(response => {
         this.user = response.data;
         this.roleGroup = response.roleGroup;
-        console.log(this.user.nickName)
-        console.log(this.roleGroup)
       });
     },
 

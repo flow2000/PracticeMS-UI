@@ -9,6 +9,15 @@ export function listArrangement(query) {
   })
 }
 
+// 查询老师指导的学生信息
+export function stuInfoList(query) {
+  return request({
+    url: '/arrangement/arrangement/stuInfoList',
+    method: 'get',
+    params: query
+  })
+}
+
 // 查询实习安排详细
 export function getArrangement(arrangementId) {
   return request({
