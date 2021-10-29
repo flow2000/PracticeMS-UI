@@ -1,9 +1,9 @@
 <template>
-  <div id="magicalDragScene" class="mc-root mc-ui-absolute-pane" style="height: 1300px;min-height: 1100px;min-width: 1600px" mcnetline="100">
-    <div id="main-panle" class="mc-ui-grid-pane" style="height: 1300px; width: auto;margin:1%;min-height: 1100px;min-width: 1600px">
+  <div id="magicalDragScene" class="mc-root mc-ui-absolute-pane" style="height: 1300px;min-height: 1100px;min-width: 1420px" mcnetline="100">
+    <div id="main-panle" class="mc-ui-grid-pane" style="height: 1300px; width: auto;margin:1%;min-height: 1100px;min-width: 1420px">
 
       <div class="mc-ui-grid-item top-panle">
-        <div style="font-size:xx-large;color: #1c84c6;width: 20%;position: relative;float: left">
+        <div style="font-size:xx-large;color: #1c84c6;width: 30%;position: relative;float: left">
           |欢迎使用本系统！<br />
           <div style="font-size: x-large;color: #0eaa8b;">-{{roleGroup}}：{{user.nickName}}</div>
         </div>
@@ -107,7 +107,7 @@
       <!--<div class="mc-ui-grid-item mid-bottom">
       </div>-->
       <div class="mc-ui-grid-item right-bottom" >
-        <div id="chart1" style="width: 95%;height: 100%"></div>
+        <div id="chart1" style="width: 95%;height: 100%;"></div>
       </div>
 
     </div>
@@ -1071,7 +1071,8 @@ export default {
     border: 1px solid #e0e0e0;
     border-radius: 10px;
     box-shadow: 3px 3px 10px 0px rgba(1,1,1,0.2);
-    margin-bottom: 2%
+    margin-bottom: 2%;
+    min-width: 500px;
   }
   .mid-bottom{
     grid-area: mid-bottom;
@@ -1082,11 +1083,12 @@ export default {
   }
   .right-bottom{
     grid-area: right-bottom;
-    padding: 2%;
+    padding: 1%;
     border: 1px solid #e0e0e0;
     border-radius: 10px;
     box-shadow: 3px 3px 10px 0px rgba(1,1,1,0.2);
-    margin-bottom: 1%
+    margin-bottom: 1%;
+    min-width: 900px
   }
 
   /*公告栏样式*/
