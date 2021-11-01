@@ -356,7 +356,7 @@
 
 <script>
 import { listPracticeInfo, getPracticeInfo, delPracticeInfo,listUserInfoByRole, addPracticeInfo, updatePracticeInfo, exportPracticeInfo } from "@/api/practice-info/practiceInfo";
-import { listUser } from "@/api/system/user";
+import { listUser , getNoPracticeUser } from "@/api/system/user";
 import { getBaseTude } from '@/api/system/baseInfo'
 import { treeselect } from "@/api/system/dept";
 import Treeselect from '@riophae/vue-treeselect'
@@ -513,6 +513,7 @@ export default {
       this.loading = true;
       listUser(this.addDateRange(this.queryParams, this.dateRange)).then(response => {
           this.userList = response.rows;
+          console.log(this.userList)
           this.total = response.total;
           this.loading = false;
         }

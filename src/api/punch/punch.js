@@ -53,3 +53,11 @@ export function exportPunch(query) {
   })
 }
 
+// 获得当天的打卡签到人数
+export function getTodayPunchList() {
+  return request({
+    url: '/punch/punch/getTodayPunchList',
+    method: 'get'
+  })
+}
+

@@ -9,6 +9,7 @@ export function listPracticeInfo(query) {
   })
 }
 
+
 // 查询特定角色信息
 export function listUserInfoByRole(query) {
 	console.log(query)

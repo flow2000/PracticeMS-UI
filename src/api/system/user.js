@@ -10,6 +10,15 @@ export function listUser(query) {
   })
 }
 
+// 查询未实习用户列表
+export function getNoPracticeUser(query) {
+  return request({
+    url: '/system/user/getNoPracticeUser',
+    method: 'get',
+    params: query
+  })
+}
+
 // 查询用户详细
 export function getUser(userId) {
   return request({
