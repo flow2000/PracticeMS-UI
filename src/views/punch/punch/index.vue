@@ -77,10 +77,10 @@
       <el-table-column label="序号" type="index" align="center"  width="50px" height="30">
       </el-table-column>
 <!--      <el-table-column label="考勤标识" align="center" prop="attendanceId" width="155" height="30"/>-->
-      <el-table-column label="学号" align="center" prop="userName" width="135"/>
-      <el-table-column label="姓名" align="center" prop="user.nickName" width="85"/>
-      <el-table-column label="打卡地点" align="center" prop="location" />
-      <el-table-column label="打卡时间" align="center" prop="createTime" width="155"/>
+      <el-table-column label="学号" align="center" prop="userName" />
+      <el-table-column label="姓名" align="center" prop="user.nickName" />
+<!--      <el-table-column label="打卡地点" align="center" prop="location" />-->
+      <el-table-column label="打卡时间" align="center" prop="createTime" />
       <el-table-column
         align="center"
         label="打卡结果"

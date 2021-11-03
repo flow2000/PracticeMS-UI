@@ -100,23 +100,28 @@
         </template>
       </el-table-column>
       <el-table-column label="备注" align="center" prop="notes" />
-      <el-table-column label="状态" align="center" prop="status" >
+      <el-table-column label="审核状态" align="center" prop="status" >
         <template slot-scope="scope">
-          <span v-if="scope.row.status == 0">未审核</span>
-          <span v-if="scope.row.status == 1">已通过</span>
-          <span v-if="scope.row.status == -1">未通过</span>
+          <span v-if="scope.row.status == 1">未审核</span>
+          <span v-if="scope.row.status == 2">已通过</span>
+          <span v-if="scope.row.status == 3">未通过</span>
         </template>
       </el-table-column>
-      <el-table-column label="实习证明" align="center" prop="acceptanceCertificate" />
+      <el-table-column label="实习证明" align="center" prop="acceptanceCertificate" >
+        <template scope="scope">
+          <el-link type="primary" v-show="scope.row.acceptanceCertificate != ''" :href="scope.row.acceptanceCertificate" target=_blank>查看</el-link>
+          <span type="primary" v-show="scope.row.acceptanceCertificate == ''" target=_blank>未上传</span>
+        </template>
+      </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <el-button
+<!--          <el-button
             size="mini"
             type="text"
             icon="el-icon-edit"
             @click="handleUpdate(scope.row)"
             v-hasPermi="['decentralize:decentralize:edit']"
-          >修改</el-button>
+          >修改</el-button>-->
           <el-button
             size="mini"
             type="text"
@@ -124,6 +129,19 @@
             @click="handleDelete(scope.row)"
             v-hasPermi="['decentralize:decentralize:remove']"
           >删除</el-button>
+          <el-dropdown v-if="scope.row.status == 1" size="mini" @command="(command) => handleCommand(command, scope.row)">
+                <span class="el-dropdown-link">
+                  <i class="el-icon-d-arrow-right el-icon--right"></i>更多
+                </span>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item command="consentApply" icon="el-icon-key"
+                                v-hasPermi="['decentralize:decentralize:edit']" >同意申请
+              </el-dropdown-item>
+              <el-dropdown-item command="refuseApply" icon="el-icon-circle-check"
+              v-hasPermi="['decentralize:decentralize:edit']">拒绝申请
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
         </template>
       </el-table-column>
     </el-table>
@@ -222,6 +240,12 @@ export default {
         status: null,
         locationId: null
       },
+      approvalParams:{
+        applyId : null,
+        status : null,
+        auditTime : null ,
+        auditorId : null
+      },
       // 表单参数
       form: {},
       // 表单校验
@@ -288,6 +312,66 @@ export default {
       this.ids = selection.map(item => item.applyId)
       this.single = selection.length!==1
       this.multiple = !selection.length
+    },
+    // 更多操作触发
+    handleCommand(command, row) {
+      switch (command) {
+        case 'consentApply':
+          this.consentApply(row)
+          break
+        case 'refuseApply':
+          this.refuseApply(row)
+          break
+        default:
+          break
+      }
+    },
+    /** 同意申请按钮操作 */
+    consentApply(row) {
+      this.$confirm('此操作将同意该申请, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.approvalParams.applyId = row.applyId
+        this.approvalParams.status = '2'
+        updateDecentralize(this.approvalParams).then(response => {
+          this.$message({
+            type: 'success',
+            message: '已同意!'
+          });
+          this.getList();
+        });
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消操作'
+        });
+      });
+    },
+    /** 拒绝申请按钮操作 */
+    refuseApply(row) {
+      this.$confirm('此操作将拒绝该申请, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        console.log(row)
+        this.approvalParams.applyId = row.applyId
+        this.approvalParams.status = '3'
+        updateDecentralize(this.approvalParams).then(response => {
+          this.$message({
+            type: 'success',
+            message: '已拒绝!'
+          });
+          this.getList();
+        });
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消操作'
+        });
+      });
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
