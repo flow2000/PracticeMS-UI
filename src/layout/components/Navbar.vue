@@ -7,6 +7,9 @@
 
     <div class="right-menu">
       <template v-if="device!=='mobile'">
+
+        <notice id="notice" class="right-menu-item"></notice>
+
         <search id="header-search" class="right-menu-item" />
 
         <!--<el-tooltip content="源码地址" effect="dark" placement="bottom">
@@ -56,6 +59,8 @@ import SizeSelect from '@/components/SizeSelect'
 import Search from '@/components/HeaderSearch'
 import RuoYiGit from '@/components/RuoYi/Git'
 import RuoYiDoc from '@/components/RuoYi/Doc'
+import Notice from '@/components/Notice'
+
 
 export default {
   components: {
@@ -66,7 +71,8 @@ export default {
     SizeSelect,
     Search,
     RuoYiGit,
-    RuoYiDoc
+    RuoYiDoc,
+    Notice
   },
   computed: {
     ...mapGetters([
@@ -105,13 +111,16 @@ export default {
           location.href = '/index';
         })
       }).catch(() => {});
-    }
+    },
+
   }
 }
 </script>
 
 <style lang="scss" scoped>
-.navbar {
+
+
+  .navbar {
   height: 50px;
   overflow: hidden;
   position: relative;

@@ -1,5 +1,5 @@
 <template>
-  <section class="app-main">
+  <section class="app-main" v-bind:class="{'scroll':show}">
     <transition name="fade-transform" mode="out-in">
       <keep-alive :include="cachedViews">
         <router-view :key="key" />
@@ -11,6 +11,12 @@
 <script>
 export default {
   name: 'AppMain',
+  data:{
+    show:true,
+  },
+  watch:{
+
+  },
   computed: {
     cachedViews() {
       return this.$store.state.tagsView.cachedViews
@@ -28,6 +34,8 @@ export default {
   min-height: calc(100vh - 50px);
   width: 100%;
   position: relative;
+}
+.scroll{
   overflow: hidden;
 }
 
