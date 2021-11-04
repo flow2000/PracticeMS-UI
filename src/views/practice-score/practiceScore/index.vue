@@ -507,11 +507,9 @@ export default {
     },
     // 文件上传成功处理
     handleFileSuccess(response, file, fileList) {
-
       this.upload.isUploading = false;
       this.form.filePath = response.url;
       this.msgSuccess(response.msg);
-
     },
 
     /** 新增按钮操作 */

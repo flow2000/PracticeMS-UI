@@ -234,6 +234,12 @@
         :limit="1"
         drag
         multiple
+        :file-list="upload.AppraisalFileList"
+        :headers="upload.headers"
+        :action="upload.AppraisalUrl"
+        :on-progress="handleFileUploadProgress"
+        :on-success="handleFileSuccess"
+        :data="{nick_name:upload.nick_name,user_id:upload.user_id,scoreId:upload.scoreId}"
       >
         <i class="el-icon-upload"></i>
         <div class="el-upload__text" >将文件拖到此处,或<em>点击上传</em></div>
@@ -255,6 +261,12 @@
         :limit="1"
         drag
         multiple
+        :file-list="upload.SummaryFileList"
+        :headers="upload.headers"
+        :action="upload.SummaryUrl"
+        :on-progress="handleFileUploadProgress"
+        :on-success="handleFileSuccess"
+        :data="{nick_name:upload.nick_name,user_id:upload.user_id,scoreId:upload.scoreId}"
       >
         <i class="el-icon-upload"></i>
         <div class="el-upload__text" >将文件拖到此处,或<em>点击上传</em></div>
@@ -267,6 +279,9 @@
 
 <script>
   import { listPracticelog, getPracticelog, delPracticelog, addPracticelog, updatePracticelog, exportPracticelog } from "@/api/practicelog/practicelog";
+  import { listPracticeScore, getPracticeScore, delPracticeScore, addPracticeScore, updatePracticeScore, exportPracticeScore , updateScoreStatus} from "@/api/practice-score/practiceScore";
+  import { getUserProfile } from '@/api/system/user';
+  import { getToken , getInfo} from "@/utils/auth";
 
   export default {
     name: "Practicelog",
@@ -278,6 +293,10 @@
         appraisalVisible:false,
         //实习鉴定窗口是否可见
         summeryVisible:false,
+        //用户的信息
+        user:{},
+        //权限组
+        roleGroup: {},
         // 遮罩层
         loading: true,
         // 导出遮罩层
@@ -311,6 +330,26 @@
           time: null,
           logContents: null,
         },
+        upload: {
+          // 是否禁用上传
+          isUploading: false,
+          // 设置上传的请求头部
+          headers: {
+            Authorization: "Bearer " + getToken()
+          },
+          // 上传的地址
+          AppraisalUrl: process.env.VUE_APP_BASE_API + "/common/uploadAppraisal",
+          SummaryUrl:process.env.VUE_APP_BASE_API + "/common/uploadSummary",
+          // 上传的文件列表
+          AppraisalFileList: [],
+          SummaryFileList: [],
+          //传递文件所需要用到的参数 姓名
+          nick_name:"",
+          // 学号
+          user_id:"",
+          //成绩编号
+          scoreId:""
+        },
         selectTime:'',
         // 表单参数
         form: {
@@ -330,6 +369,13 @@
     created() {
       this.getList();
       this.initData({});
+      getUserProfile().then(response => {
+        this.user = response.data;
+        this.roleGroup = response.roleGroup;
+        //console.log(this.user);
+        //console.log(this.roleGroup);
+      });
+
     },
 
     methods: {
@@ -344,10 +390,33 @@
       //打开实习鉴定页面
       openAppraisal(){
         this.appraisalVisible = true;
+        this.upload.AppraisalFileList = [];
+        this.upload.nick_name = this.user.nickName;
+        this.upload.user_id = this.user.userId;
+        this.upload.scoreId = 0;
+
       },
       //打开实习总结页面
       openSummery(){
         this.summeryVisible = true;
+        this.upload.AppraisalFileList = [];
+        this.upload.nick_name = this.user.nickName;
+        this.upload.user_id = this.user.userId;
+        this.upload.scoreId = 0;
+      },
+      // 文件提交处理
+      submitUpload() {
+        this.$refs.upload.submit();
+      },
+      // 文件上传中处理
+      handleFileUploadProgress(event, file, fileList) {
+        this.upload.isUploading = true;
+      },
+      // 文件上传成功处理
+      handleFileSuccess(response, file, fileList) {
+        this.upload.isUploading = false;
+        this.form.filePath = response.url;
+        this.msgSuccess(response.msg);
       },
       /** 查询实习日志列表 */
       getList() {
