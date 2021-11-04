@@ -227,6 +227,7 @@
       style="top: 10%"
       @close="this.getList"
     >
+
       <el-upload
         style="margin-left: 10%"
         class="upload-demo"
@@ -245,6 +246,7 @@
         <div class="el-upload__text" >将文件拖到此处,或<em>点击上传</em></div>
         <div class="el-upload__tip" slot="tip">只能上传PDF文件，且不超过10M</div>
       </el-upload>
+      <el-button type="primary" style="margin-left: 10%;margin-top: 5%" @click="watchAppraisal">查看上传的实习鉴定</el-button>
     </el-dialog>
 
     <el-dialog
@@ -272,6 +274,7 @@
         <div class="el-upload__text" >将文件拖到此处,或<em>点击上传</em></div>
         <div class="el-upload__tip" slot="tip">只能上传PDF文件，且不超过10M</div>
       </el-upload>
+      <el-button type="primary" style="margin-left: 10%;margin-top: 5%" @click="watchSummery">查看上传的实习总结</el-button>
     </el-dialog>
 
   </div>
@@ -348,7 +351,11 @@
           // 学号
           user_id:"",
           //成绩编号
-          scoreId:""
+          scoreId:"",
+          //用户自己的实习鉴定
+          userAppraisal:"",
+          //自己的实习总结
+          userSummery:""
         },
         selectTime:'',
         // 表单参数
@@ -394,7 +401,28 @@
         this.upload.nick_name = this.user.nickName;
         this.upload.user_id = this.user.userId;
         this.upload.scoreId = 0;
-
+      },
+      watchAppraisal(){
+        listPracticeScore({userId:this.user.userId}).then(response => {
+          console.log(response.rows[0].appraisal);
+          if(response.rows[0].appraisal==""){
+          }
+          URL  = response.rows[0].appraisal;
+          this.upload.userAppraisal = URL;
+          //window.location.href=URL;
+        });
+        window.open(this.upload.userAppraisal,'_blank');
+      },
+      watchSummery(){
+        listPracticeScore({userId:this.user.userId}).then(response => {
+          console.log(response.rows[0].summary);
+          if(response.rows[0].summary==""){
+          }
+          URL  = response.rows[0].summary;
+          this.upload.userSummery = URL;
+          //window.location.href=URL;
+        });
+        window.open(this.upload.userSummery,'_blank');
       },
       //打开实习总结页面
       openSummery(){
