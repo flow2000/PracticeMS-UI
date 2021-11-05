@@ -98,8 +98,8 @@
         <el-form-item label="经纬度" prop="tude" v-show="false">
           <el-input v-model="form.tude" id="tude" />
         </el-form-item>
-        <el-form-item label="联系人" prop="contacts">
-          <el-input v-model="form.contacts" placeholder="请输入联系人" />
+        <el-form-item label="实习单位联系人" prop="contacts">
+          <el-input v-model="form.contacts" placeholder="请输入实习单位联系人" />
         </el-form-item>
         <el-form-item label="联系电话" prop="phone">
           <el-input v-model="form.phone" placeholder="请输入联系电话" />
