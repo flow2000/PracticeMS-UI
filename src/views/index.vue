@@ -1,15 +1,15 @@
 <template>
-  <div id="magicalDragScene" class="mc-root mc-ui-absolute-pane" style="height: 1300px;min-height: 1100px;min-width: 1600px" mcnetline="100">
-    <div id="main-panle" class="mc-ui-grid-pane" style="height: 1300px; width: auto;margin:1%;min-height: 1100px;min-width: 1600px">
+  <div id="magicalDragScene" class="mc-root mc-ui-absolute-pane" style="height: 1300px;min-height: 1100px;min-width: 1420px" mcnetline="100">
+    <div id="main-panle" class="mc-ui-grid-pane" style="height: 1300px; width: auto;margin:1%;min-height: 1100px;min-width: 1420px">
 
       <div class="mc-ui-grid-item top-panle">
-        <div style="font-size:xx-large;color: #1c84c6;width: 20%;position: relative;float: left">
+        <div style="font-size:xx-large;color: #1c84c6;width: 30%;position: relative;float: left">
           |欢迎使用本系统！<br />
           <div style="font-size: x-large;color: #0eaa8b;">-{{roleGroup}}：{{user.nickName}}</div>
         </div>
 
         <!--通知栏-->
-        <div style="position: relative;float: left;width: 60%;padding:0 8%">
+        <!--<div style="position: relative;float: left;width: 60%;padding:0 8%">
           <el-tooltip effect="dark" content="展开公告" placement="right">
             <div class="sysNoticeTitle" @click="showAllNotice()" >系统通知</div>
           </el-tooltip>
@@ -20,7 +20,7 @@
                 </p>
               </el-carousel-item>
             </el-carousel>
-        </div>
+        </div>-->
         <!--公告详细信息-->
         <el-dialog
           title="系统通知"
@@ -107,7 +107,7 @@
       <!--<div class="mc-ui-grid-item mid-bottom">
       </div>-->
       <div class="mc-ui-grid-item right-bottom" >
-        <div id="chart1" style="width: 95%;height: 100%"></div>
+        <div id="chart1" style="width: 95%;height: 100%;"></div>
       </div>
 
     </div>
@@ -125,6 +125,7 @@ import { getTude } from '@/api/location/info'
 import { getBaseTude } from '@/api/system/baseInfo'
 import  location from '@/assets/images/location.png'
 import  locationRed from '@/assets/images/location-red.png'
+import bus from '../bus.js'
 
 export default {
   name: "index",
@@ -177,9 +178,7 @@ export default {
     this.getUser();
 
     // 获取最近的公告
-    this.getNoticeList();
-
-
+    //this.getNoticeList();
   },
   mounted(){
     // 绘图
@@ -187,42 +186,22 @@ export default {
     // 地图初始化
     var that = this
     this.init(that)
-
+    // 接收详细公告信息
+    bus.$on('sendNoticeDetail',(detail)=>{
+      this.noticeDetail=detail;
+      this.noticeDetail.visible=true;
+    });
+    //接收全部公告信息
+    bus.$on('sendAllNotice',list=>{
+      this.noticeList=list;
+      this.allNotice.visible=true;
+    })
     // 展示网络时间
     // this.showNetDateTime();
   },
   methods: {
     goTarget(href) {
       window.open(href, "_blank");
-    },
-
-    /* 查询公告列表 */
-    getNoticeList() {
-      this.noticeloading = true;
-      listNotice(this.noticeParams).then(response => {
-        this.noticeList = response.rows;
-        this.noticetotal = response.total;
-        this.noticeloading = false;
-        for(let item of this.noticeList){
-          let day=item.updateTime.split(' ');
-          this.noticeSlims.push(item.noticeTitle+" ["+day[0]+"]")
-        }
-      });
-    },
-
-    /* 查看所有公告 */
-    showAllNotice(){
-      this.allNotice.visible=true;
-    },
-
-    /* 查看公告详细信息 */
-    showNoticeDetail(noticeId){
-      let index=checkNoticeId(this.noticeList,noticeId);
-      this.noticeDetail.visible=true;
-      this.noticeDetail.title=this.noticeList[index].noticeTitle;
-      this.noticeDetail.content=this.noticeList[index].noticeContent;
-      this.noticeDetail.updateTime=this.noticeList[index].updateTime;
-      this.noticeDetail.publisher=this.noticeList[index].nickname;
     },
 
     /* 获取当前用户信息 */
@@ -1071,7 +1050,8 @@ export default {
     border: 1px solid #e0e0e0;
     border-radius: 10px;
     box-shadow: 3px 3px 10px 0px rgba(1,1,1,0.2);
-    margin-bottom: 2%
+    margin-bottom: 2%;
+    min-width: 500px;
   }
   .mid-bottom{
     grid-area: mid-bottom;
@@ -1082,11 +1062,12 @@ export default {
   }
   .right-bottom{
     grid-area: right-bottom;
-    padding: 2%;
+    padding: 1%;
     border: 1px solid #e0e0e0;
     border-radius: 10px;
     box-shadow: 3px 3px 10px 0px rgba(1,1,1,0.2);
-    margin-bottom: 1%
+    margin-bottom: 1%;
+    min-width: 900px
   }
 
   /*公告栏样式*/

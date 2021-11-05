@@ -44,7 +44,7 @@
           size="mini"
           @click="handleAdd"
           v-hasPermi="['system:notice:add']"
-        >新增</el-button>
+        >发布公告</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button
@@ -160,9 +160,10 @@
             </el-form-item>
           </el-col>
           <el-col :span="24">
-            <el-form-item label="状态">
+            <el-form-item label="状态" v-hasPermi="['system:notice:edit']">
               <el-radio-group v-model="noticeStatus">
                 <el-radio-button
+                  v-hasPermi="['system:notice:edit']"
                   v-for="dict in [
                   {value: '0',label:'待审核'},
                   {value: '1',label:'审核通过'},
@@ -227,6 +228,7 @@ export default {
         pageNum: 1,
         pageSize: 10,
         noticeTitle: undefined,
+        noticeType:undefined,
         createBy: undefined,
         status: undefined
       },

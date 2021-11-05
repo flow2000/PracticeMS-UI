@@ -61,7 +61,7 @@
           plain
           icon="el-icon-upload2"
           size="mini"
-          @click="handleExport"
+          @click="openSummery"
           v-hasPermi="['practicelog:practicelog:export']"
         >上传实习总结</el-button>
       </el-col>
@@ -227,6 +227,7 @@
       style="top: 10%"
       @close="this.getList"
     >
+
       <el-upload
         style="margin-left: 10%"
         class="upload-demo"
@@ -234,11 +235,46 @@
         :limit="1"
         drag
         multiple
+        :file-list="upload.AppraisalFileList"
+        :headers="upload.headers"
+        :action="upload.AppraisalUrl"
+        :on-progress="handleFileUploadProgress"
+        :on-success="handleFileSuccess"
+        :data="{nick_name:upload.nick_name,user_id:upload.user_id,scoreId:upload.scoreId}"
       >
         <i class="el-icon-upload"></i>
         <div class="el-upload__text" >将文件拖到此处,或<em>点击上传</em></div>
         <div class="el-upload__tip" slot="tip">只能上传PDF文件，且不超过10M</div>
       </el-upload>
+      <el-button type="primary" style="margin-left: 10%;margin-top: 5%" @click="watchAppraisal">查看上传的实习鉴定</el-button>
+    </el-dialog>
+
+    <el-dialog
+      title="上传实习总结"
+      :visible.sync="summeryVisible"
+      width="28%"
+      style="top: 10%"
+      @close="this.getList"
+    >
+      <el-upload
+        style="margin-left: 10%"
+        class="upload-demo"
+        accept=".pdf"
+        :limit="1"
+        drag
+        multiple
+        :file-list="upload.SummaryFileList"
+        :headers="upload.headers"
+        :action="upload.SummaryUrl"
+        :on-progress="handleFileUploadProgress"
+        :on-success="handleFileSuccess"
+        :data="{nick_name:upload.nick_name,user_id:upload.user_id,scoreId:upload.scoreId}"
+      >
+        <i class="el-icon-upload"></i>
+        <div class="el-upload__text" >将文件拖到此处,或<em>点击上传</em></div>
+        <div class="el-upload__tip" slot="tip">只能上传PDF文件，且不超过10M</div>
+      </el-upload>
+      <el-button type="primary" style="margin-left: 10%;margin-top: 5%" @click="watchSummery">查看上传的实习总结</el-button>
     </el-dialog>
 
   </div>
@@ -246,6 +282,9 @@
 
 <script>
   import { listPracticelog, getPracticelog, delPracticelog, addPracticelog, updatePracticelog, exportPracticelog } from "@/api/practicelog/practicelog";
+  import { listPracticeScore, getPracticeScore, delPracticeScore, addPracticeScore, updatePracticeScore, exportPracticeScore , updateScoreStatus} from "@/api/practice-score/practiceScore";
+  import { getUserProfile } from '@/api/system/user';
+  import { getToken , getInfo} from "@/utils/auth";
 
   export default {
     name: "Practicelog",
@@ -257,6 +296,10 @@
         appraisalVisible:false,
         //实习鉴定窗口是否可见
         summeryVisible:false,
+        //用户的信息
+        user:{},
+        //权限组
+        roleGroup: {},
         // 遮罩层
         loading: true,
         // 导出遮罩层
@@ -290,6 +333,30 @@
           time: null,
           logContents: null,
         },
+        upload: {
+          // 是否禁用上传
+          isUploading: false,
+          // 设置上传的请求头部
+          headers: {
+            Authorization: "Bearer " + getToken()
+          },
+          // 上传的地址
+          AppraisalUrl: process.env.VUE_APP_BASE_API + "/common/uploadAppraisal",
+          SummaryUrl:process.env.VUE_APP_BASE_API + "/common/uploadSummary",
+          // 上传的文件列表
+          AppraisalFileList: [],
+          SummaryFileList: [],
+          //传递文件所需要用到的参数 姓名
+          nick_name:"",
+          // 学号
+          user_id:"",
+          //成绩编号
+          scoreId:"",
+          //用户自己的实习鉴定
+          userAppraisal:"",
+          //自己的实习总结
+          userSummery:""
+        },
         selectTime:'',
         // 表单参数
         form: {
@@ -309,6 +376,13 @@
     created() {
       this.getList();
       this.initData({});
+      getUserProfile().then(response => {
+        this.user = response.data;
+        this.roleGroup = response.roleGroup;
+        //console.log(this.user);
+        //console.log(this.roleGroup);
+      });
+
     },
 
     methods: {
@@ -320,9 +394,57 @@
         var dayn = now.getDate();
         this.selectTime = yearn+"-"+monthn+"-"+dayn;
       },
-
+      //打开实习鉴定页面
       openAppraisal(){
         this.appraisalVisible = true;
+        this.upload.AppraisalFileList = [];
+        this.upload.nick_name = this.user.nickName;
+        this.upload.user_id = this.user.userId;
+        this.upload.scoreId = 0;
+      },
+      watchAppraisal(){
+        listPracticeScore({userId:this.user.userId}).then(response => {
+          console.log(response.rows[0].appraisal);
+          if(response.rows[0].appraisal==""){
+          }
+          URL  = response.rows[0].appraisal;
+          this.upload.userAppraisal = URL;
+          //window.location.href=URL;
+        });
+        window.open(this.upload.userAppraisal,'_blank');
+      },
+      watchSummery(){
+        listPracticeScore({userId:this.user.userId}).then(response => {
+          console.log(response.rows[0].summary);
+          if(response.rows[0].summary==""){
+          }
+          URL  = response.rows[0].summary;
+          this.upload.userSummery = URL;
+          //window.location.href=URL;
+        });
+        window.open(this.upload.userSummery,'_blank');
+      },
+      //打开实习总结页面
+      openSummery(){
+        this.summeryVisible = true;
+        this.upload.AppraisalFileList = [];
+        this.upload.nick_name = this.user.nickName;
+        this.upload.user_id = this.user.userId;
+        this.upload.scoreId = 0;
+      },
+      // 文件提交处理
+      submitUpload() {
+        this.$refs.upload.submit();
+      },
+      // 文件上传中处理
+      handleFileUploadProgress(event, file, fileList) {
+        this.upload.isUploading = true;
+      },
+      // 文件上传成功处理
+      handleFileSuccess(response, file, fileList) {
+        this.upload.isUploading = false;
+        this.form.filePath = response.url;
+        this.msgSuccess(response.msg);
       },
       /** 查询实习日志列表 */
       getList() {
