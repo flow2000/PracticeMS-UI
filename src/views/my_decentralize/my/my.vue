@@ -88,6 +88,9 @@
         <el-form-item label="单位名称" prop="companyName">
           <el-input v-model="form.companyName" placeholder="请输入单位名称" />
         </el-form-item>
+        <el-form-item label="所属省份" prop="province">
+          <el-input v-model="form.province" placeholder="请输入所属省份" />
+        </el-form-item>
         <el-form-item label="详细地址" prop="address">
           <el-input v-model="form.address" type="textarea" id="search" placeholder="请输入详细地址" />
           <div class="tip-box" id="searchTip" style="z-index: 999999;"></div>
@@ -386,6 +389,7 @@ export default {
     },
     /** 提交上传按钮 */
     submitForm() {
+      this.form.address = this.form.province + this.form.address;
       this.$refs["form"].validate(valid => {
         if (valid) {
           this.$refs.upload.submit();
