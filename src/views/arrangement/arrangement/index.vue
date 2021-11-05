@@ -41,7 +41,7 @@
     </el-form>
 
     <el-row :gutter="10" class="mb8">
-      <el-col :span="1.5">
+<!--      <el-col :span="1.5">
         <el-button
           type="primary"
           plain
@@ -50,7 +50,7 @@
           @click="handleAdd"
           v-hasPermi="['arrangement:arrangement:add']"
         >新增</el-button>
-      </el-col>
+      </el-col>-->
       <el-col :span="1.5">
         <el-button
           type="success"
@@ -89,17 +89,23 @@
 
     <el-table v-loading="loading" :data="arrangementList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="实习安排ID" align="center" prop="arrangementId" />
+      <el-table-column label="实习安排ID" align="center" prop="arrangementId" v-if="false" />
       <el-table-column label="学号" align="center" prop="user.userName" />
-	  <el-table-column label="学生姓名" align="center" prop="user.nickName" />
+	    <el-table-column label="学生姓名" align="center" prop="user.nickName" />
       <el-table-column label="实习岗位" align="center" prop="info.postName" />
       <el-table-column label="备注" align="center" prop="notes" />
-      <el-table-column label="状态" align="center" prop="status" >
-		  <template slot-scope="scope">
-			<span v-show="scope.row.status == 0+''">启用</span>
-			<span v-show="scope.row.status == 1+''">禁用</span>
-		  </template>
-	  </el-table-column>
+      <el-table-column label="状态" align="center" prop="status" width="60">
+        <template scope="scope" >
+          <el-switch
+            v-model="scope.row.status"
+            active-value="0"
+            inactive-value="1"
+
+            @change="changeStatus(scope.row)"
+          >
+          </el-switch>
+        </template>
+      </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
@@ -204,6 +210,10 @@ export default {
 		postName : null,
 		nickName : null
       },
+      statusChangeParams:{
+        arrangementId:null,
+        status:null
+      },
       // 表单参数
       form: {},
       // 表单校验
@@ -286,6 +296,24 @@ export default {
 		this.form.userName = this.form.user.userName
         this.open = true;
         this.title = "修改实习安排";
+      });
+    },
+    /** 状态改变操作 */
+    changeStatus(row) {
+      let that = this
+      let text = row.status ==="0" ? "有效" : "无效";
+      this.$confirm('是否将ID为 '+row.infoId+' 的实习信息状态改为'+text,"状态变更",{
+        confirmButtonText:"确定",
+        cancelButtonText:"取消",
+        type:"warning"
+      }).then(function () {
+        that.statusChangeParams.arrangementId = row.arrangementId
+        that.statusChangeParams.status = row.status
+        return updateArrangement(that.statusChangeParams)
+      }).then(()=>{
+        this.msgSuccess("修改成功");
+      }).catch(function () {
+        row.status = row.status==="0"?"1":"0";
       });
     },
     /** 提交按钮 */

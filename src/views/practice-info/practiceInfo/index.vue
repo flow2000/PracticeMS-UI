@@ -111,7 +111,7 @@
       <el-table-column label="岗位名称" align="center" prop="postName" />
       <el-table-column label="实习人数" align="center" prop="number" />
 	    <el-table-column label="岗位余量" align="center" prop="surplus" />
-      <el-table-column label="实习时间" align="center" prop="entryTime" width="180">
+      <el-table-column label="起始时间" align="center" prop="entryTime" width="180">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.entryTime, '{y}-{m}-{d}') }}</span>
         </template>
@@ -121,12 +121,18 @@
           <span>{{ parseTime(scope.row.endingTime, '{y}-{m}-{d}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="状态" align="center" prop="status" >
-		  <template slot-scope="scope">
-		    <span v-show="scope.row.status == 0">启用</span>
-			<span v-show="scope.row.status == 1">禁用</span>
-		  </template>
-	  </el-table-column>
+      <el-table-column label="状态" align="center" prop="status" width="60">
+        <template scope="scope" >
+          <el-switch
+            v-model="scope.row.status"
+            active-value="0"
+            inactive-value="1"
+
+            @change="changeStatus(scope.row)"
+          >
+          </el-switch>
+        </template>
+      </el-table-column>
       <el-table-column label="指导老师" align="center" prop="teacher.nickName" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
@@ -257,18 +263,23 @@
                     </el-form-item>
                   </el-form>
 
-
                   <el-table ref="table" v-loading="loading" :row-key="getRowKey" :data="userList" @selection-change="handleUserSelectionChange">
                     <el-table-column type="selection" width="50" align="center" :reserve-selection="true" />
+                    <el-table-column label="序号" type="index" width="50"></el-table-column>
                     <el-table-column label="用户编号" align="center" key="userId" prop="userId" v-if="columns[0].visible" />
-                    <el-table-column label="用户名称" align="center" key="userName" prop="userName" v-if="columns[1].visible" :show-overflow-tooltip="true" />
-                    <el-table-column label="用户昵称" align="center" key="nickName" prop="nickName" v-if="columns[2].visible" :show-overflow-tooltip="true" />
+                    <el-table-column label="学号" align="center" key="userName" prop="userName" v-if="columns[1].visible" :show-overflow-tooltip="true" />
+                    <el-table-column label="姓名" align="center" key="nickName" prop="nickName" v-if="columns[2].visible" :show-overflow-tooltip="true" />
                     <el-table-column label="专业" align="center" key="deptName" prop="dept.deptName" v-if="columns[3].visible" :show-overflow-tooltip="true" />
                     <el-table-column label="手机号码" align="center" key="phonenumber" prop="phonenumber" v-if="columns[4].visible" width="120" />
-                    <el-table-column label="状态" align="center" key="status" prop="status" v-if="columns[5].visible" :show-overflow-tooltip="true" >
-                      <template slot-scope="scope">
-                        <span v-if="scope.row.status == 0">启用</span>
-                        <span v-if="scope.row.status == 1">禁用</span>
+                    <el-table-column label="状态" align="center" prop="status" width="60" v-if="columns[5].visible" :show-overflow-tooltip="true">
+                      <template scope="scope" >
+                        <el-switch
+                          v-model="scope.row.status"
+                          active-value="0"
+                          inactive-value="1"
+                          @change="changeStatus(scope.row)"
+                        >
+                        </el-switch>
                       </template>
                     </el-table-column>
                     <el-table-column label="创建时间" align="center" prop="createTime" v-if="columns[6].visible" width="160">
@@ -278,9 +289,11 @@
                     </el-table-column>
                   </el-table>
 
+                  <div style="padding: 10px;">已选择 {{this.studentIds.length}} 名学生</div>
+
                   <pagination
-                    v-show="total>0"
-                    :total="total"
+                    v-show="utotal>0"
+                    :total="utotal"
                     :page.sync="queryParams.pageNum"
                     :limit.sync="queryParams.pageSize"
                     @pagination="getUserList"
@@ -299,22 +312,19 @@
         <el-form-item label="岗位名称" prop="postName">
           <el-input v-model="form.postName" placeholder="请输入岗位名称" />
         </el-form-item>
-        <el-form-item label="实习人数" prop="number">
-          <el-input v-model="form.number" placeholder="请输入实习人数" />
+        <el-form-item label="实习人数" v-if="this.title == '实习分配'" prop="number">
+          <el-input v-model="form.number" :disabled="true" placeholder="请输入实习人数" />
         </el-form-item>
-		<el-form-item label="岗位余量" v-if="this.title =='添加实习信息' " prop="surplus">
-		  <el-input v-model="form.number" :disabled="true" />
-		</el-form-item>
-		<el-form-item label="岗位余量" v-else prop="surplus">
+		<el-form-item label="岗位余量" v-if="false" prop="surplus">
 		  <el-input v-model="form.surplus" :disabled="true" />
 		</el-form-item>
-    <el-form-item label="实习时间" prop="entryTime" >
+    <el-form-item label="起始时间" prop="entryTime" >
       <el-date-picker clearable size="small"
         v-model="form.entryTime"
         type="date"
         @blur="setEndingTime"
         value-format="yyyy-MM-dd"
-        placeholder="选择实习时间">
+        placeholder="选择起始时间">
       </el-date-picker>
     </el-form-item>
     <el-form-item label="结束时间" prop="entryTime" >
@@ -355,7 +365,7 @@
 </template>
 
 <script>
-import { listPracticeInfo, getPracticeInfo, delPracticeInfo,listUserInfoByRole, addPracticeInfo, updatePracticeInfo, exportPracticeInfo } from "@/api/practice-info/practiceInfo";
+import { listPracticeInfo, changeStatus , getPracticeInfo, delPracticeInfo,listUserInfoByRole, addPracticeInfo, updatePracticeInfo, exportPracticeInfo } from "@/api/practice-info/practiceInfo";
 import { listUser , getNoPracticeUser } from "@/api/system/user";
 import { getBaseTude } from '@/api/system/baseInfo'
 import { treeselect } from "@/api/system/dept";
@@ -412,6 +422,8 @@ export default {
 	  ttotal : 0 ,
       //实习基地数
       btotal : 0 ,
+      //实习学生数量
+      utotal : 0 ,
       // 实习信息表格数据
       practiceInfoList: [],
       // 弹出层标题
@@ -429,13 +441,13 @@ export default {
         value: '',
       // 列信息
       columns: [
-        { key: 0, label: `用户编号`, visible: true },
-        { key: 1, label: `用户名称`, visible: true },
-        { key: 2, label: `用户昵称`, visible: true },
-        { key: 3, label: `专业`, visible: true },
-        { key: 4, label: `手机号码`, visible: true },
-        { key: 5, label: `状态`, visible: true },
-        { key: 6, label: `创建时间`, visible: true }
+        { key: 0, label: `用户编号`, visible: false },
+        { key: 1, label: `学号`, visible: true },
+        { key: 2, label: `姓名`, visible: true },
+        { key: 3, label: `专业`, visible: false },
+        { key: 4, label: `手机号码`, visible: false },
+        { key: 5, label: `状态`, visible: false },
+        { key: 6, label: `创建时间`, visible: false }
       ],
       // 查询参数
         queryParams: {
@@ -453,6 +465,10 @@ export default {
 		    locationName : null,
 		    teacherName : null
 	  },
+      statusChangeParams:{
+        infoId:null,
+        status:null
+      },
 	  userQueryParams : {
 		  roleName : null
 	  },
@@ -466,11 +482,8 @@ export default {
         postName: [
           { required: true, message: "岗位名称不能为空", trigger: "blur" }
         ],
-        number: [
-          { required: true, message: "实习人数不能为空", trigger: "blur" }
-        ],
         entryTime: [
-          { required: true, message: "实习时间不能为空", trigger: "blur" }
+          { required: true, message: "起始时间不能为空", trigger: "blur" }
         ],
         baseId: [
           { required: true, message: "实习基地不能为空", trigger: "change" }
@@ -514,10 +527,30 @@ export default {
       listUser(this.addDateRange(this.queryParams, this.dateRange)).then(response => {
           this.userList = response.rows;
           console.log(this.userList)
-          this.total = response.total;
+          this.utotal = response.total;
           this.loading = false;
         }
       )
+    },
+    /** 状态改变操作 */
+    changeStatus(row) {
+      console.log(row)
+      let that = this
+      let text = row.status ==="0" ? "有效" : "无效";
+      this.$confirm('是否将ID为 '+row.infoId+' 的实习信息状态改为'+text,"状态变更",{
+        confirmButtonText:"确定",
+        cancelButtonText:"取消",
+        type:"warning"
+      }).then(function () {
+        console.log(row)
+        that.statusChangeParams.infoId = row.infoId
+        that.statusChangeParams.status = row.status
+        return changeStatus(that.statusChangeParams)
+      }).then(()=>{
+        this.msgSuccess("修改成功");
+      }).catch(function () {
+        row.status = row.status==="0"?"1":"0";
+      });
     },
     handleClose(done) {
       this.$confirm('确认关闭？')
@@ -539,7 +572,7 @@ export default {
     },
     confirmStudent(){
       this.dialogVisible = false;
-      this.form.surplus = this.form.number - this.studentIds.length;
+      this.form.number = this.studentIds.length;
       this.studentIds_h = this.studentIds
     },
     setEndingTime(){

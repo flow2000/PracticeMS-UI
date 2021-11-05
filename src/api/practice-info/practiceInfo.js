@@ -47,6 +47,15 @@ export function updatePracticeInfo(data) {
   })
 }
 
+// 修改实习信息
+export function changeStatus(data) {
+  return request({
+    url: '/practice-info/practiceInfo/changeStatus',
+    method: 'post',
+    data: data
+  })
+}
+
 // 删除实习信息
 export function delPracticeInfo(infoId) {
   return request({
