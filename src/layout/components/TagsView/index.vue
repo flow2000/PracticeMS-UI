@@ -190,9 +190,14 @@ export default {
         // you can adjust it according to your needs.
         if (view.name === 'Dashboard') {
           // to reload home page
-          this.$router.replace({ path: '/redirect' + view.fullPath })
+          if(user.state.roles[0]==="student") {
+            this.$router.replace({ path: '/index_stu' })
+          }
+          else {
+            this.$router.replace({ path: '/index_stu'  })
+          }
         } else {
-          this.$router.push('/')
+          this.$router.replace({path:'/index_stu'})
         }
       }
     },

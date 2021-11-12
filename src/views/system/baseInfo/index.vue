@@ -63,7 +63,8 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>-->
-      <el-form-item label="联系电话" prop="basePhone">
+      <!--联系电话-->
+      <!--<el-form-item label="联系电话" prop="basePhone">
         <el-input
           v-model="queryParams.basePhone"
           placeholder="请输入联系电话"
@@ -71,7 +72,7 @@
           size="small"
           @keyup.enter.native="handleQuery"
         />
-      </el-form-item>
+      </el-form-item>-->
       <!--传真-->
       <!--<el-form-item label="传真" prop="baseFax">
         <el-input
@@ -113,8 +114,8 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>-->
-
-      <el-form-item label="基地状态" prop="status">
+      <!--基地状态-->
+      <!--<el-form-item label="基地状态" prop="status">
         <el-select v-model="queryParams.status" placeholder="请选择基地状态" clearable size="small">
           <el-option
             v-for="dict in statusOptions"
@@ -123,7 +124,7 @@
             :value="dict.dictValue"
           />
         </el-select>
-      </el-form-item>
+      </el-form-item>-->
       <!--删除标志-->
       <!--<el-form-item label="删除标志" prop="delFlag">
         <el-select v-model="queryParams.delFlag" placeholder="请选择删除标志" clearable size="small">
@@ -200,7 +201,7 @@
     <el-table v-loading="loading" :data="baseInfoList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
 
-      <el-table-column label="基地ID" align="center" key="baseId" prop="baseId" />
+      <!--<el-table-column label="基地ID" align="center" key="baseId" prop="baseId" />-->
       <el-table-column label="基地名称" align="center" prop="baseName" />
       <el-table-column label="基地单位性质" align="center" prop="baseNature" />
       <el-table-column label="基地联系人" align="center" prop="baseContacts" />
@@ -208,14 +209,21 @@
       <el-table-column label="学校基地负责人" align="center" prop="schoolLeader" />
       <el-table-column label="学校基地联系电话" align="center" prop="schoolPhone" />
 
-      <el-table-column label="状态" align="center" key="status">
-        <template slot-scope="scope">
+      <el-table-column label="启用/停用" align="center" key="status" >
+        <template slot-scope="scope" style="min-width: 100px">
           <el-switch
             v-model="scope.row.status"
             active-value="0"
             inactive-value="1"
             @change="handleStatusChange(scope.row)"
+
           ></el-switch>
+          <div v-if="scope.row.status==='0'" le="height: 60px">
+            已启用
+          </div>
+          <div v-else >
+            已停用
+          </div>
         </template>
       </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">

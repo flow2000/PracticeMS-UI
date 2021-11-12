@@ -1,6 +1,6 @@
 <template>
-  <div id="magicalDragScene" class="mc-root mc-ui-absolute-pane" style="height: 1300px;min-height: 1100px;min-width: 1420px" mcnetline="100">
-    <div id="main-panle" class="mc-ui-grid-pane" style="height: 1300px; width: auto;margin:1%;min-height: 1100px;min-width: 1420px">
+  <div id="magicalDragScene" class="mc-root mc-ui-absolute-pane" style="height: 1300px;min-height: 1100px;min-width: 1500px" mcnetline="100">
+    <div id="main-panle" class="mc-ui-grid-pane" style="height: 1300px; width: auto;margin:1%;min-height: 1100px;min-width: 1500px">
 
       <div class="mc-ui-grid-item top-panle">
         <div style="font-size:xx-large;color: #1c84c6;width: 30%;position: relative;float: left">
@@ -68,18 +68,18 @@
       </div>
 
       <div class="mc-ui-grid-item left-mid1" >
-        <p class="title1">管理实习学生人数</p>
+        <p class="title1" >实习学生人数</p>
         <hr/>
-        <p class="text1">56</p>
+        <p class="text1">{{this.userTotal}}</p>
         <!--<p class="data1">在岗实习人数：50</p>-->
       </div>
       <div class="mc-ui-grid-item left-mid2" >
-        <p class="title1">今日打卡人数</p>
+        <p class="title1">今日在岗人数</p>
         <hr/>
         <p class="text1">48</p>
       </div>
       <div class="mc-ui-grid-item left-mid3" >
-        <p class="title1">今日日志提交份数</p>
+        <p class="title1">完成日志人数</p>
         <hr/>
         <p class="text1">48</p>
       </div>
@@ -89,7 +89,7 @@
       </div>
 
       <div class="mc-ui-grid-item right-mid1">
-        <p class="title1">本周实习打卡统计</p>
+        <p class="title1">实习学生考勤统计</p>
         <hr/>
         <div id="chart3" style="
         width: 110%;height: 90%;position:relative;
@@ -116,383 +116,397 @@
 
 <script>
 
-import { getUserProfile } from '../api/system/user'
-import * as echarts from 'echarts'
-import { listNotice } from "@/api/system/notice";
-import ScrollPane from '../layout/components/TagsView/ScrollPane'
-import request from '@/utils/request'
-import { getTude } from '@/api/location/info'
-import { getBaseTude } from '@/api/system/baseInfo'
-import  location from '@/assets/images/location.png'
-import  locationRed from '@/assets/images/location-red.png'
-import bus from '../bus.js'
+  import { getUserProfile,listUser } from '../api/system/user'
+  import * as echarts from 'echarts'
+  import ScrollPane from '../layout/components/TagsView/ScrollPane'
+  import { getTude } from '@/api/location/info'
+  import { getBaseTude } from '@/api/system/baseInfo'
+  import  location from '@/assets/images/location.png'
+  import  locationRed from '@/assets/images/location-red.png'
+  import bus from '../bus.js'
+  import getters from '../store/getters'
 
-export default {
-  name: "index",
-  components: { ScrollPane },
-  data() {
-    return {
-      // 版本号
-      version: "3.6.0",
-      // 用户信息
-      user: {},
-      roleGroup: {},
-      //通知列表
-      noticeList: [],
-      noticeSlims:[],
-      //通知条数
-      noticetotal:0,
-      //通知详细窗口
-      noticeDetail:{
-        visible:false,
-        title:null,
-        content:null,
-        updateTime:null,
-        publisher:null,
-      },
-      //查看所有通知窗口
-      allNotice:{
-        visible:false
-      },
-      // 通知查询参数
-      noticeParams: {
-        pageNum: 1,
-        pageSize: 5,
-        status: '1',
-      },
-      // 地图数据
-      ruleForm: {
-        name: '',
-        phone: '',
-        addr: '',
-        long: '',
-        lat: '',
-        start_work_time: '',
-        end_work_time: ''
+  export default {
+    name: "index",
+    components: { ScrollPane },
+    data() {
+      return {
+        // 版本号
+        version: "3.6.0",
+        // 用户信息
+        user: {},
+        roleGroup: {},
+        //通知列表
+        noticeList: [],
+        noticeSlims:[],
+        //通知条数
+        noticetotal:0,
+        //通知详细窗口
+        noticeDetail:{
+          visible:false,
+          title:null,
+          content:null,
+          updateTime:null,
+          publisher:null,
+        },
+        //查看所有通知窗口
+        allNotice:{
+          visible:false
+        },
+        // 通知查询参数
+        noticeParams: {
+          pageNum: 1,
+          pageSize: 5,
+          status: '1',
+        },
+        // 地图数据
+        ruleForm: {
+          name: '',
+          phone: '',
+          addr: '',
+          long: '',
+          lat: '',
+          start_work_time: '',
+          end_work_time: ''
 
-      }
-    };
-  },
-  created() {
-    // 获取当前用户信息
-    this.getUser();
-
-    // 获取最近的公告
-    //this.getNoticeList();
-  },
-  mounted(){
-    // 绘图
-    this.drawLine();
-    // 地图初始化
-    var that = this
-    this.init(that)
-    // 接收详细公告信息
-    bus.$on('sendNoticeDetail',(detail)=>{
-      this.noticeDetail=detail;
-      this.noticeDetail.visible=true;
-    });
-    //接收全部公告信息
-    bus.$on('sendAllNotice',list=>{
-      this.noticeList=list;
-      this.allNotice.visible=true;
-    })
-    // 展示网络时间
-    // this.showNetDateTime();
-  },
-  methods: {
-    goTarget(href) {
-      window.open(href, "_blank");
+        },
+        // 管理用户人数
+        userTotal:null,
+        // 管理用户人数列表
+        userList:[],
+        // 查询管理用户列表参数
+        queryParams: {
+          pageNum: undefined,
+          pageSize: undefined,
+          userName: undefined,
+          phonenumber: undefined,
+          status: undefined,
+          deptId: undefined,
+          role: '实习学生'
+        },
+      };
     },
+    created() {
+      // 获取当前用户信息
+      this.getUser();
+    },
+    mounted(){
+      // 获取管理用户信息
+      this.getUserList();
+      // 绘图
+      this.drawLine();
 
-    /* 获取当前用户信息 */
-    getUser() {
-      getUserProfile().then(response => {
-        this.user = response.data;
-        this.roleGroup = response.roleGroup;
+      // 地图初始化
+      var that = this
+      this.init(that)
+
+      // 接收详细公告信息
+      bus.$on('sendNoticeDetail',(detail)=>{
+        this.noticeDetail=detail;
+        this.noticeDetail.visible=true;
       });
-    },
-
-    /* 展示网络时间 */
-    showNetDateTime(){
-      getNetDateTime().then(response=>{
-        console.log(response);
+      //接收全部公告信息
+      bus.$on('sendAllNotice',list=>{
+        this.noticeList=list;
+        this.allNotice.visible=true;
       })
+
     },
-    /* 绘图 */
-    drawLine(){
-      // 基于准备好的dom，初始化echarts实例
-      let chart1 = echarts.init(document.getElementById('chart1'))
-      let chart2 =echarts.init(document.getElementById('chart2'))
-      let chart3 =echarts.init(document.getElementById('chart3'))
-      // 绘制图表
-      chart1.setOption({
-        tooltip: {
-          trigger: 'axis',
-          axisPointer: {
-            type: 'shadow'
+    methods: {
+      goTarget(href) {
+        window.open(href, "_blank");
+      },
+      /* 获取当前用户信息 */
+      getUser() {
+        getUserProfile().then(response => {
+          this.user = response.data;
+          this.roleGroup = response.roleGroup;
+          if(this.roleGroup==="实习学生"){
+            this.$router.replace({ path: "/index_stu" }).catch(()=>{});
           }
-        },
-        legend: {},
-        grid: {
-          left: '3%',
-          right: '4%',
-          bottom: '3%',
-          containLabel: true
-        },
-        xAxis: [
-          {
-            type: 'category',
-            data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-          }
-        ],
-        yAxis: [
-          {
-            type: 'value'
-          }
-        ],
-        series: [
-          {
-            name: 'Direct',
-            type: 'bar',
-            emphasis: {
-              focus: 'series'
-            },
-            data: [320, 332, 301, 334, 390, 330, 320]
+        });
+      },
+      /* 获取管理用户列表 */
+      getUserList(){
+        listUser(this.queryParams).then(response=>{
+          this.userTotal=response.total;
+          this.userList=response.row;
+        })
+      },
+      /* 绘图 */
+      drawLine(){
+        // 基于准备好的dom，初始化echarts实例
+        let chart1 = echarts.init(document.getElementById('chart1'))
+        let chart2 =echarts.init(document.getElementById('chart2'))
+        let chart3 =echarts.init(document.getElementById('chart3'))
+        // 绘制图表
+        chart1.setOption({
+          tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+              type: 'shadow'
+            }
           },
-          {
-            name: 'Email',
-            type: 'bar',
-            stack: 'Ad',
-            emphasis: {
-              focus: 'series'
-            },
-            data: [120, 132, 101, 134, 90, 230, 210]
+          legend: {},
+          grid: {
+            left: '3%',
+            right: '4%',
+            bottom: '3%',
+            containLabel: true
           },
-          {
-            name: 'Union Ads',
-            type: 'bar',
-            stack: 'Ad',
-            emphasis: {
-              focus: 'series'
-            },
-            data: [220, 182, 191, 234, 290, 330, 310]
-          },
-          {
-            name: 'Video Ads',
-            type: 'bar',
-            stack: 'Ad',
-            emphasis: {
-              focus: 'series'
-            },
-            data: [150, 232, 201, 154, 190, 330, 410]
-          },
-          {
-            name: 'Search Engine',
-            type: 'bar',
-            data: [862, 1018, 964, 1026, 1679, 1600, 1570],
-            emphasis: {
-              focus: 'series'
-            },
-            /*markLine: {
-              lineStyle: {
-                type: 'dashed'
+          xAxis: [
+            {
+              type: 'category',
+              data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+            }
+          ],
+          yAxis: [
+            {
+              type: 'value'
+            }
+          ],
+          series: [
+            {
+              name: 'Direct',
+              type: 'bar',
+              emphasis: {
+                focus: 'series'
               },
-              data: [[{ type: 'min' }, { type: 'max' }]]
-            }*/
-          },
-          {
-            name: 'Baidu',
-            type: 'bar',
-            barWidth: 5,
-            stack: 'Search Engine',
-            emphasis: {
-              focus: 'series'
+              data: [320, 332, 301, 334, 390, 330, 320]
             },
-            data: [620, 732, 701, 734, 1090, 1130, 1120]
-          },
-          {
-            name: 'Google',
-            type: 'bar',
-            stack: 'Search Engine',
-            emphasis: {
-              focus: 'series'
+            {
+              name: 'Email',
+              type: 'bar',
+              stack: 'Ad',
+              emphasis: {
+                focus: 'series'
+              },
+              data: [120, 132, 101, 134, 90, 230, 210]
             },
-            data: [120, 132, 101, 134, 290, 230, 220]
-          },
-          {
-            name: 'Bing',
-            type: 'bar',
-            stack: 'Search Engine',
-            emphasis: {
-              focus: 'series'
+            {
+              name: 'Union Ads',
+              type: 'bar',
+              stack: 'Ad',
+              emphasis: {
+                focus: 'series'
+              },
+              data: [220, 182, 191, 234, 290, 330, 310]
             },
-            data: [60, 72, 71, 74, 190, 130, 110]
-          },
-          {
-            name: 'Others',
-            type: 'bar',
-            stack: 'Search Engine',
-            emphasis: {
-              focus: 'series'
+            {
+              name: 'Video Ads',
+              type: 'bar',
+              stack: 'Ad',
+              emphasis: {
+                focus: 'series'
+              },
+              data: [150, 232, 201, 154, 190, 330, 410]
             },
-            data: [62, 82, 91, 84, 109, 110, 120]
-          }
-        ]
-      });
-      chart2.setOption({
-        title: {
-          text: 'Referer of a Website',
-          subtext: 'Fake Data',
-          left: 'center'
-        },
-        tooltip: {
-          trigger: 'item'
-        },
-        legend: {
-          orient: 'vertical',
-          left: 'left'
-        },
-        series: [
-          {
-            name: 'Access From',
-            type: 'pie',
-            radius: '50%',
-            data: [
-              { value: 1048, name: 'Search Engine' },
-              { value: 735, name: 'Direct' },
-              { value: 580, name: 'Email' },
-              { value: 484, name: 'Union Ads' },
-              { value: 300, name: 'Video Ads' }
-            ],
-            emphasis: {
-              itemStyle: {
-                shadowBlur: 10,
-                shadowOffsetX: 0,
-                shadowColor: 'rgba(0, 0, 0, 0.5)'
+            {
+              name: 'Search Engine',
+              type: 'bar',
+              data: [862, 1018, 964, 1026, 1679, 1600, 1570],
+              emphasis: {
+                focus: 'series'
+              },
+              /*markLine: {
+                lineStyle: {
+                  type: 'dashed'
+                },
+                data: [[{ type: 'min' }, { type: 'max' }]]
+              }*/
+            },
+            {
+              name: 'Baidu',
+              type: 'bar',
+              barWidth: 5,
+              stack: 'Search Engine',
+              emphasis: {
+                focus: 'series'
+              },
+              data: [620, 732, 701, 734, 1090, 1130, 1120]
+            },
+            {
+              name: 'Google',
+              type: 'bar',
+              stack: 'Search Engine',
+              emphasis: {
+                focus: 'series'
+              },
+              data: [120, 132, 101, 134, 290, 230, 220]
+            },
+            {
+              name: 'Bing',
+              type: 'bar',
+              stack: 'Search Engine',
+              emphasis: {
+                focus: 'series'
+              },
+              data: [60, 72, 71, 74, 190, 130, 110]
+            },
+            {
+              name: 'Others',
+              type: 'bar',
+              stack: 'Search Engine',
+              emphasis: {
+                focus: 'series'
+              },
+              data: [62, 82, 91, 84, 109, 110, 120]
+            }
+          ]
+        });
+        chart2.setOption({
+          title: {
+            text: 'Referer of a Website',
+            subtext: 'Fake Data',
+            left: 'center'
+          },
+          tooltip: {
+            trigger: 'item'
+          },
+          legend: {
+            orient: 'vertical',
+            left: 'left'
+          },
+          series: [
+            {
+              name: 'Access From',
+              type: 'pie',
+              radius: '50%',
+              data: [
+                { value: 1048, name: 'Search Engine' },
+                { value: 735, name: 'Direct' },
+                { value: 580, name: 'Email' },
+                { value: 484, name: 'Union Ads' },
+                { value: 300, name: 'Video Ads' }
+              ],
+              emphasis: {
+                itemStyle: {
+                  shadowBlur: 10,
+                  shadowOffsetX: 0,
+                  shadowColor: 'rgba(0, 0, 0, 0.5)'
+                }
               }
             }
-          }
-        ]
-      });
-      chart3.setOption({
-        tooltip: {
-          trigger: 'axis',
-          axisPointer: {
-            type: 'shadow'
-          }
-        },
-        xAxis: [
-          {
-            type: 'category',
-            data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-            axisTick: {
-              alignWithLabel: true
+          ]
+        });
+        chart3.setOption({
+          tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+              type: 'shadow'
             }
-          }
-        ],
-        yAxis: {
-          type: 'value'
-        },
-        series: [
-          {
-            data: [120, 200, 150, 80, 70, 110, 130],
-            type: 'bar'
-          }
-        ],
-
-      });
-    },
-
-    /* 地图 */
-    init(that) {
-      let markers = [] // 点聚合数组
-      // console.log(that.companyNames)
-      var map = new AMap.Map('my_container', {
-        resizeEnable: true,
-        zoom: 8,
-        center: [108.365386, 22.843292] // 中心点坐标,广西民族大学
-      })
-      AMap.plugin('AMap.Geolocation', function() { //异步加载插件
-        var geolocation = new AMap.Geolocation()
-        map.addControl(geolocation)
-      })
-
-      initBaseInfo(that);
-      initLocation(that);
-      initMarkerClusterer();
-
-      function initBaseInfo(that){
-        getTude().then(response => {
-          var i = 0
-          var lonlats = []
-          var companyNames = []
-          for (; i < response.data.length; i++) {
-            var str = response.data[i].tude.split(',')
-            // var strComs = response.data[i].companyName.split(',')
-            //产生经纬度数组
-            var tude = [];
-            var name = [];
-            var longit = parseFloat(str[0])
-            var lat = parseFloat(str[1])
-            tude.push(longit)
-            tude.push(lat)
-            lonlats.push(tude)
-            companyNames.push(response.data[i].companyName)
-          }
-          console.log(companyNames)
-          console.log(lonlats)
-
-          // let lonlat = [[108.365386, 22.843292], [108.238089, 22.848063], [108.244248, 22.852298]]
-          for (let i = 0; i < lonlats.length; i++) {
-            //获得地点信息
-            var geocoder = new AMap.Geocoder({
-              /// city 指定进行编码查询的城市，支持传入城市名、adcode 和 citycode
-              radius: 10
-            })
-            geocoder.getAddress(lonlats[i], function(status, result) {
-              // console.log(status,result)
-              if (status === 'complete' && result.info === 'OK') {
-                // result为对应的地理位置详细信息
-                //             console.log(result.regeocode.formattedAddress)
-                customMark(lonlats[i][0], lonlats[i][1], companyNames[i])
-                // console.log(address)
-                // this.addresses = address
+          },
+          xAxis: [
+            {
+              type: 'category',
+              data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+              axisTick: {
+                alignWithLabel: true
               }
-            })
-            // console.log(this.addresses)
-            //添加标记
-            // customMark(lonlat[i][0],lonlat[i][1],address)
-          }
-          // initMarkerClusterer()
-          // cluster.setMaxZoom(15);
+            }
+          ],
+          yAxis: {
+            type: 'value'
+          },
+          series: [
+            {
+              data: [120, 200, 150, 80, 70, 110, 130],
+              type: 'bar'
+            }
+          ],
+
+        });
+      },
+      /* 地图 */
+      init(that) {
+        let markers = [] // 点聚合数组
+        // console.log(that.companyNames)
+        var map = new AMap.Map('my_container', {
+          resizeEnable: true,
+          zoom: 8,
+          center: [108.365386, 22.843292] // 中心点坐标,广西民族大学
+        })
+        AMap.plugin('AMap.Geolocation', function() { //异步加载插件
+          var geolocation = new AMap.Geolocation()
+          map.addControl(geolocation)
+        })
+
+        initBaseInfo(that);
+        initLocation(that);
+        initMarkerClusterer();
+
+        function initBaseInfo(that){
+          getTude().then(response => {
+            var i = 0
+            var lonlats = []
+            var companyNames = []
+            for (; i < response.data.length; i++) {
+              var str = response.data[i].tude.split(',')
+              // var strComs = response.data[i].companyName.split(',')
+              //产生经纬度数组
+              var tude = [];
+              var name = [];
+              var longit = parseFloat(str[0])
+              var lat = parseFloat(str[1])
+              tude.push(longit)
+              tude.push(lat)
+              lonlats.push(tude)
+              companyNames.push(response.data[i].companyName)
+            }
+            console.log(companyNames)
+            console.log(lonlats)
+
+            // let lonlat = [[108.365386, 22.843292], [108.238089, 22.848063], [108.244248, 22.852298]]
+            for (let i = 0; i < lonlats.length; i++) {
+              //获得地点信息
+              var geocoder = new AMap.Geocoder({
+                /// city 指定进行编码查询的城市，支持传入城市名、adcode 和 citycode
+                radius: 10
+              })
+              geocoder.getAddress(lonlats[i], function(status, result) {
+                // console.log(status,result)
+                if (status === 'complete' && result.info === 'OK') {
+                  // result为对应的地理位置详细信息
+                  //             console.log(result.regeocode.formattedAddress)
+                  customMark(lonlats[i][0], lonlats[i][1], companyNames[i])
+                  // console.log(address)
+                  // this.addresses = address
+                }
+              })
+              // console.log(this.addresses)
+              //添加标记
+              // customMark(lonlat[i][0],lonlat[i][1],address)
+            }
+            // initMarkerClusterer()
+            // cluster.setMaxZoom(15);
 // 添加自定义标记
 //             imageIcon=require("../../../assets/images/location.png")
-          function customMark(longit, lat, title) {
-            // let lonlat = [108.365386,22.843292];
-            // 创建 AMap.Icon 实例：
-            let icon = new AMap.Icon({
-              size: new AMap.Size(58, 70),    // 图标尺寸
-              image: location,  // Icon的图像
-              imageSize: new AMap.Size(28, 30)   // 根据所设置的大小拉伸或压缩图片
-            })
+            function customMark(longit, lat, title) {
+              // let lonlat = [108.365386,22.843292];
+              // 创建 AMap.Icon 实例：
+              let icon = new AMap.Icon({
+                size: new AMap.Size(58, 70),    // 图标尺寸
+                image: location,  // Icon的图像
+                imageSize: new AMap.Size(28, 30)   // 根据所设置的大小拉伸或压缩图片
+              })
 
-            // 将 Icon 实例添加到 marker 上:
-            let marker = new AMap.Marker({
-              position: new AMap.LngLat(longit, lat),
-              offset: new AMap.Pixel(-10, -10),
-              icon: icon, // 添加 Icon 实例
-              title: '实习地点：'+title,
-              zoom: 13
-            })
-            var msg_label =
-              '<div style="border-radius:200px;background: #00afff"></div><span >'+title+'</span></div>'
+              // 将 Icon 实例添加到 marker 上:
+              let marker = new AMap.Marker({
+                position: new AMap.LngLat(longit, lat),
+                offset: new AMap.Pixel(-10, -10),
+                icon: icon, // 添加 Icon 实例
+                title: '实习地点：'+title,
+                zoom: 13
+              })
+              var msg_label =
+                '<div style="border-radius:200px;background: #00afff"></div><span >'+title+'</span></div>'
 
-            marker.setLabel({
-              offset: new AMap.Pixel(20, -10), //显示位置
-              content: msg_label //显示内容
-            })
+              marker.setLabel({
+                offset: new AMap.Pixel(20, -10), //显示位置
+                content: msg_label //显示内容
+              })
 
-            var markerContent =`<div class="description">
+              var markerContent =`<div class="description">
               <span class="title">${title}</span>
               <br />
               <div class="mt-3 detail">
@@ -502,186 +516,186 @@ export default {
               </div>
             </div>`
 
-            marker.on('mouseover', function(e) {
-              marker.setTop(true)
-            })
+              marker.on('mouseover', function(e) {
+                marker.setTop(true)
+              })
 
-            marker.on('mouseout', function() {
-              //  鼠标离开标注地点事件
-              marker.setTop(false)
-            })
+              marker.on('mouseout', function() {
+                //  鼠标离开标注地点事件
+                marker.setTop(false)
+              })
 
-            marker.on("click", function (e) {
-              //  点击标注地点事件
-            });
-            // var lonlat=longit+","+lat
-            // markerEvent(marker,lonlat)
-            map.add(marker)
+              marker.on("click", function (e) {
+                //  点击标注地点事件
+              });
+              // var lonlat=longit+","+lat
+              // markerEvent(marker,lonlat)
+              map.add(marker)
 
-            markers.push(marker)
-          }
+              markers.push(marker)
+            }
 
-          // markerEvent在创建点标记后调用，这里不写了
-          function markerEvent(marker, lonlats) {
-            // AMap.event.addListener(marker, 'click', function () {
-            //   openInfo(marker, lonlat);
-            // })
-          }
+            // markerEvent在创建点标记后调用，这里不写了
+            function markerEvent(marker, lonlats) {
+              // AMap.event.addListener(marker, 'click', function () {
+              //   openInfo(marker, lonlat);
+              // })
+            }
 
 // 初始化点聚合k
-          function initMarkerClusterer() {
-            //添加聚合组件
-            map.plugin(['AMap.MarkerClusterer'], function() {
-              var cluster = new AMap.MarkerClusterer(
-                map,     // 地图实例
-                markers)
-              cluster.setMaxZoom(12)
-            })
-          }
+            function initMarkerClusterer() {
+              //添加聚合组件
+              map.plugin(['AMap.MarkerClusterer'], function() {
+                var cluster = new AMap.MarkerClusterer(
+                  map,     // 地图实例
+                  markers)
+                cluster.setMaxZoom(12)
+              })
+            }
 
 // 添加点标记至点聚合中
-          this.addMarkerClusterer = function() {
-            // let lonlat = [Math.random() + 113, Math.random() + 23]
-            // console.log(lonlat)
-            // 创建 AMap.Icon 实例：
-            let icon = new AMap.Icon({
-              size: new AMap.Size(58, 70),    // 图标尺寸
-              image: 'https://chuyinweilai.store/apk/index_calen.png',  // Icon的图像
-              imageSize: new AMap.Size(58, 70)   // 根据所设置的大小拉伸或压缩图片
-            })
+            this.addMarkerClusterer = function() {
+              // let lonlat = [Math.random() + 113, Math.random() + 23]
+              // console.log(lonlat)
+              // 创建 AMap.Icon 实例：
+              let icon = new AMap.Icon({
+                size: new AMap.Size(58, 70),    // 图标尺寸
+                image: 'https://chuyinweilai.store/apk/index_calen.png',  // Icon的图像
+                imageSize: new AMap.Size(58, 70)   // 根据所设置的大小拉伸或压缩图片
+              })
 
-            // 将 Icon 实例添加到 marker 上:
-            let marker = new AMap.Marker({
-              position: new AMap.LngLat(lonlats[0], lonlats[1]),
-              offset: new AMap.Pixel(-10, -10),
-              icon: icon, // 添加 Icon 实例
-              title: "111",
-              zoom: 13
-            })
-            markerEvent(marker, lonlats)
-            cluster.addMarker(marker)
-          }
+              // 将 Icon 实例添加到 marker 上:
+              let marker = new AMap.Marker({
+                position: new AMap.LngLat(lonlats[0], lonlats[1]),
+                offset: new AMap.Pixel(-10, -10),
+                icon: icon, // 添加 Icon 实例
+                title: "111",
+                zoom: 13
+              })
+              markerEvent(marker, lonlats)
+              cluster.addMarker(marker)
+            }
 
-          var geocoder, marker
-          // function regeocoder(lnglatXY,that) {
-          //   AMap.plugin('AMap.Geocoder',function(){
-          //     var geocoder = new AMap.Geocoder({
-          //       radius: 1000,
-          //       extensions: "all"
-          //     });
-          //     var address;
-          //     geocoder.getAddress(lnglatXY, function(status, result) {
-          //       if (status === 'complete' && result.info === 'OK') {
-          //         address = result.regeocode.formattedAddress;
-          //         console.log("address"+address)
-          //         that.ruleForm.addr = address
-          //       }
-          //     });
-          //     if(!marker){
-          //       var marker = new AMap.Marker({
-          //         position: new AMap.LngLat(113.397428, 23.2,112.397428, 23.2),   // 经纬度对象，也可以是经纬度构成的一维数组[116.39, 39.9]
-          //         title: '默认图标'
-          //       });
-          //       var msg_label = '<span>'+ "测试"+'</span>';
-          //       marker.setLabel({
-          //         offset: new AMap.Pixel(20, -10), //显示位置
-          //         content: msg_label //显示内容
-          //       });
-          //       var msg_title = '测试使用的title';
-          //       marker.setTitle(msg_title);
-          //       marker.on("mouseover", function(e) {
-          //         marker.setTop(true);
-          //       });
-          //       marker.on("mouseout", function() {
-          //         marker.setTop(false);
-          //       });
-          //       map.add(marker);
-          //     }
-          //     // marker.setMap(mapObj);
-          //     marker.setPosition(lnglatXY);
-          //   })
-          // }
-          // var that = this
-          // map.on('click', function(e) {
-          //   var lnglatXY = [e.lnglat.getLng(),e.lnglat.getLat()];
-          //   regeocoder(lnglatXY,that)
-          //   that.ruleForm.long = e.lnglat.getLng()
-          //   that.ruleForm.lat = e.lnglat.getLat()
-          // });
-        })
-      }
+            var geocoder, marker
+            // function regeocoder(lnglatXY,that) {
+            //   AMap.plugin('AMap.Geocoder',function(){
+            //     var geocoder = new AMap.Geocoder({
+            //       radius: 1000,
+            //       extensions: "all"
+            //     });
+            //     var address;
+            //     geocoder.getAddress(lnglatXY, function(status, result) {
+            //       if (status === 'complete' && result.info === 'OK') {
+            //         address = result.regeocode.formattedAddress;
+            //         console.log("address"+address)
+            //         that.ruleForm.addr = address
+            //       }
+            //     });
+            //     if(!marker){
+            //       var marker = new AMap.Marker({
+            //         position: new AMap.LngLat(113.397428, 23.2,112.397428, 23.2),   // 经纬度对象，也可以是经纬度构成的一维数组[116.39, 39.9]
+            //         title: '默认图标'
+            //       });
+            //       var msg_label = '<span>'+ "测试"+'</span>';
+            //       marker.setLabel({
+            //         offset: new AMap.Pixel(20, -10), //显示位置
+            //         content: msg_label //显示内容
+            //       });
+            //       var msg_title = '测试使用的title';
+            //       marker.setTitle(msg_title);
+            //       marker.on("mouseover", function(e) {
+            //         marker.setTop(true);
+            //       });
+            //       marker.on("mouseout", function() {
+            //         marker.setTop(false);
+            //       });
+            //       map.add(marker);
+            //     }
+            //     // marker.setMap(mapObj);
+            //     marker.setPosition(lnglatXY);
+            //   })
+            // }
+            // var that = this
+            // map.on('click', function(e) {
+            //   var lnglatXY = [e.lnglat.getLng(),e.lnglat.getLat()];
+            //   regeocoder(lnglatXY,that)
+            //   that.ruleForm.long = e.lnglat.getLng()
+            //   that.ruleForm.lat = e.lnglat.getLat()
+            // });
+          })
+        }
 
-      function initLocation(that){
-        var lonlats = []
-        var companyNames = []
-        getBaseTude().then(response => {
-          var i = 0
+        function initLocation(that){
+          var lonlats = []
+          var companyNames = []
+          getBaseTude().then(response => {
+            var i = 0
 
-          for (; i < response.data.length; i++) {
-            var str = response.data[i].tude.split(',')
-            // var strComs = response.data[i].companyName.split(',')
-            //产生经纬度数组
-            var tude = [];
-            var name = [];
-            var longit = parseFloat(str[0])
-            var lat = parseFloat(str[1])
-            tude.push(longit)
-            tude.push(lat)
-            lonlats.push(tude)
-            companyNames.push(response.data[i].companyName)
-          }
-          // console.log(companyNames)
-          // console.log(lonlats)
+            for (; i < response.data.length; i++) {
+              var str = response.data[i].tude.split(',')
+              // var strComs = response.data[i].companyName.split(',')
+              //产生经纬度数组
+              var tude = [];
+              var name = [];
+              var longit = parseFloat(str[0])
+              var lat = parseFloat(str[1])
+              tude.push(longit)
+              tude.push(lat)
+              lonlats.push(tude)
+              companyNames.push(response.data[i].companyName)
+            }
+            // console.log(companyNames)
+            // console.log(lonlats)
 
 
-          // let lonlat = [[108.365386, 22.843292], [108.238089, 22.848063], [108.244248, 22.852298]]
-          for (let i = 0; i < lonlats.length; i++) {
-            //获得地点信息
-            var geocoder = new AMap.Geocoder({
-              /// city 指定进行编码查询的城市，支持传入城市名、adcode 和 citycode
-              radius: 10
-            })
-            geocoder.getAddress(lonlats[i], function(status, result) {
-              // console.log(status,result)
-              if (status === 'complete' && result.info === 'OK') {
-                // result为对应的地理位置详细信息
-                //             console.log(result.regeocode.formattedAddress)
-                customMark(lonlats[i][0], lonlats[i][1], companyNames[i])
-                // console.log(address)
-                // this.addresses = address
-              }
-            })
-            // console.log(this.addresses)
-            //添加标记
-            // customMark(lonlat[i][0],lonlat[i][1],address)
-          }
-          // cluster.setMaxZoom(15);
+            // let lonlat = [[108.365386, 22.843292], [108.238089, 22.848063], [108.244248, 22.852298]]
+            for (let i = 0; i < lonlats.length; i++) {
+              //获得地点信息
+              var geocoder = new AMap.Geocoder({
+                /// city 指定进行编码查询的城市，支持传入城市名、adcode 和 citycode
+                radius: 10
+              })
+              geocoder.getAddress(lonlats[i], function(status, result) {
+                // console.log(status,result)
+                if (status === 'complete' && result.info === 'OK') {
+                  // result为对应的地理位置详细信息
+                  //             console.log(result.regeocode.formattedAddress)
+                  customMark(lonlats[i][0], lonlats[i][1], companyNames[i])
+                  // console.log(address)
+                  // this.addresses = address
+                }
+              })
+              // console.log(this.addresses)
+              //添加标记
+              // customMark(lonlat[i][0],lonlat[i][1],address)
+            }
+            // cluster.setMaxZoom(15);
 // 添加自定义标记
-          function customMark(longit, lat, title) {
-            // let lonlat = [108.365386,22.843292];
-            // 创建 AMap.Icon 实例：
-            var icon = new AMap.Icon({
-              size: new AMap.Size(58, 70),    // 图标尺寸
-              image: locationRed,  // Icon的图像
-              imageSize: new AMap.Size(28, 30)   // 根据所设置的大小拉伸或压缩图片
-            })
+            function customMark(longit, lat, title) {
+              // let lonlat = [108.365386,22.843292];
+              // 创建 AMap.Icon 实例：
+              var icon = new AMap.Icon({
+                size: new AMap.Size(58, 70),    // 图标尺寸
+                image: locationRed,  // Icon的图像
+                imageSize: new AMap.Size(28, 30)   // 根据所设置的大小拉伸或压缩图片
+              })
 
-            // 将 Icon 实例添加到 marker 上:
-            var marker = new AMap.Marker({
-              position: new AMap.LngLat(longit, lat),
-              offset: new AMap.Pixel(-10, -10),
-              icon: icon, // 添加 Icon 实例
-              title: '基地  ：'+title,
-              zoom: 13
-            })
-            var msg_label = '<span>' + title + '</span>'
+              // 将 Icon 实例添加到 marker 上:
+              var marker = new AMap.Marker({
+                position: new AMap.LngLat(longit, lat),
+                offset: new AMap.Pixel(-10, -10),
+                icon: icon, // 添加 Icon 实例
+                title: '基地  ：'+title,
+                zoom: 13
+              })
+              var msg_label = '<span>' + title + '</span>'
 
-            marker.setLabel({
-              offset: new AMap.Pixel(20, -10), //显示位置
-              content: msg_label //显示内容
-            })
+              marker.setLabel({
+                offset: new AMap.Pixel(20, -10), //显示位置
+                content: msg_label //显示内容
+              })
 
-            var markerContent =`<div class="description">
+              var markerContent =`<div class="description">
               <span class="title">${title}</span>
               <br />
               <div class="mt-3 detail">
@@ -691,37 +705,37 @@ export default {
               </div>
             </div>`
 
-            marker.on('mouseover', function(e) {
-              marker.setTop(true)
-            })
-            marker.on('mouseout', function() {
-              marker.setTop(false)
-            })
+              marker.on('mouseover', function(e) {
+                marker.setTop(true)
+              })
+              marker.on('mouseout', function() {
+                marker.setTop(false)
+              })
 
-            // var lonlat=longit+","+lat
-            // markerEvent(marker,lonlat)
-            map.add(marker)
+              // var lonlat=longit+","+lat
+              // markerEvent(marker,lonlat)
+              map.add(marker)
 
-            markers.push(marker)
-          }
+              markers.push(marker)
+            }
 
-          // markerEvent在创建点标记后调用，这里不写了
-          function markerEvent(marker, lonlats) {
-            // AMap.event.addListener(marker, 'click', function () {
-            //   openInfo(marker, lonlat);
-            // })
-          }
+            // markerEvent在创建点标记后调用，这里不写了
+            function markerEvent(marker, lonlats) {
+              // AMap.event.addListener(marker, 'click', function () {
+              //   openInfo(marker, lonlat);
+              // })
+            }
 
 // 初始化点聚合k
-          function initMarkerClusterer() {
-            //添加聚合组件
-            map.plugin(['AMap.MarkerClusterer'], function() {
-              var cluster = AMap.MarkerClusterer(
-                map,     // 地图实例
-                markers)
-              cluster.setMaxZoom(12)
-            })
-          }
+            function initMarkerClusterer() {
+              //添加聚合组件
+              map.plugin(['AMap.MarkerClusterer'], function() {
+                var cluster = AMap.MarkerClusterer(
+                  map,     // 地图实例
+                  markers)
+                cluster.setMaxZoom(12)
+              })
+            }
 
 // 添加点标记至点聚合中
 //             this.addMarkerClusterer = function() {
@@ -746,220 +760,205 @@ export default {
 //               cluster.addMarker(marker)
 //             }
 
-          var geocoder, marker
-          // function regeocoder(lnglatXY,that) {
-          //   AMap.plugin('AMap.Geocoder',function(){
-          //     var geocoder = new AMap.Geocoder({
-          //       radius: 1000,
-          //       extensions: "all"
-          //     });
-          //     var address;
-          //     geocoder.getAddress(lnglatXY, function(status, result) {
-          //       if (status === 'complete' && result.info === 'OK') {
-          //         address = result.regeocode.formattedAddress;
-          //         console.log("address"+address)
-          //         that.ruleForm.addr = address
-          //       }
-          //     });
-          //     if(!marker){
-          //       var marker = new AMap.Marker({
-          //         position: new AMap.LngLat(113.397428, 23.2,112.397428, 23.2),   // 经纬度对象，也可以是经纬度构成的一维数组[116.39, 39.9]
-          //         title: '默认图标'
-          //       });
-          //       var msg_label = '<span>'+ "测试"+'</span>';
-          //       marker.setLabel({
-          //         offset: new AMap.Pixel(20, -10), //显示位置
-          //         content: msg_label //显示内容
-          //       });
-          //       var msg_title = '测试使用的title';
-          //       marker.setTitle(msg_title);
-          //       marker.on("mouseover", function(e) {
-          //         marker.setTop(true);
-          //       });
-          //       marker.on("mouseout", function() {
-          //         marker.setTop(false);
-          //       });
-          //       map.add(marker);
-          //     }
-          //     // marker.setMap(mapObj);
-          //     marker.setPosition(lnglatXY);
-          //   })
-          // }
-          // var that = this
-          // map.on('click', function(e) {
-          //   var lnglatXY = [e.lnglat.getLng(),e.lnglat.getLat()];
-          //   regeocoder(lnglatXY,that)
-          //   that.ruleForm.long = e.lnglat.getLng()
-          //   that.ruleForm.lat = e.lnglat.getLat()
-          // });
-        })
-      }
+            var geocoder, marker
+            // function regeocoder(lnglatXY,that) {
+            //   AMap.plugin('AMap.Geocoder',function(){
+            //     var geocoder = new AMap.Geocoder({
+            //       radius: 1000,
+            //       extensions: "all"
+            //     });
+            //     var address;
+            //     geocoder.getAddress(lnglatXY, function(status, result) {
+            //       if (status === 'complete' && result.info === 'OK') {
+            //         address = result.regeocode.formattedAddress;
+            //         console.log("address"+address)
+            //         that.ruleForm.addr = address
+            //       }
+            //     });
+            //     if(!marker){
+            //       var marker = new AMap.Marker({
+            //         position: new AMap.LngLat(113.397428, 23.2,112.397428, 23.2),   // 经纬度对象，也可以是经纬度构成的一维数组[116.39, 39.9]
+            //         title: '默认图标'
+            //       });
+            //       var msg_label = '<span>'+ "测试"+'</span>';
+            //       marker.setLabel({
+            //         offset: new AMap.Pixel(20, -10), //显示位置
+            //         content: msg_label //显示内容
+            //       });
+            //       var msg_title = '测试使用的title';
+            //       marker.setTitle(msg_title);
+            //       marker.on("mouseover", function(e) {
+            //         marker.setTop(true);
+            //       });
+            //       marker.on("mouseout", function() {
+            //         marker.setTop(false);
+            //       });
+            //       map.add(marker);
+            //     }
+            //     // marker.setMap(mapObj);
+            //     marker.setPosition(lnglatXY);
+            //   })
+            // }
+            // var that = this
+            // map.on('click', function(e) {
+            //   var lnglatXY = [e.lnglat.getLng(),e.lnglat.getLat()];
+            //   regeocoder(lnglatXY,that)
+            //   that.ruleForm.long = e.lnglat.getLng()
+            //   that.ruleForm.lat = e.lnglat.getLat()
+            // });
+          })
+        }
 
-      function initMarkerClusterer() {
-        //添加聚合组件
-        map.plugin(['AMap.MarkerClusterer'], function() {
-          var cluster = AMap.MarkerClusterer(
-            map,     // 地图实例
-            markers)
-          cluster.setMaxZoom(12)
-        })
-      }
+        function initMarkerClusterer() {
+          //添加聚合组件
+          map.plugin(['AMap.MarkerClusterer'], function() {
+            var cluster = AMap.MarkerClusterer(
+              map,     // 地图实例
+              markers)
+            cluster.setMaxZoom(12)
+          })
+        }
 
+      }
     }
-  }
-};
-  /* 通过noticeId搜索通知列表获取索引值 */
-  function checkNoticeId(list,id){
-  let i=0;
-  for(let item of list){
-    if(item.noticeId===id) return i;
-    i++;
-  }
-}
-  /* 获取网络时间 */
-  function getNetDateTime() {
-  return request({
-    url: 'http://api.m.taobao.com/rest/api3.do?api=mtop.common.getTimestamp',
-    method: 'get'
-  })
-}
+  };
 </script>
 
 <style scoped lang="scss">
-.home {
-  blockquote {
-    padding: 10px 20px;
-    margin: 0 0 20px;
-    font-size: 17.5px;
-    border-left: 5px solid #eee;
+  .home {
+    blockquote {
+      padding: 10px 20px;
+      margin: 0 0 20px;
+      font-size: 17.5px;
+      border-left: 5px solid #eee;
+    }
+    hr {
+      margin-top: 20px;
+      margin-bottom: 20px;
+      border: 0;
+      border-top: 1px solid #eee;
+    }
+    .col-item {
+      margin-bottom: 20px;
+    }
+
+    ul {
+      padding: 0;
+      margin: 0;
+    }
+
+    font-family: "open sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 13px;
+    color: #676a6c;
+    overflow-x: hidden;
+
+    ul {
+      list-style-type: none;
+    }
+
+    h4 {
+      margin-top: 0px;
+    }
+
+    h2 {
+      margin-top: 10px;
+      font-size: 26px;
+      font-weight: 100;
+    }
+
+    p {
+      margin-top: 10px;
+
+      b {
+        font-weight: 700;
+      }
+    }
+
+    .update-log {
+      ol {
+        display: block;
+        list-style-type: decimal;
+        margin-block-start: 1em;
+        margin-block-end: 1em;
+        margin-inline-start: 0;
+        margin-inline-end: 0;
+        padding-inline-start: 40px;
+      }
+    }
   }
-  hr {
-    margin-top: 20px;
-    margin-bottom: 20px;
-    border: 0;
-    border-top: 1px solid #eee;
-  }
-  .col-item {
-    margin-bottom: 20px;
+  #my_container {
+    width:100%;
+    height: 100%;
   }
 
-  ul {
+  /**
+  * 信息窗口主体
+  */
+  .infoWindow {
+    position: relative !important;
+    box-shadow: none;
+    bottom: 0;
+    left: 0;
+    width: 15.75rem;
+    height: 13.5rem;
     padding: 0;
-    margin: 0;
+    color: #fff;
+    font-size: 12px;
   }
 
-  font-family: "open sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 13px;
-  color: #676a6c;
-  overflow-x: hidden;
-
-  ul {
-    list-style-type: none;
+  /**
+  * 信息窗口外壳
+  */
+  .amap-info-contentContainer .amap-info-sharp {
+    border-top: 8px solid rgba(0, 44, 71, .5);
   }
 
-  h4 {
-    margin-top: 0px;
+  /**
+  * 信息窗口箭头
+  */
+  .amap-info-content {
+    background-color: rgba(0, 44, 71, .5);
   }
 
-  h2 {
-    margin-top: 10px;
-    font-size: 26px;
-    font-weight: 100;
+  /**
+  * 关闭按钮
+  */
+  .amap-info-close {
+    right: 10px;
+    color: #fff;
   }
 
-  p {
-    margin-top: 10px;
-
-    b {
-      font-weight: 700;
-    }
+  #my_container .amap-marker-label {
+    border: 0 none;
+    background-color: #fff;
+    white-space: nowrap;
+    box-shadow: 0 0 5px 0 rgba(0, 0, 0, .3);
+    border-radius: 5px;
   }
 
-  .update-log {
-    ol {
-      display: block;
-      list-style-type: decimal;
-      margin-block-start: 1em;
-      margin-block-end: 1em;
-      margin-inline-start: 0;
-      margin-inline-end: 0;
-      padding-inline-start: 40px;
-    }
+  #my_container .amap-marker-label:after {
+    position: absolute;
+    border: 5px solid transparent;
+    border-top-color: #fff;
+    top: 19px;
+    left: 43%;
+    content: '';
+    width: 0;
+    height: 0;
   }
-}
-#my_container {
-  width:100%;
-  height: 100%;
-}
 
-/**
-* 信息窗口主体
-*/
-.infoWindow {
-  position: relative !important;
-  box-shadow: none;
-  bottom: 0;
-  left: 0;
-  width: 15.75rem;
-  height: 13.5rem;
-  padding: 0;
-  color: #fff;
-  font-size: 12px;
-}
-
-/**
-* 信息窗口外壳
-*/
-.amap-info-contentContainer .amap-info-sharp {
-  border-top: 8px solid rgba(0, 44, 71, .5);
-}
-
-/**
-* 信息窗口箭头
-*/
-.amap-info-content {
-  background-color: rgba(0, 44, 71, .5);
-}
-
-/**
-* 关闭按钮
-*/
-.amap-info-close {
-  right: 10px;
-  color: #fff;
-}
-
-#my_container .amap-marker-label {
-  border: 0 none;
-  background-color: #fff;
-  white-space: nowrap;
-  box-shadow: 0 0 5px 0 rgba(0, 0, 0, .3);
-  border-radius: 5px;
-}
-
-#my_container .amap-marker-label:after {
-  position: absolute;
-  border: 5px solid transparent;
-  border-top-color: #fff;
-  top: 19px;
-  left: 43%;
-  content: '';
-  width: 0;
-  height: 0;
-}
-
-.icon-s {
-  display: block;
-  margin: 0 auto;
-  width: 0;
-  height: 0;
-  border-style: solid;
-  border-width: 40px;
-  border-top-color: red;
-  border-right-color: blue;
-  border-bottom-color: yellow;
-  border-left-color: black;
-}
+  .icon-s {
+    display: block;
+    margin: 0 auto;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 40px;
+    border-top-color: red;
+    border-right-color: blue;
+    border-bottom-color: yellow;
+    border-left-color: black;
+  }
 </style>
 
 <!--首页元素布局-->
@@ -975,7 +974,7 @@ export default {
       "left-mid2 mid-mid mid-mid right-mid1"
       "left-mid3 mid-mid mid-mid right-mid2"
       "left-bottom left-bottom right-bottom right-bottom"
-    ;
+  ;
 
   }
   .top-panle{
@@ -1097,6 +1096,7 @@ export default {
     font-size:15px;
     margin: 8px;
     z-index: 1;
+    min-width: 100px;
   }
   .text1{
     text-align: center;
@@ -1124,4 +1124,5 @@ export default {
     padding: 5%;
   }
 </style>
+
 

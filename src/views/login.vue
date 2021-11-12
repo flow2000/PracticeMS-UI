@@ -58,6 +58,7 @@ import { getCodeImg } from "@/api/login";
 import Cookies from "js-cookie";
 import { encrypt, decrypt } from '@/utils/jsencrypt'
 
+
 export default {
   name: "Login",
   data() {
@@ -131,7 +132,7 @@ export default {
             Cookies.remove('rememberMe');
           }
           this.$store.dispatch("Login", this.loginForm).then(() => {
-            this.$router.push({ path: this.redirect || "/" }).catch(()=>{});
+            this.$router.push({ path:"/index_route" });
           }).catch(() => {
             this.loading = false;
             if (this.captchaOnOff) {

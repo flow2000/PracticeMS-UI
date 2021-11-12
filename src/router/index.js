@@ -60,10 +60,24 @@ export const constantRoutes = [
     redirect: 'index',
     children: [
       {
-        path: 'index',
+        path: '/index',
         component: (resolve) => require(['@/views/index'], resolve),
         name: '首页',
-        meta: { title: '首页', icon: 'dashboard', noCache: true, affix: true }
+        meta:{ title: '首页', icon: 'dashboard', noCache: true },
+        hidden: true
+      },
+      {
+        path: '/index_stu',
+        component: (resolve) => require(['@/views/index_stu'], resolve),
+        name: '学生端首页',
+        meta: { title: '首页(学生端)', icon: 'dashboard', noCache: true },
+        hidden: true,
+      },
+      {
+        path: '/index_route',
+        name: '首页路由',
+        component: (resolve) => require(['@/views/index_route'], resolve),
+        hidden:true,
       }
     ]
   },
