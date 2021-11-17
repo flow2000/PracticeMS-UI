@@ -962,7 +962,7 @@
 </style>
 
 <!--首页元素布局-->
-<style type="text/css">
+<style scoped type="text/css">
   #main-panle{
     display: grid;
     grid-template-columns: 0.2fr 0.5fr 0.75fr 0.5fr;
