@@ -59,11 +59,15 @@
           slot="dateCell"
           slot-scope="{date, data}">
             {{ data.day.split('-').slice(2).join('-') }}
-            <div v-for="item in punchDateList">
+            <div v-for="item in punchSucceedDate">
               <div v-if="item.indexOf(data.day)!==-1">
                 <p style="text-align: center"><i class="el-icon-success" style="color: #0ab685"/>签到成功</p>
               </div>
-              <div v-else></div>
+            </div>
+            <div v-for="item in punchFailedDate">
+              <div v-if="item.indexOf(data.day)!==-1">
+                <p style="text-align: center"><i class="el-icon-error" style="color: #dc1a2e"/>签到失败</p>
+              </div>
             </div>
         </template>
         </el-calendar>
@@ -122,8 +126,10 @@
         punchList:[],
         // 考勤总数
         punchTotal:null,
-        // 考勤记录日期
-        punchDateList:[],
+        // 成功考勤记录日期
+        punchSucceedDate:[],
+        // 失败考勤记录日期
+        punchFailedDate:[],
       }
     },
     created() {
@@ -148,13 +154,18 @@
       },
       /* 获取考勤记录 */
       getPunch(){
-
         //console.log(this.punchParams)
         listPunch(this.punchParams).then(response => {
           this.punchList=response.rows;
-          for(let item of this.punchList)
-            this.punchDateList.push(item.createTime);
-          //console.log(this.punchDateList)
+          // 提取考勤记录日期为列表
+          for(let item of this.punchList){
+            if(item.status==='0')
+              this.punchSucceedDate.push(item.createTime);
+            else
+              this.punchFailedDate.push(item.createTime);
+          }
+          console.log(this.punchSucceedDate)
+          console.log(this.punchFailedDate)
           this.punchTotal=response.total;
         })
       }
