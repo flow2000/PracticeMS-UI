@@ -76,12 +76,12 @@
       <div class="mc-ui-grid-item left-mid2" >
         <p class="title1">今日在岗人数</p>
         <hr/>
-        <p class="text1">48</p>
+        <p class="text1">{{this.todayPunchCounts}}</p>
       </div>
       <div class="mc-ui-grid-item left-mid3" >
         <p class="title1">完成日志人数</p>
         <hr/>
-        <p class="text1">48</p>
+        <p class="text1">{{this.todayPracLogCounts}}</p>
       </div>
 
       <div class="mc-ui-grid-item mid-mid">
@@ -89,7 +89,7 @@
       </div>
 
       <div class="mc-ui-grid-item right-mid1">
-        <p class="title1">实习学生考勤统计</p>
+        <p class="title1">本周实习学生考勤统计</p>
         <hr/>
         <div id="chart3" style="
         width: 110%;height: 90%;position:relative;
@@ -124,7 +124,8 @@
   import  location from '@/assets/images/location.png'
   import  locationRed from '@/assets/images/location-red.png'
   import bus from '../bus.js'
-  import getters from '../store/getters'
+  import {getTodayPunchList} from '../api/punch/punch'
+  import {getTodayPracLogList} from '../api/practicelog/practicelog'
 
   export default {
     name: "index",
@@ -184,6 +185,10 @@
           deptId: undefined,
           role: '实习学生'
         },
+        // 今日打卡成功人数
+        todayPunchCounts:null,
+        // 今日日志提交份数
+        todayPracLogCounts:null,
       };
     },
     created() {
@@ -195,6 +200,10 @@
       this.getUserList();
       // 绘图
       this.drawLine();
+      // 获取今天打卡成功人数
+      this.getTodayPunchList();
+      // 获取今天日志提交份数
+      this.getTodayPracLogList();
 
       // 地图初始化
       var that = this
@@ -226,10 +235,31 @@
           }
         });
       },
+
+      /* 获取今天打卡成功人数 */
+      getTodayPunchList(){
+        getTodayPunchList().then(response=>{
+          if(response.data.punchCount!==null)
+            this.todayPunchCounts=response.data.punchCount;
+          else this.todayPunchCounts=0;
+        })
+      },
+
+      /* 获取今天完成日志人数 */
+      getTodayPracLogList(){
+        getTodayPracLogList().then(response=>{
+          if(response.data.PracLogCount!==null){
+            this.todayPracLogCounts=response.data.PracLogCount
+          }
+          else this.todayPracLogCounts=0;
+        })
+      },
       /* 获取管理用户列表 */
       getUserList(){
         listUser(this.queryParams).then(response=>{
-          this.userTotal=response.total;
+          if(response.total!==null)
+            this.userTotal=response.total;
+          else this.userTotal=0;
           this.userList=response.row;
         })
       },
@@ -453,8 +483,8 @@
               lonlats.push(tude)
               companyNames.push(response.data[i].companyName)
             }
-            console.log(companyNames)
-            console.log(lonlats)
+            //console.log(companyNames)
+            //console.log(lonlats)
 
             // let lonlat = [[108.365386, 22.843292], [108.238089, 22.848063], [108.244248, 22.852298]]
             for (let i = 0; i < lonlats.length; i++) {

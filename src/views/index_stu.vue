@@ -147,9 +147,11 @@
           this.user = response.data;
           //console.log(this.user)
           this.roleGroup = response.roleGroup;
-          if(this.roleGroup==="实习学生"){
-            this.$router.replace({ path: "/index_stu" }).catch(()=>{});
+          if(this.roleGroup!=="实习学生"){
+            this.$message.error('请使用实习学生角色打开首页(学生端)');
+            this.$router.replace({ path: "/index" }).catch(()=>{});
           }
+
         });
       },
       /* 获取考勤记录 */
