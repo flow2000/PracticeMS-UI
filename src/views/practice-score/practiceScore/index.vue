@@ -111,12 +111,12 @@
 ..    <el-table-column label="最终成绩" align="center" prop="finalScore" />
       <el-table-column label="实习鉴定表" align="center" prop="appraisal" >
         <template scope="scope">
-          <el-link type="primary" :href="scope.row.appraisal" target=_blank>{{scope.row.appraisal==""?"未上传":scope.row.nickname+"的实习鉴定"}}</el-link>
+          <el-link type="primary" :href="scope.row.appraisal" target=_blank>{{scope.row.appraisal==null?"未上传":scope.row.nickname+"的实习鉴定"}}</el-link>
         </template>
       </el-table-column>
       <el-table-column label="实习总结" align="center" prop="summary" >
         <template scope="scope">
-          <el-link type="primary" :href="scope.row.summary" target=_blank>{{scope.row.summary==""?"未上传":scope.row.nickname+"的实习总结"}}</el-link>
+          <el-link type="primary" :href="scope.row.summary" target=_blank>{{scope.row.summary==null?"未上传":scope.row.nickname+"的实习总结"}}</el-link>
         </template>
       </el-table-column>
       <el-table-column label="状态" align="center" prop="status" width="60">
@@ -300,6 +300,7 @@ export default {
 
   data() {
     return {
+      user: {},
       // 遮罩层
       loading: true,
       // 导出遮罩层
@@ -362,6 +363,7 @@ export default {
         appraisal: null,
         summary: null,
         status: null,
+        teacherId: null
       },
       // 表单参数
       form: {},
@@ -377,25 +379,22 @@ export default {
     };
   },
   created() {
-    this.getList();
+    getUserProfile().then(response => {
+      this.user = response.data
+      //加载信息表
+      this.getList()
+    })
   },
   methods: {
     /** 查询实习成绩列表 */
     getList() {
       this.loading = true;
-      // getUserProfile().then(PromiseValue =>{
-      //     console.log(PromiseValue.data.userId);
-      //     this.permissionLis = PromiseValue.data.roles;
-      //     for (var i = 0;i<this.permissionLis.length;i++){
-      //       if(this.permissionLis[i].roleKey=="student")
-      //         this.queryParams.userId=PromiseValue.data.userId;
-      //     }
-      //   }
-      // );
+      this.queryParams.teacherId = this.user.userId
       listPracticeScore(this.queryParams).then(response => {
         this.practiceScoreList = response.rows;
         this.total = response.total;
         this.loading = false;
+        console.log(this.practiceScoreList);
       });
     },
     // 取消按钮
@@ -522,8 +521,10 @@ export default {
     /** 修改按钮操作 */
     handleUpdate(row) {
       this.reset();
-      const scoreId = row.scoreId || this.ids
-      getPracticeScore(scoreId).then(response => {
+      const scoreId = row.scoreId || this.ids;
+      this.queryParams.teacherId = this.user.userId;
+      this.queryParams.userId = row.userId;
+      getPracticeScore(this.queryParams).then(response => {
         this.form = response.data;
         this.open = true;
         this.title = "修改实习成绩";

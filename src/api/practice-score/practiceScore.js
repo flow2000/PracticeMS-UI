@@ -10,10 +10,11 @@ export function listPracticeScore(query) {
 }
 
 // 查询实习成绩详细
-export function getPracticeScore(scoreId) {
+export function getPracticeScore(query) {
   return request({
-    url: '/practice-score/practiceScore/' + scoreId,
-    method: 'get'
+    url: '/practice-score/practiceScore/' ,
+    method: 'get',
+    params: query
   })
 }
 

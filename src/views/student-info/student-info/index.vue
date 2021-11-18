@@ -34,7 +34,8 @@
       <el-table-column label="实习单位" align="center" prop="info.baseInfo.companyName"/>
       <el-table-column label="实习岗位" align="center" prop="info.postName"/>
       <el-table-column label="实习单位联系电话" align="center" prop="info.baseInfo.basePhone"/>
-
+      <el-table-column label="最后一次打卡日期" align="center" prop="punchTime"/>
+      <el-table-column label="最后一次日志填写" align="center" prop="logTime"/>
     </el-table>
 
     <pagination
@@ -50,6 +51,8 @@
 <script>
   import { stuInfoList } from '@/api/arrangement/arrangement'
   import { getUserProfile } from '../../../api/system/user'
+  import { listPunch, getPunch, delPunch, addPunch, updatePunch, exportPunch } from "@/api/punch/punch";
+  import { listPracticelog, getPracticelog, delPracticelog, addPracticelog, updatePracticelog, exportPracticelog } from "@/api/practicelog/practicelog";
 
   export default {
     name: 'Arrangement',
@@ -120,6 +123,7 @@
           this.arrangementList = response.rows
           this.total = response.total
           this.loading = false
+          console.log(this.arrangementList);
         })
       },
       // 取消按钮
