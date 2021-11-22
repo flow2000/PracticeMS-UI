@@ -82,7 +82,7 @@
 
 
       <el-table-column label="操作人员用户名" align="center" prop="createBy" width="150" />
-      <el-table-column label="创建人姓名" align="center" prop="nickname" width="100" />
+      <el-table-column label="创建人姓名" align="center" prop="nickname" width="150" />
       <el-table-column label="创建时间" align="center" prop="createTime" width="120">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.createTime, '{y}-{m}-{d}') }}</span>

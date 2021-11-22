@@ -9,6 +9,14 @@ export function listPracticeScore(query) {
   })
 }
 
+// 查询设置项
+export function listSetting() {
+  return request({
+    url: '/practice-score/practiceScore/setting/list',
+    method: 'get',
+  })
+}
+
 // 查询实习成绩详细
 export function getPracticeScore(query) {
   return request({
@@ -27,12 +35,29 @@ export function addPracticeScore(data) {
   })
 }
 
+// 修改设置信息
+export function updateSetting(data) {
+  return request({
+    url: '/practice-score/practiceScore/setting/edit',
+    method: 'put',
+    data: data
+  })
+}
+
 // 修改实习成绩
 export function updatePracticeScore(data) {
   return request({
     url: '/practice-score/practiceScore',
     method: 'put',
     data: data
+  })
+}
+
+// 计算成绩
+export function calculate(scoreId) {
+  return request({
+    url: '/practice-score/practiceScore/calculate' + scoreId,
+    method: 'put'
   })
 }
 
