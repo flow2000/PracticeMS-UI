@@ -19,10 +19,10 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="实习单位联系人" prop="contacts">
+      <el-form-item label="联系人" prop="contacts">
         <el-input
           v-model="queryParams.contacts"
-          placeholder="请输入实习单位联系人"
+          placeholder="请输入联系人"
           clearable
           size="small"
           @keyup.enter.native="handleQuery"
@@ -85,7 +85,7 @@
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="单位名称" align="center" prop="companyName" />
       <el-table-column label="详细地址" align="center" prop="address" />
-      <el-table-column label="实习单位联系人" align="center" prop="contacts" />
+      <el-table-column label="联系人" align="center" prop="contacts" />
       <el-table-column label="联系电话" align="center" prop="phone" />
       <el-table-column label="单位性质" align="center" prop="nature" />
       <el-table-column label="法定代表" align="center" prop="leader" />
@@ -144,8 +144,8 @@
         <el-form-item label="经纬度" prop="tude" v-show="false">
           <el-input v-model="form.tude" id="tude" />
         </el-form-item>
-        <el-form-item label="实习单位联系人" prop="contacts">
-          <el-input v-model="form.contacts" placeholder="请输入实习单位联系人" />
+        <el-form-item label="联系人" prop="contacts">
+          <el-input v-model="form.contacts" placeholder="请输入联系人" />
         </el-form-item>
         <el-form-item label="联系电话" prop="phone">
           <el-input v-model="form.phone" placeholder="请输入联系电话" />
@@ -565,7 +565,7 @@ export default {
     /** 删除按钮操作 */
     handleDelete(row) {
       const locationIds = row.locationId || this.ids;
-      this.$confirm('是否确认删除地点信息编号为"' + locationIds + '"的数据项?', "警告", {
+      this.$confirm('确认删除' + row.companyName + '?', "警告", {
           confirmButtonText: "确定",
           cancelButtonText: "取消",
           type: "warning"
