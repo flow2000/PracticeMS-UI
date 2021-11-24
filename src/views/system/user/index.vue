@@ -173,7 +173,7 @@
               icon="el-icon-folder"
               size="mini"
               @click="handleArchive"
-              v-hasPermi="['system:user:export']"
+              v-hasPermi="['system:user:archive']"
             >数据归档
             </el-button>
           </el-col>
