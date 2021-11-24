@@ -19,6 +19,20 @@ export function getNoPracticeUser(query) {
   })
 }
 
+// 数据归档
+export function dataArchive(year) {
+  return request({
+    url: '/system/user/archived',
+    method: 'post',
+    headers: {
+      'Content-Type': 'applicatino/json;charset=UTF-8'
+    },
+    params: {
+      year: year
+    }
+  })
+}
+
 // 查询用户详细
 export function getUser(userId) {
   return request({
