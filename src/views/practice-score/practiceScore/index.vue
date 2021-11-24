@@ -58,6 +58,8 @@
           plain
           icon="el-icon-magic-stick"
           size="mini"
+          :disabled="multiple"
+          @click="handleCalculate"
         >重新计算系统成绩</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -340,7 +342,7 @@
 </template>
 
 <script>
-import { listPracticeScore, getPracticeScore, delPracticeScore, addPracticeScore, updatePracticeScore, exportPracticeScore , updateScoreStatus,listSetting,updateSetting} from "@/api/practice-score/practiceScore";
+import { listPracticeScore, getPracticeScore, delPracticeScore, addPracticeScore,calculate, updatePracticeScore, exportPracticeScore , updateScoreStatus,listSetting,updateSetting} from "@/api/practice-score/practiceScore";
 import { getToken , getInfo} from "@/utils/auth";
 import { getUserProfile } from "@/api/system/user";
 
@@ -678,6 +680,20 @@ export default {
     handleSetting(){
       this.powerWeight=true;
       this.getSettingList();
+    },
+    handleCalculate(row){
+      const scoreIds = row.scoreId || this.ids;
+
+      this.$confirm('是否确认计算这 ' + scoreIds.length + '条数据?', "警告", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      }).then(function() {
+        return calculate(scoreIds);
+      }).then(() => {
+        this.getList();
+        this.msgSuccess("计算完成");
+      }).catch(() => {});
     }
 
   }

@@ -56,7 +56,7 @@ export function updatePracticeScore(data) {
 // 计算成绩
 export function calculate(scoreId) {
   return request({
-    url: '/practice-score/practiceScore/calculate' + scoreId,
+    url: '/practice-score/practiceScore/calculate/' + scoreId,
     method: 'put'
   })
 }
