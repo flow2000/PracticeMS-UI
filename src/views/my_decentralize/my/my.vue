@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
 
-    <el-steps v-if="practiceInfo.status != 2 " :active="practiceInfo.status" finish-status="success" simple style="margin-top: 20px">
+    <el-steps v-if="(practiceInfo.info == null  && practiceInfo.status == 0)  || (practiceInfo.location == null && (practiceInfo.status == 1 || practiceInfo.status == 2) ) ||  practiceInfo.status == 3" :active="practiceInfo.status" finish-status="success" simple style="margin-top: 20px">
       <el-step title="已提交" ></el-step>
       <el-step title="审核中" ></el-step>
       <el-step v-if="practiceInfo.status != 3" title="已通过" ></el-step>
@@ -55,15 +55,6 @@
     <el-descriptions-item>
       <template slot="label">
         <i class="el-icon-office-building"></i>
-        实习公司
-      </template>
-      <span v-if="practiceInfo.info != null">{{ practiceInfo.info.baseInfo.companyName }}</span>
-      <span v-if="practiceInfo.location != null">{{ practiceInfo.location.companyName }}</span>
-      <span v-if="practiceInfo.info == null && practiceInfo.location == null">暂无</span>
-    </el-descriptions-item>
-    <el-descriptions-item>
-      <template slot="label">
-        <i class="el-icon-office-building"></i>
         实习详细地点
       </template>
       <span v-if="practiceInfo.info != null">{{ practiceInfo.info.baseInfo.baseAddress }}</span>
@@ -73,7 +64,7 @@
   </el-descriptions>
 
     <div v-if="practiceInfo.info == null && practiceInfo.location == null && this.prePracticeInfo.length == 0"><span>您还未进行实习，<el-button type="text" @click="dialogVisible = true">点击此处</el-button>申请分散实习</span></div>
-    <div v-if="practiceInfo.status == 3"><span>您的申请被拒绝，<el-button type="text" @click="dialogVisible = true">点击此处</el-button>重新申请分散实习</span></div>
+    <div v-if="practiceInfo.status == 3"><span>您的申请被拒绝，拒绝理由：{{practiceInfo.notes}}，<el-button type="text" @click="dialogVisible = true">点击此处</el-button>重新申请分散实习</span></div>
     <el-dialog :visible.sync="dialogVisible" :title="title" width="600px" append-to-body>
       <el-form ref="form" :model="form" label-width="80px" v-if="(practiceInfo.info == null && practiceInfo.location == null && this.prePracticeInfo.length == 0) || practiceInfo.status == 3">
         <el-form-item label="学生编号" prop="userId" v-show="false">
@@ -88,8 +79,15 @@
         <el-form-item label="单位名称" prop="companyName">
           <el-input v-model="form.companyName" placeholder="请输入单位名称" />
         </el-form-item>
-        <el-form-item label="所属省份" prop="province">
-          <el-input v-model="form.province" placeholder="请输入所属省份" />
+        <el-form-item label="所属地区" prop="province">
+          <el-col :span="12" style="width: 100%;">
+              <el-cascader v-model="form.province" style="width: 100%;" placeholder="可搜索" :options="citys" filterable clearable @change="handleChangeArea">
+                <template slot-scope="{ node, data }">
+                  <span>{{ data.label }}</span>
+                  <span v-if="!node.isLeaf"> ({{ data.children.length }}) </span>
+                </template>
+              </el-cascader>
+          </el-col>
         </el-form-item>
         <el-form-item label="详细地址" prop="address">
           <el-input v-model="form.address" type="textarea" id="search" placeholder="请输入详细地址" />
@@ -116,9 +114,6 @@
         <el-form-item label="经营范围" prop="businessScope">
           <el-input v-model="form.businessScope" placeholder="请输入内容" />
         </el-form-item>
-        <el-form-item label="备注" prop="notes">
-          <el-input v-model="form.notes" placeholder="请输入内容" />
-        </el-form-item>
         <el-form-item label="实习证明" prop="acceptanceCertificate">
           <!--    上传分散实习证明      -->
           <el-upload
@@ -136,7 +131,7 @@
             :data="{companyName:form.companyName,address:form.address,
             tude:form.tude,contacts:form.contacts,phone:form.phone,
             nature:form.nature,leader:form.leader,flag:remark,
-            businessScope:form.businessScope,notes:form.notes,stuId:practiceInfo.student.userId,nickName:practiceInfo.student.nickName}"
+            businessScope:form.businessScope,stuId:practiceInfo.student.userId,nickName:practiceInfo.student.nickName}"
             multiple
           >
             <i class="el-icon-upload"></i>
@@ -157,6 +152,7 @@
 <script>
 import { getStudentPracticeInfo } from "@/api/decentralize/decentralize";
 import { getToken} from "@/utils/auth";
+import { regionData, CodeToText } from 'element-china-area-data'
 import {AMapManager, lazyAMapApiLoaderInstance} from 'vue-amap'
 let amapManager = new AMapManager()
 
@@ -169,7 +165,9 @@ export default {
       prePracticeInfo : [],
       dialogVisible: false,
       remark : null,
-      form : [],
+      form : {
+        businessScope:''
+      },
       title: "",
       upload: {
         // 是否禁用上传
@@ -229,9 +227,6 @@ export default {
           geocoder.getAddress([lng, lat], function (status, result) {
             if (status === 'complete' && result.info === 'OK') {
               if (result && result.regeocode) {
-                // console.log(result.regeocode.aois[0].location.lat)
-                // console.log(result.regeocode.aois[0].location.lng)
-                // console.log("地址为:"+result.regeocode.formattedAddress)
                 self.address = result.regeocode.formattedAddress
                 self.searchKey = result.regeocode.formattedAddress
                 self.$nextTick()
@@ -306,7 +301,39 @@ export default {
             }
           }
         }
-      ]
+      ],
+      kuaidi: {
+        name: '',
+        departmentName: '',
+        attribute: '',
+        destinationCity: '',
+        addressee: '',
+        consigneeAddress: '',
+        expressCompany: '',
+        courierNumber: '',
+      },
+      rules: {
+        attribute: [
+          { required: true, message: '请选择快递属性', trigger: 'change' }
+        ],
+        destinationCity: [
+          { required: true, message: '请选择城市', trigger: 'change' }
+        ],
+        addressee: [
+          { required: true, message: '请输入收件单位', trigger: 'blur' }
+        ],
+        consigneeAddress: [
+          { required: true, message: '请输入收件地址', trigger: 'blur' }
+        ],
+        expressCompany: [
+          { required: true, message: '请输入快递公司', trigger: 'blur' }
+        ],
+        courierNumber: [
+          { required: true, message: '请输入快递单号', trigger: 'blur' }
+        ],
+      },
+      attributeList: ['客户', '供应商', '其他'],
+      citys: regionData,
     }
   },
   created() {
@@ -318,6 +345,7 @@ export default {
       this.loading = true;
       getStudentPracticeInfo().then(response => {
         this.practiceInfo = response.data;
+        console.log(this.practiceInfo)
         if(this.practiceInfo.location != null) this.practiceInfo.status = parseInt(this.practiceInfo.status)
         if(response.data.status == '1'){
           this.prePracticeInfo = response.data;
@@ -339,8 +367,8 @@ export default {
     },
     // 取消按钮
     cancel() {
-      this.open = false;
-      this.reset();
+      this.dialogVisible = false;
+      this.getStudentPracticeInfo();
     },
     /** 地点信息搜索 */
     initSearch() {
@@ -389,12 +417,20 @@ export default {
     },
     /** 提交上传按钮 */
     submitForm() {
-      this.form.address = this.form.province + this.form.address;
+      this.form.address = this.kuaidi.destinationCity + this.form.address;
       this.$refs["form"].validate(valid => {
         if (valid) {
           this.$refs.upload.submit();
         }
       });
+      this.cancel();
+    },
+    handleChangeArea(value) {
+      let cityNames = []
+      value.forEach(e => {
+        cityNames.push(CodeToText[e])
+      });
+      this.kuaidi.destinationCity = cityNames.join('')
     },
     // 文件上传中处理
     handleFileUploadProgress(event, file, fileList) {
@@ -410,5 +446,3 @@ export default {
 }
 
 </script>
-<style>
-</style>

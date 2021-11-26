@@ -68,20 +68,20 @@
       </div>
 
       <div class="mc-ui-grid-item left-mid1" >
-        <p class="title1">管理实习学生人数</p>
+        <p class="title1">实习学生人数</p>
         <hr/>
-        <p class="text1">56</p>
+        <p class="text1">{{this.screenData.practiceStudentNum}}</p>
         <!--<p class="data1">在岗实习人数：50</p>-->
       </div>
       <div class="mc-ui-grid-item left-mid2" >
-        <p class="title1">今日打卡人数</p>
+        <p class="title1">今日在岗人数</p>
         <hr/>
-        <p class="text1">48</p>
+        <p class="text1">{{this.screenData.nowOnGuardNum}}</p>
       </div>
       <div class="mc-ui-grid-item left-mid3" >
-        <p class="title1">今日日志提交份数</p>
+        <p class="title1">今日完成日志人数</p>
         <hr/>
-        <p class="text1">48</p>
+        <p class="text1">{{this.screenData.nowCompleteLogNum}}</p>
       </div>
 
       <div class="mc-ui-grid-item mid-mid">
@@ -89,7 +89,7 @@
       </div>
 
       <div class="mc-ui-grid-item right-mid1">
-        <p class="title1">本周实习打卡统计</p>
+        <p class="title1">本周实习出勤情况</p>
         <hr/>
         <div id="chart3" style="
         width: 110%;height: 90%;position:relative;
@@ -121,10 +121,14 @@ import * as echarts from 'echarts'
 import { listNotice } from "@/api/system/notice";
 import ScrollPane from '../layout/components/TagsView/ScrollPane'
 import request from '@/utils/request'
+import { getScreenData } from "@/api/arrangement/arrangement";
+import { listUserInfoByRole } from "@/api/practice-info/practiceInfo";
 import { getTude } from '@/api/location/info'
 import { getBaseTude } from '@/api/system/baseInfo'
 import  location from '@/assets/images/location.png'
 import  locationRed from '@/assets/images/location-red.png'
+import { getTodayPunchList , selectNowWeekAttendanceList } from "@/api/punch/punch";
+import { getTodayPracLogList } from "@/api/practicelog/practicelog";
 import bus from '../bus.js'
 
 export default {
@@ -170,19 +174,34 @@ export default {
         start_work_time: '',
         end_work_time: ''
 
-      }
+      },
+      userQueryParams : {
+        roleName : null
+      },
+      screenData : {
+        //实习学生人数
+        practiceStudentNum : 0,
+        //今日在岗人数
+        nowOnGuardNum : 0,
+        //今日完成日志人数
+        nowCompleteLogNum : 0,
+        //分散实习人数
+        scatteredPracticeNum : 0,
+        //集中实习人数
+        focusPracticeNum : 0
+      },
+      thisWeekData : []
     };
   },
   created() {
     // 获取当前用户信息
     this.getUser();
-
+    //初始化大屏数据
+    this.initScreenData();
     // 获取最近的公告
     //this.getNoticeList();
   },
   mounted(){
-    // 绘图
-    this.drawLine();
     // 地图初始化
     var that = this
     this.init(that)
@@ -200,6 +219,30 @@ export default {
     // this.showNetDateTime();
   },
   methods: {
+    initScreenData(){
+      this.userQueryParams.roleName = 'student'
+      listUserInfoByRole(this.userQueryParams).then(response => {
+        this.screenData.practiceStudentNum = response.total
+      });
+      getTodayPunchList().then(response => {
+        this.screenData.nowOnGuardNum = response.data.punchCount
+      });
+      getTodayPracLogList().then(response => {
+        this.screenData.nowCompleteLogNum = response.data.PracLogCount
+      });
+      getScreenData().then(response => {
+        var that = this
+        //分散实习人数
+        this.screenData.scatteredPracticeNum = response.data.scatteredPracticeNum
+        //集中实习人数
+        this.screenData.focusPracticeNum = response.data.focusPracticeNum
+        selectNowWeekAttendanceList().then(response => {
+           that.thisWeekData = response.data
+          //绘图
+          this.drawLine();
+        });
+      });
+    },
     goTarget(href) {
       window.open(href, "_blank");
     },
@@ -341,7 +384,7 @@ export default {
       });
       chart2.setOption({
         title: {
-          text: 'Referer of a Website',
+          text: '实习类型情况',
           subtext: 'Fake Data',
           left: 'center'
         },
@@ -354,15 +397,12 @@ export default {
         },
         series: [
           {
-            name: 'Access From',
+            name: '人数',
             type: 'pie',
             radius: '50%',
             data: [
-              { value: 1048, name: 'Search Engine' },
-              { value: 735, name: 'Direct' },
-              { value: 580, name: 'Email' },
-              { value: 484, name: 'Union Ads' },
-              { value: 300, name: 'Video Ads' }
+              { value: parseInt(this.screenData.scatteredPracticeNum), name: '分散实习' },
+              { value: parseInt(this.screenData.focusPracticeNum), name: '集中实习' }
             ],
             emphasis: {
               itemStyle: {
@@ -395,7 +435,7 @@ export default {
         },
         series: [
           {
-            data: [120, 200, 150, 80, 70, 110, 130],
+            data: this.thisWeekData,
             type: 'bar'
           }
         ],

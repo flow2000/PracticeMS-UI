@@ -223,7 +223,7 @@
                 <!--用户数据-->
                 <el-col :span="20" :xs="24">
                   <el-form :model="queryParams" ref="studentQueryForm" :inline="true" v-show="showSearch" label-width="68px">
-                    <el-form-item label="用户名称" prop="userName">
+                    <el-form-item label="学号" prop="userName">
                       <el-input
                         v-model="queryParams.userName"
                         placeholder="请输入用户名称"
@@ -233,27 +233,15 @@
                         @keyup.enter.native="handleQuery"
                       />
                     </el-form-item>
-                    <el-form-item label="手机号码" prop="phonenumber">
+                    <el-form-item label="学生姓名" prop="nickName">
                       <el-input
-                        v-model="queryParams.phonenumber"
-                        placeholder="请输入手机号码"
+                        v-model="queryParams.nickName"
+                        placeholder="请输入用户名称"
                         clearable
                         size="small"
                         style="width: 240px"
                         @keyup.enter.native="handleQuery"
                       />
-                    </el-form-item>
-                    <el-form-item label="创建时间" prop="createTime">
-                      <el-date-picker
-                        v-model="dateRange"
-                        size="small"
-                        style="width: 240px"
-                        value-format="yyyy-MM-dd"
-                        type="daterange"
-                        range-separator="-"
-                        start-placeholder="开始日期"
-                        end-placeholder="结束日期"
-                      ></el-date-picker>
                     </el-form-item>
                     <el-form-item>
                       <el-button type="primary" icon="el-icon-search" size="mini" @click="handleUserQuery">搜索</el-button>
@@ -334,7 +322,7 @@
         placeholder="选择结束时间">
       </el-date-picker>
     </el-form-item>
-		<el-form-item label="指导老师" prop="teacherId" v-if="this.title =='修改实习信息'">
+		<el-form-item label="指导老师" prop="teacherId" v-if="this.title =='实习分配'">
 		  <el-select v-model="form.teacherId" filterable placeholder="请选择">
 		      <el-option
 		        v-for="teacher in teachers"
@@ -363,7 +351,7 @@
 </template>
 
 <script>
-import { listPracticeInfo, changeStatus , getPracticeInfo, delPracticeInfo,listUserInfoByRole, addPracticeInfo, updatePracticeInfo, exportPracticeInfo } from "@/api/practice-info/practiceInfo";
+import { listPracticeInfo, changeStatus , allocationPractice , getPracticeInfo, delPracticeInfo,listUserInfoByRole, addPracticeInfo, updatePracticeInfo, exportPracticeInfo } from "@/api/practice-info/practiceInfo";
 import { listUser , getNoPracticeUser } from "@/api/system/user";
 import { getBaseTude } from '@/api/system/baseInfo'
 import { treeselect } from "@/api/system/dept";
@@ -416,8 +404,8 @@ export default {
       userList: null,
       // 总条数
       total: 0,
-	  //指导老师数
-	  ttotal : 0 ,
+      //指导老师数
+      ttotal : 0 ,
       //实习基地数
       btotal : 0 ,
       //实习学生数量
@@ -461,7 +449,9 @@ export default {
         teacherId: null,
           baseId : null ,
 		    locationName : null,
-		    teacherName : null
+		    teacherName : null,
+          nickName : null,
+          userName : null
 	  },
       statusChangeParams:{
         infoId:null,
@@ -476,9 +466,6 @@ export default {
       rules: {
         locationId: [
           { required: true, message: "地点ID不能为空", trigger: "blur" }
-        ],
-        postName: [
-          { required: true, message: "岗位名称不能为空", trigger: "blur" }
         ],
         entryTime: [
           { required: true, message: "起始时间不能为空", trigger: "blur" }
@@ -532,7 +519,6 @@ export default {
     },
     /** 状态改变操作 */
     changeStatus(row) {
-      console.log(row)
       let that = this
       let text = row.status ==="0" ? "有效" : "无效";
       this.$confirm('是否将ID为 '+row.infoId+' 的实习信息状态改为'+text,"状态变更",{
@@ -540,7 +526,6 @@ export default {
         cancelButtonText:"取消",
         type:"warning"
       }).then(function () {
-        console.log(row)
         that.statusChangeParams.infoId = row.infoId
         that.statusChangeParams.status = row.status
         return changeStatus(that.statusChangeParams)
@@ -606,20 +591,22 @@ export default {
       return row.userId
     },
     getTeacherList() {
+      var that = this
       this.loading = true;
       this.userQueryParams.roleName = 'teacher'
       listUserInfoByRole(this.userQueryParams).then(response => {
         this.teachers = response.rows;
         this.ttotal = response.total;
-      var param = '[{'+'"value" : "'+response.rows[0].userId+'","label" : "' + response.rows[0].nickName + '"}'
-      for(var i = 1 ; i < this.ttotal ; i++){
-        param += ',{'+'"value" : "'+response.rows[i].userId+'","label" : "' + response.rows[i].nickName + '"}'
-      }
-      param += ']'
-      var dataMap = JSON.parse(param);  //这是一个json数组 ，原数组
-      var optionArr = [];  //定义一个数组用来存放
-      optionArr.push(dataMap)
-      this.teachers = optionArr[0]
+        console.log(response)
+        var param = '[{'+'"value" : "'+response.rows[0].userId+'","label" : " ' + response.rows[0].nickName +'（' + response.rows[0].guideStudent.length + '/' + response.rows[0].expectNumber +'）'+ '"}'
+        for(var i = 1 ; i < this.ttotal ; i++){
+          param += ',{'+'"value" : "'+response.rows[i].userId+'","label" : "' + response.rows[i].nickName +'（' + response.rows[i].guideStudent.length + '/' + response.rows[i].expectNumber +'）'+ '"}'
+        }
+        param += ']'
+        var dataMap = JSON.parse(param);  //这是一个json数组 ，原数组
+        var optionArr = [];  //定义一个数组用来存放
+        optionArr.push(dataMap)
+        this.teachers = optionArr[0]
         this.loading = false;
       });
     },
@@ -637,24 +624,6 @@ export default {
         var optionArr = [];  //定义一个数组用来存放
         optionArr.push(dataMap)
         this.baseInfos = optionArr[0]
-        this.loading = false;
-      });
-    },
-    getStudents() {
-      this.loading = true;
-      this.userQueryParams.roleName = 'student'
-      listUserInfoByRole(this.userQueryParams).then(response => {
-        this.teachers = response.rows;
-        this.ttotal = response.total;
-        var param = '[{'+'"value" : "'+response.rows[0].userId+'","label" : "' + response.rows[0].nickName + ' : '+ response.rows[0].userName + '"}'
-        for(var i = 1 ; i < this.ttotal ; i++){
-          param += ',{'+'"value" : "'+response.rows[i].userId+'","label" : "' + response.rows[i].nickName + ' : '+ response.rows[i].userName + '"}'
-        }
-        param += ']'
-        var dataMap = JSON.parse(param);  //这是一个json数组 ，原数组
-        var optionArr = [];  //定义一个数组用来存放
-        optionArr.push(dataMap)
-        this.students = optionArr[0]
         this.loading = false;
       });
     },
@@ -745,7 +714,6 @@ export default {
       this.$nextTick(function () {
         getPracticeInfo(infoId).then(response => {
           this.form = response.data;
-          console.log(this.form)
           this.studentIds = this.form.studentsId;
           this.studentIds_h = this.form.studentsId
           this.title = "实习分配";
@@ -754,14 +722,15 @@ export default {
       })
     },
     submitAllocation(){
+      console.log(this.studentIds)
       this.form.studentIds = this.studentIds
       this.form.stuStrings = this.studentIds.join(',')
-      this.form.teacherId = null
       if (this.form.infoId != null) {
-        updatePracticeInfo(this.form).then(response => {
+        allocationPractice(this.form).then(response => {
           this.msgSuccess("分配成功");
           this.open = false;
           this.getList();
+          this.getTeacherList();
         });
       }
     },

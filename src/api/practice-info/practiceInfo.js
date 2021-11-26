@@ -47,10 +47,19 @@ export function updatePracticeInfo(data) {
   })
 }
 
-// 修改实习信息
+// 修改实习信息状态
 export function changeStatus(data) {
   return request({
     url: '/practice-info/practiceInfo/changeStatus',
+    method: 'post',
+    data: data
+  })
+}
+
+// 实习分配
+export function allocationPractice(data) {
+  return request({
+    url: '/practice-info/practiceInfo/allocationPractice',
     method: 'post',
     data: data
   })

@@ -41,16 +41,6 @@
     </el-form>
 
     <el-row :gutter="10" class="mb8">
-<!--      <el-col :span="1.5">
-        <el-button
-          type="primary"
-          plain
-          icon="el-icon-plus"
-          size="mini"
-          @click="handleAdd"
-          v-hasPermi="['arrangement:arrangement:add']"
-        >新增</el-button>
-      </el-col>-->
       <el-col :span="1.5">
         <el-button
           type="success"
@@ -89,21 +79,33 @@
 
     <el-table v-loading="loading" :data="arrangementList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="实习安排ID" align="center" prop="arrangementId" v-if="false" />
-      <el-table-column label="学号" align="center" prop="user.userName" />
-	    <el-table-column label="学生姓名" align="center" prop="user.nickName" />
-      <el-table-column label="实习岗位" align="center" prop="info.postName" />
-      <el-table-column label="备注" align="center" prop="notes" />
-      <el-table-column label="状态" align="center" prop="status" width="60">
-        <template scope="scope" >
-          <el-switch
-            v-model="scope.row.status"
-            active-value="0"
-            inactive-value="1"
-
-            @change="changeStatus(scope.row)"
-          >
-          </el-switch>
+      <el-table-column label="实习安排ID" align="center" prop="arrangementId" v-if="false"/>
+      <el-table-column label="实习安排ID" align="center" prop="applyId" v-if="false"/>
+      <el-table-column label="学号" align="center" >
+        <template slot-scope="scope">
+          <span v-if="scope.row.user != null">{{ scope.row.user.userName }}</span>
+          <span v-if="scope.row.student != null">{{ scope.row.student.userName }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="学生姓名" align="center" prop="user.nickName" >
+        <template slot-scope="scope">
+          <span v-if="scope.row.user != null">{{ scope.row.user.nickName }}</span>
+          <span v-if="scope.row.student != null">{{ scope.row.student.nickName }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="实习类型" align="center" >
+        <template slot-scope="scope">
+          <span v-if="scope.row.info != null">集中实习</span>
+          <span v-if="scope.row.location != null">分散实习</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="实习状态" align="center" prop="user.nickName" >
+        <template slot-scope="scope">
+          <span v-if="scope.row.user != null && scope.row.user.status == 0">实习中</span>
+          <span v-if="scope.row.user != null && scope.row.user.status != 0">未实习</span>
+          <span v-if="scope.row.student != null && (scope.row.student.status == 0 || scope.row.student.status == 3)">未实习</span>
+          <span v-if="scope.row.student != null && scope.row.student.status == 1">审核中</span>
+          <span v-if="scope.row.student != null && scope.row.student.status == 2">实习中</span>
         </template>
       </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
@@ -171,7 +173,7 @@
 </template>
 
 <script>
-import { listArrangement, getArrangement, delArrangement, addArrangement, updateArrangement, exportArrangement } from "@/api/arrangement/arrangement";
+import { listArrangement, selectAllPractice , getArrangement, delArrangement, addArrangement, updateArrangement, exportArrangement } from "@/api/arrangement/arrangement";
 
 export default {
   name: "Arrangement",
@@ -202,13 +204,13 @@ export default {
         pageNum: 1,
         pageSize: 10,
         stuId: null,
-		info : null,
-		infoId: null,
+        info : null,
+        infoId: null,
         notes: null,
         stuOption: null,
         status: null,
-		postName : null,
-		nickName : null
+        postName : null,
+        nickName : null
       },
       statusChangeParams:{
         arrangementId:null,
@@ -234,9 +236,9 @@ export default {
     /** 查询实习安排列表 */
     getList() {
       this.loading = true;
-      listArrangement(this.queryParams).then(response => {
+      selectAllPractice(this.queryParams).then(response => {
         this.arrangementList = response.rows;
-		console.log(this.arrangementList)
+        console.log(this.arrangementList)
         this.total = response.total;
         this.loading = false;
       });
@@ -256,9 +258,9 @@ export default {
         stuOption: null,
         status: "0",
         delFlag: null,
-		nickName : null,
-		postName : null ,
-		userName : null
+        nickName : null,
+        postName : null ,
+        userName : null
       };
       this.resetForm("form");
     },
@@ -290,10 +292,10 @@ export default {
       const arrangementId = row.arrangementId || this.ids
       getArrangement(arrangementId).then(response => {
         this.form = response.data;
-		console.log(this.form)
-		this.form.nickName = this.form.user.nickName
-		this.form.postName = this.form.info.postName
-		this.form.userName = this.form.user.userName
+        console.log(this.form)
+        this.form.nickName = this.form.user.nickName
+        this.form.postName = this.form.info.postName
+        this.form.userName = this.form.user.userName
         this.open = true;
         this.title = "修改实习安排";
       });

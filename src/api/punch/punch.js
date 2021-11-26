@@ -61,3 +61,10 @@ export function getTodayPunchList() {
   })
 }
 
+// 获得获取本周每日的打卡情况
+export function selectNowWeekAttendanceList() {
+  return request({
+    url: '/punch/punch/selectNowWeekAttendanceList',
+    method: 'get'
+  })
+}

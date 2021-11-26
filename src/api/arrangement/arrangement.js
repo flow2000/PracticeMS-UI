@@ -9,6 +9,24 @@ export function listArrangement(query) {
   })
 }
 
+// 获取实习大屏数据
+export function getScreenData(query) {
+  return request({
+    url: '/arrangement/arrangement/getScreenData',
+    method: 'post',
+    params: query
+  })
+}
+
+//获取所有学生实习信息
+export function selectAllPractice(query) {
+  return request({
+    url: '/arrangement/arrangement/selectAllPractice',
+    method: 'post',
+    params: query
+  })
+}
+
 // 查询老师指导的学生信息
 export function stuInfoList(query) {
   return request({

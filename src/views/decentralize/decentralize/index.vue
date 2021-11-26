@@ -1,42 +1,9 @@
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px">
-      <el-form-item label="学生姓名" prop="stuName">
+      <el-form-item label="实习地点" prop="companyName">
         <el-input
-          v-model="queryParams.stuId"
-          placeholder="请输入学生姓名"
-          clearable
-          size="small"
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="审核人" prop="auditorNam">
-        <el-input
-          v-model="queryParams.auditorId"
-          placeholder="请输入审核人姓名"
-          clearable
-          size="small"
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="审核时间" prop="auditTime">
-        <el-date-picker clearable size="small"
-          v-model="queryParams.auditTime"
-          type="date"
-          value-format="yyyy-MM-dd"
-          placeholder="选择审核时间">
-        </el-date-picker>
-      </el-form-item>
-      <el-form-item label="状态" prop="status">
-        <el-select v-model="queryParams.status" placeholder="请选择状态" clearable size="small">
-          <el-option label="未审核" value="0" />
-          <el-option label="已通过" value="1" />
-          <el-option label="未通过" value="-1" />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="实习地点" prop="locationId">
-        <el-input
-          v-model="queryParams.locationId"
+          v-model="queryParams.companyName"
           placeholder="请输入实习地点名称"
           clearable
           size="small"
@@ -49,79 +16,24 @@
       </el-form-item>
     </el-form>
 
-    <el-row :gutter="10" class="mb8">
-      <el-col :span="1.5">
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="success"
-          plain
-          icon="el-icon-edit"
-          size="mini"
-          :disabled="single"
-          @click="handleUpdate"
-          v-hasPermi="['decentralize:decentralize:edit']"
-        >修改</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="danger"
-          plain
-          icon="el-icon-delete"
-          size="mini"
-          :disabled="multiple"
-          @click="handleDelete"
-          v-hasPermi="['decentralize:decentralize:remove']"
-        >删除</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="warning"
-          plain
-          icon="el-icon-download"
-          size="mini"
-		  :loading="exportLoading"
-          @click="handleExport"
-          v-hasPermi="['decentralize:decentralize:export']"
-        >导出</el-button>
-      </el-col>
-      <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
-    </el-row>
-
     <el-table v-loading="loading" :data="decentralizeList" @selection-change="handleSelectionChange">
-      <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="学生姓名" align="center" prop="student.nickName" />
-      <el-table-column label="经营范围" align="center" prop="businessScope" />
-      <el-table-column label="审核人姓名" align="center" prop="auditor.nickName" />
-      <el-table-column label="实习单位" align="center" prop="location.companyName" />
-      <el-table-column label="审核时间" align="center" prop="auditTime" width="180">
+      <el-table-column label="序号" type="index" width="50"></el-table-column>
+      <el-table-column label="实习地点"  align="center" prop="companyName" />
+      <el-table-column label="审核进度"  align="center" prop="companyName" >
         <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.auditTime, '{y}-{m}-{d}') }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="备注" align="center" prop="notes" />
-      <el-table-column label="审核状态" align="center" prop="status" >
-        <template slot-scope="scope">
-          <span v-if="scope.row.status == 1">未审核</span>
-          <span v-if="scope.row.status == 2">已通过</span>
-          <span v-if="scope.row.status == 3">未通过</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="实习证明" align="center" prop="acceptanceCertificate" >
-        <template scope="scope">
-          <el-link type="primary" v-show="scope.row.acceptanceCertificate != ''" :href="scope.row.acceptanceCertificate" target=_blank>查看</el-link>
-          <span type="primary" v-show="scope.row.acceptanceCertificate == ''" target=_blank>未上传</span>
+          <span v-show="scope.row.awaitingApprovalNum == scope.row.totalNum" style="color : #67C23A">{{scope.row.awaitingApprovalNum}}/{{scope.row.totalNum}}</span>
+          <span v-show="scope.row.awaitingApprovalNum != scope.row.totalNum" style="color : #F56C6C">{{scope.row.awaitingApprovalNum}}/{{scope.row.totalNum}}</span>
         </template>
       </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
-<!--          <el-button
+          <el-button
             size="mini"
             type="text"
             icon="el-icon-edit"
             @click="handleUpdate(scope.row)"
             v-hasPermi="['decentralize:decentralize:edit']"
-          >修改</el-button>-->
+          >详情</el-button>
           <el-button
             size="mini"
             type="text"
@@ -154,55 +66,70 @@
       @pagination="getList"
     />
 
-    <!-- 添加或修改分散实习申请对话框 -->
-    <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
-      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="实习学生ID" prop="stuId">
-          <el-input v-model="form.stuId" placeholder="请输入实习学生ID" />
-        </el-form-item>
-        <el-form-item label="实习单位经营" prop="businessScope">
-          <el-input v-model="form.businessScope" type="textarea" placeholder="请输入内容" />
-        </el-form-item>
-        <el-form-item label="实习单位接收实习证明" prop="acceptanceCertificate">
-          <el-input v-model="form.acceptanceCertificate" type="textarea" placeholder="请输入内容" />
-        </el-form-item>
-        <el-form-item label="备注" prop="notes">
-          <el-input v-model="form.notes" type="textarea" placeholder="请输入内容" />
-        </el-form-item>
-        <el-form-item label="审核人" prop="auditorName">
-          <el-input v-model="form.auditorId" placeholder="请输入审核人ID" />
-        </el-form-item>
-        <el-form-item label="审核时间" prop="auditTime">
-          <el-date-picker clearable size="small"
-            v-model="form.auditTime"
-            type="date"
-            value-format="yyyy-MM-dd"
-            placeholder="选择审核时间">
-          </el-date-picker>
-        </el-form-item>
-        <el-form-item label="状态">
-          <el-radio-group v-model="form.status">
-            <el-radio label="1">请选择字典生成</el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="删除标志" prop="delFlag">
-          <el-input v-model="form.delFlag" placeholder="请输入删除标志" />
-        </el-form-item>
-        <el-form-item label="实习地点ID" prop="locationId">
-          <el-input v-model="form.locationId" placeholder="请输入实习地点ID" />
-        </el-form-item>
-      </el-form>
+    <el-dialog :title="title" :visible.sync="open" width="1200px" :append-to-body="true">
+      <el-table ref="table" v-loading="loading" :row-key="getRowKey" :data="form" @selection-change="practiceHandleSelectionChange">
+        <el-table-column :selectable="selectable" type="selection" width="55" align="center" />
+        <el-table-column label="分散实习申请编号" align="center" prop="applyId" v-if="false"/>
+        <el-table-column label="学生姓名" align="center" prop="student.nickName" />
+        <el-table-column label="经营范围" align="center" prop="businessScope" />
+        <el-table-column label="审核人姓名" align="center" prop="auditor.nickName" />
+        <el-table-column label="实习地点" align="center" prop="location.companyName" />
+        <el-table-column label="审核时间" align="center" prop="auditTime" width="180">
+          <template slot-scope="scope">
+            <span>{{ parseTime(scope.row.auditTime, '{y}-{m}-{d}') }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="备注" align="center" prop="notes" />
+        <el-table-column label="审核状态" align="center" prop="status" >
+          <template slot-scope="scope">
+            <span v-if="scope.row.status == 1">未审核</span>
+            <span v-if="scope.row.status == 2">已通过</span>
+            <span v-if="scope.row.status == 3">未通过</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="实习证明" align="center" prop="acceptanceCertificate" >
+          <template scope="scope">
+            <el-link type="primary" v-show="scope.row.acceptanceCertificate != ''" :href="scope.row.acceptanceCertificate" target=_blank>查看</el-link>
+            <span type="primary" v-show="scope.row.acceptanceCertificate == ''" target=_blank>未上传</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+          <template slot-scope="scope">
+            <el-dropdown v-if="scope.row.status == 1" size="mini" @command="(command) => handleCommand(command, scope.row)">
+                <span class="el-dropdown-link">
+                  <i class="el-icon-d-arrow-right el-icon--right"></i>更多
+                </span>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item command="consentApply" icon="el-icon-check"
+                                  v-hasPermi="['decentralize:decentralize:edit']" >同意申请
+                </el-dropdown-item>
+                <el-dropdown-item command="refuseApply" icon="el-icon-close"
+                                  v-hasPermi="['decentralize:decentralize:edit']">拒绝申请
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
+          </template>
+        </el-table-column>
+      </el-table>
+      <pagination
+        v-show="utotal>0"
+        :total="utotal"
+        :page.sync="queryParams.pageNum"
+        :limit.sync="queryParams.pageSize"
+        @pagination="getDecentralizeInfo"
+      />
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
+        <el-button type="primary" @click="consentApplys">一键通过</el-button>
+        <el-button type="primary" @click="refuseApplys">一键拒绝</el-button>
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
+
   </div>
 </template>
 
 <script>
-import { listDecentralize, getDecentralize, delDecentralize, addDecentralize, updateDecentralize, exportDecentralize } from "@/api/decentralize/decentralize";
-
+import { getDecentralizeByLocation , updateDecentralizes ,getDecentralizeInfo , listDecentralize, getDecentralize, delDecentralize, addDecentralize, updateDecentralize, exportDecentralize } from "@/api/decentralize/decentralize";
 export default {
   name: "Decentralize",
   data() {
@@ -213,6 +140,8 @@ export default {
       exportLoading: false,
       // 选中数组
       ids: [],
+      // 选中数组
+      selectionIds: [],
       // 非单个禁用
       single: true,
       // 非多个禁用
@@ -221,6 +150,8 @@ export default {
       showSearch: true,
       // 总条数
       total: 0,
+      //实习学生总条数
+      utotal : 0,
       // 分散实习申请表格数据
       decentralizeList: [],
       // 弹出层标题
@@ -238,13 +169,16 @@ export default {
         auditorId: null,
         auditTime: null,
         status: null,
-        locationId: null
+        locationId: null,
+        companyName : null
       },
       approvalParams:{
         applyId : null,
         status : null,
         auditTime : null ,
-        auditorId : null
+        auditorId : null,
+        notes : null,
+        applyIds : []
       },
       // 表单参数
       form: {},
@@ -263,18 +197,21 @@ export default {
     };
   },
   created() {
-    this.getList();
+    this.$nextTick(function () {
+      this.getList();
+    })
   },
   methods: {
     /** 查询分散实习申请列表 */
     getList() {
       this.loading = true;
-      listDecentralize(this.queryParams).then(response => {
-        this.decentralizeList = response.rows;
-        console.log(this.decentralizeList)
-        this.total = response.total;
-        this.loading = false;
-      });
+      this.$nextTick(function () {
+        getDecentralizeByLocation(this.queryParams).then(response => {
+          this.decentralizeList = response.rows;
+          this.total = response.total;
+          this.loading = false;
+        });
+      })
     },
     // 取消按钮
     cancel() {
@@ -293,7 +230,8 @@ export default {
         auditTime: null,
         status: "0",
         delFlag: null,
-        locationId: null
+        locationId: null,
+        companyName : null
       };
       this.resetForm("form");
     },
@@ -313,6 +251,12 @@ export default {
       this.single = selection.length!==1
       this.multiple = !selection.length
     },
+    // 多选框选中数据
+    practiceHandleSelectionChange(selection) {
+      this.selectionIds = selection.map(item => item.applyId)
+      this.single = selection.length!==1
+      this.multiple = !selection.length
+    },
     // 更多操作触发
     handleCommand(command, row) {
       switch (command) {
@@ -325,6 +269,16 @@ export default {
         default:
           break
       }
+    },
+    selectable(row,index){
+      if(row.status== '1'){
+        return 1;
+      }else{
+        return 0;
+      }
+    },
+    getRowKey (row) {
+      return row.userId
     },
     /** 同意申请按钮操作 */
     consentApply(row) {
@@ -340,47 +294,133 @@ export default {
             type: 'success',
             message: '已同意!'
           });
-          this.getList();
+          this.getDecentralizeInfo(row.locationId)
         });
       }).catch(() => {
         this.$message({
           type: 'info',
           message: '已取消操作'
+        });
+      });
+    },
+    /** 批量同意申请按钮操作 */
+    consentApplys(row) {
+      if(this.selectionIds.length == 0){
+        this.$message({
+          type: 'info',
+          message: '还未选中学生'
+        });
+        return;
+      }
+      this.$confirm('此操作将同意该申请, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.approvalParams.status = '2'
+        this.approvalParams.applyIds = this.selectionIds
+        updateDecentralizes(this.approvalParams).then(response => {
+          this.$message({
+            type: 'success',
+            message: '已同意!'
+          });
+          this.getDecentralizeInfo(row.locationId)
+        });
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消操作'
+        });
+      });
+    },
+    /** 批量拒绝申请按钮操作 */
+    refuseApplys(row) {
+      if(this.selectionIds.length == 0){
+        this.$message({
+          type: 'info',
+          message: '还未选中学生'
+        });
+        return;
+      }
+      this.$prompt('拒绝理由', '拒绝申请', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        inputValidator(value){
+          if (value == undefined) {
+            return '拒绝理由不能为空'
+          } else if (value.length == 0) {
+            return '拒绝理由不能为空'
+          } else if (value.length > 50) {
+            return '请输入20个字符以内的分组名称'
+          }
+        },
+        inputErrorMessage: '不支持特殊字符'
+      }).then(({ value }) => {
+        this.approvalParams.applyIds = this.selectionIds
+        this.approvalParams.status = '3'
+        this.approvalParams.notes = value
+        updateDecentralizes(this.approvalParams).then(response => {
+          this.$message({
+            type: 'success',
+            message: '已拒绝!'
+          });
+          this.getDecentralizeInfo(row.locationId)
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '取消操作'
+          });
         });
       });
     },
     /** 拒绝申请按钮操作 */
     refuseApply(row) {
-      this.$confirm('此操作将拒绝该申请, 是否继续?', '提示', {
+      console.log(this.selectionIds)
+      this.$prompt('拒绝理由', '拒绝申请', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        console.log(row)
-        this.approvalParams.applyId = row.applyId
-        this.approvalParams.status = '3'
-        updateDecentralize(this.approvalParams).then(response => {
-          this.$message({
-            type: 'success',
-            message: '已拒绝!'
-          });
-          this.getList();
-        });
+        inputValidator(value){
+          if (value == undefined) {
+            return '拒绝理由不能为空'
+          } else if (value.length == 0) {
+            return '拒绝理由不能为空'
+          } else if (value.length > 50) {
+            return '请输入20个字符以内的分组名称'
+          }
+        },
+        inputErrorMessage: '不支持特殊字符'
+      }).then(({ value }) => {
+          this.approvalParams.applyId = row.applyId
+          this.approvalParams.status = '3'
+          this.approvalParams.notes = value
+          updateDecentralize(this.approvalParams).then(response => {
+            this.$message({
+              type: 'success',
+              message: '已拒绝!'
+            });
+            this.getDecentralizeInfo(row.locationId)
       }).catch(() => {
         this.$message({
           type: 'info',
-          message: '已取消操作'
+          message: '取消操作'
         });
+      });
       });
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
       this.reset();
-      const applyId = row.applyId || this.ids
-      getDecentralize(applyId).then(response => {
+      const locationId = row.locationId
+      this.$nextTick(function () {
+        this.getDecentralizeInfo(locationId);
+      })
+    },
+    getDecentralizeInfo(locationId){
+      getDecentralizeInfo(locationId).then(response => {
         this.form = response.data;
-        this.open = true;
-        this.title = "修改分散实习申请";
+        this.utotal = response.data.length
+        this.open = true
+        this.title = "详情";
       });
     },
     /** 提交按钮 */
@@ -391,7 +431,7 @@ export default {
             updateDecentralize(this.form).then(response => {
               this.msgSuccess("修改成功");
               this.open = false;
-              this.getList();
+              this.getDecentralizeInfo(this.form.locationId)
             });
           } else {
             addDecentralize(this.form).then(response => {
