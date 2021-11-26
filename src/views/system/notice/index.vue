@@ -72,18 +72,17 @@
     </el-row>
 
     <el-table v-loading="loading" :data="noticeList" @selection-change="handleSelectionChange">
-      <el-table-column type="selection" width="55" align="center" />
+      <el-table-column type="selection" width="55" align="center" v-hasPermi="['system:notice:remove']" />
       <el-table-column label="序号" align="center" prop="noticeId" width="100" />
       <el-table-column
         label="公告标题"
-        align="center"
         prop="noticeTitle"
         :show-overflow-tooltip="true"
       />
 
 
       <el-table-column label="操作人员用户名" align="center" prop="createBy" width="150" />
-      <el-table-column label="创建人姓名" align="center" prop="nickname" width="100" />
+      <el-table-column label="创建人姓名" align="center" prop="nickname" width="150" />
       <el-table-column label="创建时间" align="center" prop="createTime" width="120">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.createTime, '{y}-{m}-{d}') }}</span>
@@ -110,7 +109,7 @@
           <p v-if="scope.row.status=='-1'" style="color:#d71345">审核不通过</p>
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+      <el-table-column label="操作" align="center" class-name="small-padding fixed-width" >
         <template slot-scope="scope">
           <el-button
             size="mini"

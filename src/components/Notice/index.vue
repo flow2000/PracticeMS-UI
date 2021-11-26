@@ -1,6 +1,6 @@
 <template>
   <el-dropdown trigger="click">
-    <el-badge is-dot :max="99" style="position:relative;top: 8px">
+    <el-badge :is-dot="target" :max="99" style="position:relative;top: 8px">
       <i class="el-icon-message-solid" id="noticeIcon"></i>
     </el-badge>
     <el-dropdown-menu  slot="dropdown" >
@@ -36,6 +36,8 @@
           updateTime:null,
           publisher:null,
         },
+        // 图标小红点参数
+        target:false
       }
     },
     created() {
@@ -48,6 +50,7 @@
         listNotice(this.noticeParams).then(response => {
           this.noticeList = response.rows;
           this.noticetotal = response.total;
+          if(this.noticetotal>0) this.target=true;
           for(let item of this.noticeList){
             let day=item.updateTime.split(' ');
             this.noticeSlims.push(item.noticeTitle+" ["+day[0]+"]")

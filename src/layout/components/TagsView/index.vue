@@ -190,9 +190,9 @@ export default {
         // you can adjust it according to your needs.
         if (view.name === 'Dashboard') {
           // to reload home page
-          this.$router.replace({ path: '/redirect' + view.fullPath })
+          this.$router.replace({ path: '/index_route'  })
         } else {
-          this.$router.push('/')
+          this.$router.replace({path:'/index_route'})
         }
       }
     },

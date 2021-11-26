@@ -58,7 +58,7 @@
               placeholder="请输入账号"
               clearable
               size="small"
-              style="width: 160px"
+              style="width: 150px"
               @keyup.enter.native="handleQuery"
             />
           </el-form-item>
@@ -78,17 +78,17 @@
               placeholder="请输入手机号码"
               clearable
               size="small"
-              style="width: 160px"
+              style="width: 150px"
               @keyup.enter.native="handleQuery"
             />
           </el-form-item>
-          <el-form-item label="状态" prop="status">
+          <el-form-item label="账号状态" prop="status">
             <el-select
               v-model="queryParams.status"
-              placeholder="账号状态"
+              placeholder="请选择账号状态"
               clearable
               size="small"
-              style="width: 120px"
+              style="width: 140px"
             >
               <el-option
                 v-for="dict in statusOptions"
@@ -166,6 +166,18 @@
             >导出
             </el-button>
           </el-col>
+
+          <el-col :span="1.5">
+            <el-button
+              type="primary"
+              icon="el-icon-folder"
+              size="mini"
+              @click="handleArchive"
+              v-hasPermi="['system:user:archive']"
+            >数据归档
+            </el-button>
+          </el-col>
+
           <right-toolbar :showSearch.sync="showSearch" @queryTable="getList" :columns="columns"></right-toolbar>
         </el-row>
 
@@ -179,10 +191,12 @@
                            :show-overflow-tooltip="true"/>
           <el-table-column label="手机号码" align="center" key="phonenumber" prop="phonenumber" v-if="columns[4].visible"
                            width="120"/>
-          <el-table-column label="状态" align="center" key="status" v-if="columns[5].visible">
+          <el-table-column label="账号状态" align="center" key="status" v-if="columns[5].visible">
             <template slot-scope="scope">
               <el-switch
                 v-model="scope.row.status"
+                active-text="正常"
+                inactive-text="停用"
                 active-value="0"
                 inactive-value="1"
                 @change="handleStatusChange(scope.row)"
@@ -309,7 +323,7 @@
 
         <el-row>
           <el-col :span="12">
-            <el-form-item label="状态">
+            <el-form-item label="账号状态">
               <el-radio-group v-model="form.status">
                 <el-radio
                   v-for="dict in statusOptions"
@@ -367,6 +381,24 @@
         <el-button @click="upload.open = false">取 消</el-button>
       </div>
     </el-dialog>
+
+    <!-- 数据归档对话框 -->
+    <el-dialog :title="archive.title" :visible.sync="archive.open" width="400px" class="archive" append-to-body>
+      <div class="block" style="text-align: center;">
+        <el-date-picker
+          value-format="yyyy"
+          v-model="archiveTime"
+          type="year"
+          placeholder="请选择归档数据年份">
+        </el-date-picker>
+      </div>
+
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="submitArchive">确 定</el-button>
+        <el-button @click="archive.open = false">取 消</el-button>
+      </div>
+    </el-dialog>
+
   </div>
 </template>
 
@@ -380,18 +412,22 @@
     exportUser,
     resetUserPwd,
     changeUserStatus,
-    importTemplate
+    importTemplate,
+    dataArchive
   } from '@/api/system/user'
   import { getToken } from '@/utils/auth'
   import { treeselect } from '@/api/system/dept'
   import Treeselect from '@riophae/vue-treeselect'
   import '@riophae/vue-treeselect/dist/vue-treeselect.css'
+  import { Loading } from 'element-ui';
 
   export default {
     name: 'User',
     components: { Treeselect },
     data() {
       return {
+        //数据归档年份
+        archiveTime: '',
         // 遮罩层
         loading: true,
         // 导出遮罩层
@@ -449,6 +485,15 @@
           // 上传的地址
           url: process.env.VUE_APP_BASE_API + '/system/user/importData'
         },
+        // 数据归档参数
+        archive: {
+          // 是否显示弹出层（数据归档）
+          open: false,
+          // 弹出层标题（数据归档）
+          title: '',
+          // 请求地址
+          url: process.env.VUE_APP_BASE_API + '/system/user/archived'
+        },
         // 查询参数
         queryParams: {
           pageNum: 1,
@@ -466,7 +511,7 @@
           { key: 2, label: `姓名`, visible: true },
           { key: 3, label: `专业`, visible: true },
           { key: 4, label: `手机号码`, visible: true },
-          { key: 5, label: `状态`, visible: true },
+          { key: 5, label: `账号状态`, visible: true },
           { key: 6, label: `创建时间`, visible: true }
         ],
         // 表单校验
@@ -711,7 +756,7 @@
       /** 导出按钮操作 */
       handleExport() {
         const queryParams = this.queryParams
-        this.$confirm('是否确认导出所有用户数据项?', '警告', {
+        this.$confirm('是否确认导出用户数据?', '警告', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
@@ -728,6 +773,11 @@
       handleImport() {
         this.upload.title = '用户导入'
         this.upload.open = true
+      },
+      /** 数据归档按钮操作 */
+      handleArchive() {
+        this.archive.title = '数据归档'
+        this.archive.open = true
       },
       /** 下载模板操作 */
       importTemplate() {
@@ -750,6 +800,35 @@
       // 提交上传文件
       submitFileForm() {
         this.$refs.upload.submit()
+      },
+      // 数据归档
+      submitArchive() {
+        if (this.archiveTime == '') {
+          this.msgError('年份不能为空')
+        } else {
+          const loadData = {
+            spinner: 'el-icon-loading',
+            text: '归档中...',
+            background: 'rgba(0, 0, 0, 0.3)',
+            lock: true
+          }
+          let loadingInstance = Loading.service(loadData);
+          dataArchive(this.archiveTime).then(response => {
+            this.$nextTick(() => {
+              // 以服务的方式调用的 Loading 需要异步关闭
+              loadingInstance.close();
+            });
+            this.msgSuccess('归档成功')
+            this.archive.open = false
+            this.getList()
+            this.archiveTime = ''
+          }).catch(resonse => {
+            loadingInstance.close();                // 关闭遮罩层
+            this.msgError('归档失败')
+            this.archive.open = false
+            this.archiveTime = ''
+          })
+        }
       }
     }
   }

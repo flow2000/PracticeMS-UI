@@ -52,7 +52,7 @@
           icon="el-icon-upload"
           size="mini"
           @click="openAppraisal"
-          v-hasPermi="['practicelog:practicelog:export']"
+          v-hasPermi="['practicelog:practicelog:add']"
         >上传实习鉴定</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -62,7 +62,7 @@
           icon="el-icon-upload2"
           size="mini"
           @click="openSummery"
-          v-hasPermi="['practicelog:practicelog:export']"
+          v-hasPermi="['practicelog:practicelog:add']"
         >上传实习总结</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -403,8 +403,9 @@
         this.upload.scoreId = 0;
       },
       watchAppraisal(){
+
         listPracticeScore({userId:this.user.userId}).then(response => {
-          console.log(response.rows[0].appraisal);
+
           if(response.rows[0].appraisal==""){
           }
           URL  = response.rows[0].appraisal;

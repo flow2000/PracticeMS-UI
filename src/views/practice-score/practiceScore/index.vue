@@ -54,6 +54,16 @@
       </el-col>
       <el-col :span="1.5">
         <el-button
+          type="primary"
+          plain
+          icon="el-icon-magic-stick"
+          size="mini"
+          :disabled="multiple"
+          @click="handleCalculate"
+        >重新计算系统成绩</el-button>
+      </el-col>
+      <el-col :span="1.5">
+        <el-button
           type="success"
           plain
           icon="el-icon-edit"
@@ -82,9 +92,20 @@
           size="mini"
 		  :loading="exportLoading"
           @click="handleExport"
-          v-hasPermi="['practice-score:practiceScore:export']"
+          v-hasPermi="['practice-score:practiceScore:edit']"
         >导出</el-button>
       </el-col>
+      <el-col :span="1.5">
+        <el-button
+          type="primary"
+          plain
+          icon="el-icon-setting"
+          size="mini"
+          @click="handleSetting"
+          v-hasPermi="['practice-score:practiceScore:remove']"
+        >成绩权重设定</el-button>
+      </el-col>
+
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
@@ -111,12 +132,12 @@
 ..    <el-table-column label="最终成绩" align="center" prop="finalScore" />
       <el-table-column label="实习鉴定表" align="center" prop="appraisal" >
         <template scope="scope">
-          <el-link type="primary" :href="scope.row.appraisal" target=_blank>{{scope.row.appraisal==""?"未上传":scope.row.nickname+"的实习鉴定"}}</el-link>
+          <el-link type="primary" :href="scope.row.appraisal" target=_blank>{{scope.row.appraisal==null?"未上传":(scope.row.appraisal==""?"未上传":scope.row.nickname+"的实习鉴定")}}</el-link>
         </template>
       </el-table-column>
       <el-table-column label="实习总结" align="center" prop="summary" >
         <template scope="scope">
-          <el-link type="primary" :href="scope.row.summary" target=_blank>{{scope.row.summary==""?"未上传":scope.row.nickname+"的实习总结"}}</el-link>
+          <el-link type="primary" :href="scope.row.summary" target=_blank>{{scope.row.summary==null?"未上传":(scope.row.summary==""?"未上传":scope.row.nickname+"的实习总结")}}</el-link>
         </template>
       </el-table-column>
       <el-table-column label="状态" align="center" prop="status" width="60">
@@ -230,6 +251,38 @@
       </div>
     </el-dialog>
 
+    <el-dialog title="成绩权重设定" :visible.sync="powerWeight" width="500px" append-to-body>
+      <el-form :inline="true" ref="formSetting" :model="formSetting"  label-position="right" :rules="rules" label-width="130px">
+        <el-form-item label="系统评分权重" prop="systemWeight" >
+          <el-input placeholder="系统评分占比（小于1）" v-model="formSetting.systemWeight" oninput="value=value.replace(/^0[0-9]|^[2-9]|^1[0-9]|^1\.|[^\d.]/g,'')"></el-input>
+        </el-form-item>
+        <el-form-item label="教师评分权重" prop="teacherWeight">
+          <el-input placeholder="教师评分占比（小于1）" v-model="formSetting.teacherWeight" oninput="value=value.replace(/^0[0-9]|^[2-9]|^1[0-9]|^1\.|[^\d.]/g,'')"></el-input>
+        </el-form-item>
+        <el-form-item label="公司评分权重" prop="companyWeight">
+          <el-input placeholder="公司评分占比（小于1）" v-model="formSetting.companyWeight" oninput="value=value.replace(/^0[0-9]|^[2-9]|^1[0-9]|^1\.|[^\d.]/g,'')"></el-input>
+        </el-form-item>
+        <el-form-item label="打卡权重" prop="punchWeight">
+          <el-input placeholder="签到打卡所占比例（小于1）" v-model="formSetting.punchWeight" oninput="value=value.replace(/^0[0-9]|^[2-9]|^1[0-9]|^1\.|[^\d.]/g,'')"></el-input>
+        </el-form-item>
+        <el-form-item label="日志权重" prop="logWeight">
+          <el-input placeholder="填写日志所占比例(小于1)" v-model="formSetting.logWeight" oninput="value=value.replace(/^0[0-9]|^[2-9]|^1[0-9]|^1\.|[^\d.]/g,'')"></el-input>
+        </el-form-item>
+        <br>
+        <el-tooltip class="item" effect="light" content="Left Center 提示文字" placement="left">
+        <el-button
+            type="warning"
+            plain
+            icon="el-icon-question"
+            size="mini"
+        >帮助</el-button>
+        </el-tooltip>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="submitSetting" size="mini">保存并生效</el-button>
+        <el-button @click="powerWeight = false" size="mini">取 消</el-button>
+      </div>
+    </el-dialog>
 
     <el-dialog
       title="上传实习鉴定"
@@ -289,7 +342,7 @@
 </template>
 
 <script>
-import { listPracticeScore, getPracticeScore, delPracticeScore, addPracticeScore, updatePracticeScore, exportPracticeScore , updateScoreStatus} from "@/api/practice-score/practiceScore";
+import { listPracticeScore, getPracticeScore, delPracticeScore, addPracticeScore,calculate, updatePracticeScore, exportPracticeScore , updateScoreStatus,listSetting,updateSetting} from "@/api/practice-score/practiceScore";
 import { getToken , getInfo} from "@/utils/auth";
 import { getUserProfile } from "@/api/system/user";
 
@@ -300,6 +353,8 @@ export default {
 
   data() {
     return {
+      user: {},
+      setting:{},
       // 遮罩层
       loading: true,
       // 导出遮罩层
@@ -316,6 +371,8 @@ export default {
       total: 0,
       // 实习成绩表格数据
       practiceScoreList: [],
+      //成绩权重设定
+      powerWeight:false,
       // 弹出层标题
       title: "",
       // 是否显示弹出层
@@ -362,9 +419,12 @@ export default {
         appraisal: null,
         summary: null,
         status: null,
+        teacherId: null
       },
       // 表单参数
       form: {},
+      // 表单参数
+      formSetting: {},
       // 表单校验
       rules: {
         userId: [
@@ -373,30 +433,51 @@ export default {
         locationId: [
           { required: true, message: "地点ID不能为空", trigger: "blur" }
         ],
+        systemWeight:[
+          { required: true, message: "系统权重不能为空", trigger: "blur" }
+        ],
+        teacherWeight:[
+          { required: true, message: "教师权重不能为空", trigger: "blur" }
+        ],
+        companyWeight:[
+          { required: true, message: "公司权重不能为空", trigger: "blur" }
+        ],
+        punchWeight:[
+          { required: true, message: "打卡权重不能为空", trigger: "blur" }
+        ],
+        logWeight:[
+          { required: true, message: "日志权重不能为空", trigger: "blur" }
+        ]
       }
     };
   },
   created() {
-    this.getList();
+    getUserProfile().then(response => {
+      this.user = response.data
+      //加载信息表
+      this.getList();
+
+    })
   },
   methods: {
     /** 查询实习成绩列表 */
     getList() {
       this.loading = true;
-      // getUserProfile().then(PromiseValue =>{
-      //     console.log(PromiseValue.data.userId);
-      //     this.permissionLis = PromiseValue.data.roles;
-      //     for (var i = 0;i<this.permissionLis.length;i++){
-      //       if(this.permissionLis[i].roleKey=="student")
-      //         this.queryParams.userId=PromiseValue.data.userId;
-      //     }
-      //   }
-      // );
+      this.queryParams.teacherId = this.user.userId
       listPracticeScore(this.queryParams).then(response => {
         this.practiceScoreList = response.rows;
         this.total = response.total;
         this.loading = false;
+        console.log(this.practiceScoreList);
       });
+    },
+    /***/
+    getSettingList(){
+      listSetting().then(response =>{
+        this.setting = response.rows[0];
+        this.formSetting = response.rows[0];
+        console.log(this.setting);
+      })
     },
     // 取消按钮
     cancel() {
@@ -522,8 +603,10 @@ export default {
     /** 修改按钮操作 */
     handleUpdate(row) {
       this.reset();
-      const scoreId = row.scoreId || this.ids
-      getPracticeScore(scoreId).then(response => {
+      const scoreId = row.scoreId || this.ids;
+      this.queryParams.teacherId = this.user.userId;
+      this.queryParams.userId = row.userId;
+      getPracticeScore(this.queryParams).then(response => {
         this.form = response.data;
         this.open = true;
         this.title = "修改实习成绩";
@@ -538,16 +621,31 @@ export default {
             updatePracticeScore(this.form).then(response => {
               this.msgSuccess("修改成功");
               this.open = false;
+              this.queryParams.userId = null;
               this.getList();
             });
           } else {
             addPracticeScore(this.form).then(response => {
               this.msgSuccess("新增成功");
               this.open = false;
+              this.queryParams.userId = null;
               this.getList();
             });
           }
         }
+      });
+    },
+    /** 提交设置 */
+    submitSetting(){
+      this.$refs["formSetting"].validate(valid => {
+        if (valid){
+          console.log(this.formSetting);
+          updateSetting(this.formSetting).then(response => {
+            this.msgSuccess("保存成功");
+            this.powerWeight= false;
+          });
+        }
+
       });
     },
     /** 删除按钮操作 */
@@ -578,7 +676,26 @@ export default {
           this.download(response.msg);
           this.exportLoading = false;
         }).catch(() => {});
+    },
+    handleSetting(){
+      this.powerWeight=true;
+      this.getSettingList();
+    },
+    handleCalculate(row){
+      const scoreIds = row.scoreId || this.ids;
+
+      this.$confirm('是否确认计算这 ' + scoreIds.length + '条数据?', "警告", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      }).then(function() {
+        return calculate(scoreIds);
+      }).then(() => {
+        this.getList();
+        this.msgSuccess("计算完成");
+      }).catch(() => {});
     }
+
   }
 };
 </script>
