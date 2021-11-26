@@ -3,8 +3,12 @@
     <div id="main-panle" class="mc-ui-grid-pane" style="height: 1000px; width: auto;margin:1%;min-height: 1000px;min-width: 1500px">
       <div class="mc-ui-grid-item top-panle">
         <div style="font-size:xx-large;color: #1c84c6;width: 30%;position: relative;float: left">
-          |欢迎使用本系统！<br />
-          <div style="font-size: x-large;color: #0eaa8b;">-{{roleGroup}}：{{user.nickName}}</div>
+            |欢迎使用本系统！<br />
+            <div style="font-size: x-large;color: #0eaa8b;">-{{roleGroup}}：{{user.nickName}}</div>
+
+        </div>
+        <div>
+          <el-image :src="qrCode" style="width: 100px;position: relative;"></el-image>
         </div>
         <!--公告详细信息-->
         <el-dialog
@@ -85,6 +89,7 @@
   import { getUserProfile } from '../api/system/user'
   import{listPunch} from '../api/punch/punch'
   import bus from '../bus'
+  import qr from '@/assets/images/qr.png'
 
   export default {
     name: 'index_stu',
@@ -92,6 +97,8 @@
       return{
         // 用户信息
         user: {},
+        //二维码
+        qrCode: qr,
         roleGroup: {},
         // 当前月份信息
         mouthNow:new Date(),
