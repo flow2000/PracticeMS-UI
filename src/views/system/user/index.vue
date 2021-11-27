@@ -2,7 +2,7 @@
   <div class="app-container">
     <el-row :gutter="20">
       <!--院校数据-->
-      <el-col :span="4" :xs="24">
+      <el-col :span="this.hamburgerParam.academyW" :xs="24">
         <div class="head-container">
           <el-form>
             <el-form-item  prop="role">
@@ -50,8 +50,11 @@
       </el-col>
 
       <!--用户数据-->
-      <el-col :span="20" :xs="24">
+      <el-col :span="this.hamburgerParam.mainW" :xs="24">
         <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px">
+          <transition>
+            <el-button v-on:click="foldContoller()" class="foldBt" :class="this.foldOpen?'el-icon-s-fold' : 'el-icon-s-unfold'"></el-button>
+          </transition>
           <el-form-item label="账号" prop="userName">
             <el-input
               v-model="queryParams.userName"
@@ -430,6 +433,8 @@
         archiveTime: '',
         // 遮罩层
         loading: true,
+        //折叠状态
+        foldOpen : false,
         // 导出遮罩层
         exportLoading: false,
         // 选中数组
@@ -469,6 +474,10 @@
         defaultProps: {
           children: 'children',
           label: 'label'
+        },
+        hamburgerParam : {
+          academyW : 0,
+          mainW : 24
         },
         // 用户导入参数
         upload: {
@@ -597,10 +606,23 @@
         this.queryParams.deptId = data.id
         this.getList()
       },
+      foldContoller(){
+        this.foldOpen = !this.foldOpen
+        if(this.foldOpen == true){
+          this.hamburgerParam.academyW = 4
+          this.hamburgerParam.mainW = 20
+        }else{
+          this.hamburgerParam.academyW = 0
+          this.hamburgerParam.mainW = 24
+        }
+      },
       // 角色单击事件
       handleRoleClick(data) {
         this.queryParams.roleId = data
         this.getList()
+      },
+      toggleSideBar() {
+        this.$store.dispatch('app/toggleSideBar')
       },
       // 用户状态修改
       handleStatusChange(row) {

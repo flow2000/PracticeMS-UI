@@ -26,38 +26,6 @@
 
 
     <el-row :gutter="10" class="mb8">
-<!--      <el-col :span="1.5">-->
-<!--        <el-button-->
-<!--          type="primary"-->
-<!--          plain-->
-<!--          icon="el-icon-plus"-->
-<!--          size="mini"-->
-<!--          @click="handleAdd"-->
-<!--          v-hasPermi="['punch:punch:add']"-->
-<!--        >打卡</el-button>-->
-<!--      </el-col>-->
-      <el-col :span="1.5">
-        <el-button
-          type="success"
-          plain
-          icon="el-icon-edit"
-          size="mini"
-          :disabled="single"
-          @click="handleUpdate"
-          v-hasPermi="['punch:punch:edit']"
-        >修改</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="danger"
-          plain
-          icon="el-icon-delete"
-          size="mini"
-          :disabled="multiple"
-          @click="handleDelete"
-          v-hasPermi="['punch:punch:remove']"
-        >删除</el-button>
-      </el-col>
       <el-col :span="1.5">
         <el-button
           type="warning"
@@ -73,13 +41,10 @@
     </el-row>
 
     <el-table v-loading="loading" :data="punchList"  border @selection-change="handleSelectionChange">
-      <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="序号" type="index" align="center"  width="50px" height="30">
       </el-table-column>
-<!--      <el-table-column label="考勤标识" align="center" prop="attendanceId" width="155" height="30"/>-->
       <el-table-column label="学号" align="center" prop="userName" />
       <el-table-column label="姓名" align="center" prop="user.nickName" />
-<!--      <el-table-column label="打卡地点" align="center" prop="location" />-->
       <el-table-column label="打卡时间" align="center" prop="createTime" />
       <el-table-column
         align="center"
@@ -108,13 +73,6 @@
             @click="handleUpdate(scope.row)"
             v-hasPermi="['punch:punch:edit']"
           >修改</el-button>
-          <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-delete"
-            @click="handleDelete(scope.row)"
-            v-hasPermi="['punch:punch:remove']"
-          >删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -130,11 +88,21 @@
     <!-- 添加或修改打卡签到对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="用户账号" prop="userName">
-          <el-input v-model="form.userName" placeholder="请输入用户账号" />
+        <el-form-item label="学号" prop="userName">
+          <el-input :disabled="true" v-model="form.userName" placeholder="请输入学号" />
         </el-form-item>
-        <el-form-item label="打卡地点" prop="location">
-          <el-input v-model="form.location" type="textarea" placeholder="请输入内容" />
+        <el-form-item label="打卡状态" v-hasPermi="['punch:punch:edit']">
+          <el-radio-group v-model="form.status">
+            <el-radio-button
+              v-hasPermi="['system:notice:edit']"
+              v-for="dict in [
+                  {value: '0',label:'打卡成功'},
+                  {value: '1',label:'打卡失败'}]"
+              :key="dict.value"
+              v-model="dict.value"
+              :label="dict.label"
+            ></el-radio-button>
+          </el-radio-group>
         </el-form-item>
         <el-form-item label="备注" prop="notes">
           <el-input v-model="form.notes" type="textarea" placeholder="请输入内容" />

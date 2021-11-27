@@ -418,6 +418,7 @@ export default {
     /** 提交上传按钮 */
     submitForm() {
       this.form.address = this.kuaidi.destinationCity + this.form.address;
+      console.log(this.form.address)
       this.$refs["form"].validate(valid => {
         if (valid) {
           this.$refs.upload.submit();

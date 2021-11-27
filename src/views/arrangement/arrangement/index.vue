@@ -19,19 +19,16 @@
 	      @keyup.enter.native="handleQuery"
 	    />
 	  </el-form-item>
-      <el-form-item label="实习岗位" prop="postName">
-        <el-input
-          v-model="queryParams.postName"
-          placeholder="请输入实习岗位名称"
-          clearable
-          size="small"
-          @keyup.enter.native="handleQuery"
-        />
+      <el-form-item label="实习类型" prop="practiceType">
+        <el-select v-model="queryParams.practiceType" placeholder="请选择实习类型" clearable size="small">
+          <el-option label="集中实习" value="1" />
+          <el-option label="分散实习" value="2" />
+        </el-select>
       </el-form-item>
-      <el-form-item label="状态" prop="status">
-        <el-select v-model="queryParams.status" placeholder="请选择状态" clearable size="small">
-          <el-option label="启用" value="0" />
-          <el-option label="禁用" value="1" />
+      <el-form-item label="实习状态" prop="practiceStatus">
+        <el-select v-model="queryParams.practiceStatus" placeholder="请选择实习状态" clearable size="small">
+          <el-option label="审核中" value="1" />
+          <el-option label="实习中" value="2" />
         </el-select>
       </el-form-item>
       <el-form-item>
@@ -42,15 +39,6 @@
 
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button
-          type="success"
-          plain
-          icon="el-icon-edit"
-          size="mini"
-          :disabled="single"
-          @click="handleUpdate"
-          v-hasPermi="['arrangement:arrangement:edit']"
-        >修改</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button
@@ -61,7 +49,7 @@
           :disabled="multiple"
           @click="handleDelete"
           v-hasPermi="['arrangement:arrangement:remove']"
-        >删除</el-button>
+        >取消实习</el-button>
       </el-col>
       <el-col :span="1.5">
         <el-button
@@ -113,17 +101,11 @@
           <el-button
             size="mini"
             type="text"
-            icon="el-icon-edit"
-            @click="handleUpdate(scope.row)"
-            v-hasPermi="['arrangement:arrangement:edit']"
-          >修改</el-button>
-          <el-button
-            size="mini"
-            type="text"
             icon="el-icon-delete"
             @click="handleDelete(scope.row)"
+            v-if="(scope.row.user != null && scope.row.user.status == 0) || (scope.row.student != null && scope.row.student.status == 2)"
             v-hasPermi="['arrangement:arrangement:remove']"
-          >删除</el-button>
+          >取消实习</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -210,7 +192,9 @@ export default {
         stuOption: null,
         status: null,
         postName : null,
-        nickName : null
+        nickName : null,
+        practiceStatus: null ,
+        practiceType : null
       },
       statusChangeParams:{
         arrangementId:null,
@@ -238,7 +222,6 @@ export default {
       this.loading = true;
       selectAllPractice(this.queryParams).then(response => {
         this.arrangementList = response.rows;
-        console.log(this.arrangementList)
         this.total = response.total;
         this.loading = false;
       });
@@ -341,7 +324,16 @@ export default {
     /** 删除按钮操作 */
     handleDelete(row) {
       const arrangementIds = row.arrangementId || this.ids;
-      this.$confirm('是否确认删除实习安排编号为"' + arrangementIds + '"的数据项?', "警告", {
+      let userName = null;
+      let nickName = null;
+      if(row.student != null){
+        userName = row.student.userName
+        nickName = row.student.nickName
+      }else if(row.user != null){
+        userName = row.user.userName
+        nickName = row.user.nickName
+      }
+      this.$confirm('是否要取消' + userName + nickName + '的实习?', "警告", {
           confirmButtonText: "确定",
           cancelButtonText: "取消",
           type: "warning"

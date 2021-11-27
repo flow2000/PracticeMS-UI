@@ -1,26 +1,11 @@
 <template>
-  <div id="magicalDragScene" class="mc-root mc-ui-absolute-pane" style="height: 1300px;min-height: 1100px;min-width: 1420px" mcnetline="100">
-    <div id="main-panle" class="mc-ui-grid-pane" style="height: 1300px; width: auto;margin:1%;min-height: 1100px;min-width: 1420px">
+  <div id="magicalDragScene" class="mc-root mc-ui-absolute-pane" style="height: 1300px;min-height: 1100px;min-width: 1100px" mcnetline="100">
+    <div id="main-panle" class="mc-ui-grid-pane" style="height: 1300px;margin:1%;max-width: 1300px ;min-height: 1100px;min-width: 800px">
 
       <div class="mc-ui-grid-item top-panle">
-        <div style="font-size:xx-large;color: #1c84c6;width: 30%;position: relative;float: left">
-          |欢迎使用本系统！<br />
+        <div style="font-size:xx-large;color: #1c84c6;width: 100%;float: left">
           <div style="font-size: x-large;color: #0eaa8b;">-{{roleGroup}}：{{user.nickName}}</div>
         </div>
-
-        <!--通知栏-->
-        <!--<div style="position: relative;float: left;width: 60%;padding:0 8%">
-          <el-tooltip effect="dark" content="展开公告" placement="right">
-            <div class="sysNoticeTitle" @click="showAllNotice()" >系统通知</div>
-          </el-tooltip>
-            <el-carousel height="35px" direction="vertical" :autoplay="true" indicator-position="none">
-              <el-carousel-item v-for="item in noticeList">
-                <p class="noticeSlim" @click="showNoticeDetail(item.noticeId)">
-                  [{{(item.updateTime.split(" "))[0]}}]&nbsp;{{item.noticeTitle}}
-                </p>
-              </el-carousel-item>
-            </el-carousel>
-        </div>-->
         <!--公告详细信息-->
         <el-dialog
           title="系统通知"
@@ -48,7 +33,6 @@
           >
           <el-collapse class="allNotice" accordion>
             <el-collapse-item v-for="item in noticeList" :title="'['+[(item.updateTime.split(' '))[0]]+'] '+item.noticeTitle">
-
               <div style="font-size: 12px;color: #717171;
           width: 50%;float: left;
           text-align: left;">
@@ -71,7 +55,6 @@
         <p class="title1">实习学生人数</p>
         <hr/>
         <p class="text1">{{this.screenData.practiceStudentNum}}</p>
-        <!--<p class="data1">在岗实习人数：50</p>-->
       </div>
       <div class="mc-ui-grid-item left-mid2" >
         <p class="title1">今日在岗人数</p>
@@ -99,16 +82,14 @@
       <div class="mc-ui-grid-item right-mid2">
 
       </div>
-
-
       <div class="mc-ui-grid-item left-bottom" >
-        <div id="chart2" style="width: 100%;height: 100%;padding-top: 10%"></div>
+        <div id="chart2" style="width: 95%;height: 100%;"></div>
+      </div>
+      <div class="mc-ui-grid-item right-bottom" >
+        <div id="chart1" style="width: 100%;height: 100%;padding-top: 10%"></div>
       </div>
       <!--<div class="mc-ui-grid-item mid-bottom">
       </div>-->
-      <div class="mc-ui-grid-item right-bottom" >
-        <div id="chart1" style="width: 95%;height: 100%;"></div>
-      </div>
 
     </div>
   </div>
@@ -479,9 +460,6 @@ export default {
             lonlats.push(tude)
             companyNames.push(response.data[i].companyName)
           }
-          console.log(companyNames)
-          console.log(lonlats)
-
           // let lonlat = [[108.365386, 22.843292], [108.238089, 22.848063], [108.244248, 22.852298]]
           for (let i = 0; i < lonlats.length; i++) {
             //获得地点信息
@@ -940,7 +918,7 @@ export default {
   box-shadow: none;
   bottom: 0;
   left: 0;
-  width: 15.75rem;
+  width: 15.00rem;
   height: 13.5rem;
   padding: 0;
   color: #fff;
@@ -1006,14 +984,14 @@ export default {
 <style type="text/css">
   #main-panle{
     display: grid;
-    grid-template-columns: 0.2fr 0.5fr 0.75fr 0.5fr;
-    grid-template-rows:0.1fr 0.3fr 0.3fr 0.3fr 0.7fr;
+    grid-template-columns: 0.8fr 0.8fr 0.1fr 0.1fr;
+    grid-template-rows:0.1fr 0.5fr 0.5fr 0.5fr 0.9fr;
     gap: 1% 1%;
     grid-template-areas:
-      "top-panle top-panle top-panle top-panle"
-      "left-mid1 mid-mid mid-mid right-mid1 "
-      "left-mid2 mid-mid mid-mid right-mid1"
-      "left-mid3 mid-mid mid-mid right-mid2"
+      "left-mid1 left-mid2 left-mid3 top-panle"
+      "mid-mid mid-mid mid-mid right-mid1 "
+      "mid-mid mid-mid mid-mid right-mid1"
+      "mid-mid mid-mid mid-mid right-mid2"
       "left-bottom left-bottom right-bottom right-bottom"
     ;
 
@@ -1024,7 +1002,7 @@ export default {
     border: 1px solid #e0e0e0;
     border-radius: 10px;
     box-shadow: 3px 3px 10px 0px rgba(1,1,1,0.2);
-    max-height: 110px;
+    float: left;
   }
 
   .left-mid1 {

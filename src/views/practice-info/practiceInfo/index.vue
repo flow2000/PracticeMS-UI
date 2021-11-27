@@ -45,12 +45,6 @@
           placeholder="选择进点时间">
         </el-date-picker>
       </el-form-item>
-      <el-form-item label="状态" prop="status">
-        <el-select v-model="queryParams.status" placeholder="请选择状态" clearable size="small">
-          <el-option label="启用" value="0" />
-		  <el-option label="停用" value="1" />
-        </el-select>
-      </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
@@ -106,11 +100,11 @@
 
     <el-table v-loading="loading" :data="practiceInfoList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="25" align="center" />
-      <el-table-column label="实习信息ID" align="center" prop="infoId" v-if="1 == 2"/>
+      <el-table-column label="实习信息ID" align="center" prop="infoId" v-if="false"/>
       <el-table-column label="实习地点" align="center" prop="baseInfo.baseName" />
       <el-table-column label="岗位名称" align="center" prop="postName" />
       <el-table-column label="实习人数" align="center" prop="number" />
-	    <el-table-column label="岗位余量" align="center" prop="surplus" />
+	    <el-table-column label="岗位余量" align="center" prop="surplus" v-if="false" />
       <el-table-column label="起始时间" align="center" prop="entryTime" width="180">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.entryTime, '{y}-{m}-{d}') }}</span>
@@ -119,18 +113,6 @@
       <el-table-column label="结束时间" align="center" prop="endingTime" width="180">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.endingTime, '{y}-{m}-{d}') }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="状态" align="center" prop="status" width="60">
-        <template scope="scope" >
-          <el-switch
-            v-model="scope.row.status"
-            active-value="0"
-            inactive-value="1"
-
-            @change="changeStatus(scope.row)"
-          >
-          </el-switch>
         </template>
       </el-table-column>
       <el-table-column label="指导老师" align="center" prop="teacher.nickName" />
@@ -197,7 +179,7 @@
             <div class="app-container">
               <el-row :gutter="20">
                 <!--院校数据-->
-                <el-col :span="4" :xs="24">
+                <el-col :span="this.hamburgerParam.academyW" :xs="24">
                   <div class="head-container">
                     <el-input
                       v-model="deptName"
@@ -221,8 +203,11 @@
                   </div>
                 </el-col>
                 <!--用户数据-->
-                <el-col :span="20" :xs="24">
+                <el-col :span="this.hamburgerParam.mainW" :xs="24">
                   <el-form :model="queryParams" ref="studentQueryForm" :inline="true" v-show="showSearch" label-width="68px">
+                    <transition>
+                      <el-button v-on:click="foldContoller()" class="foldBt" :class="this.foldOpen?'el-icon-s-fold' : 'el-icon-s-unfold'"></el-button>
+                    </transition>
                     <el-form-item label="学号" prop="userName">
                       <el-input
                         v-model="queryParams.userName"
@@ -253,21 +238,10 @@
                     <el-table-column type="selection" width="50" align="center" :reserve-selection="true" />
                     <el-table-column label="序号" type="index" width="50"></el-table-column>
                     <el-table-column label="用户编号" align="center" key="userId" prop="userId" v-if="columns[0].visible" />
-                    <el-table-column label="学号" align="center" key="userName" prop="userName" v-if="columns[1].visible" :show-overflow-tooltip="true" />
-                    <el-table-column label="姓名" align="center" key="nickName" prop="nickName" v-if="columns[2].visible" :show-overflow-tooltip="true" />
-                    <el-table-column label="专业" align="center" key="deptName" prop="dept.deptName" v-if="columns[3].visible" :show-overflow-tooltip="true" />
+                    <el-table-column label="学号" align="center" key="userName" prop="userName" v-if="columns[1].visible" />
+                    <el-table-column label="姓名" align="center" key="nickName" prop="nickName" v-if="columns[2].visible"  />
+                    <el-table-column label="专业" align="center" key="deptName" prop="dept.deptName" v-if="columns[3].visible"  />
                     <el-table-column label="手机号码" align="center" key="phonenumber" prop="phonenumber" v-if="columns[4].visible" width="120" />
-                    <el-table-column label="状态" align="center" prop="status" width="60" v-if="columns[5].visible" :show-overflow-tooltip="true">
-                      <template scope="scope" >
-                        <el-switch
-                          v-model="scope.row.status"
-                          active-value="0"
-                          inactive-value="1"
-                          @change="changeStatus(scope.row)"
-                        >
-                        </el-switch>
-                      </template>
-                    </el-table-column>
                     <el-table-column label="创建时间" align="center" prop="createTime" v-if="columns[6].visible" width="160">
                       <template slot-scope="scope">
                         <span>{{ parseTime(scope.row.createTime) }}</span>
@@ -333,12 +307,6 @@
 		    </el-select>
 		</el-form-item>
 
-    <el-form-item label="状态" v-if="this.title =='修改实习信息'" prop="status">
-      <el-radio-group v-model="form.status">
-        <el-radio label="0">启用</el-radio>
-        <el-radio label="1">禁用</el-radio>
-      </el-radio-group>
-    </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button v-if="this.title == '实习分配'" type="primary" @click="submitAllocation">确 定</el-button>
@@ -420,8 +388,13 @@ export default {
       numberOptions: [],
       //指导老师
       teachers : [],
+      foldOpen : false,
       //实习学生
       students : [],
+      hamburgerParam : {
+        academyW : 0,
+        mainW : 24
+      },
       //实习基地
       baseInfos : [],
         value: '',
@@ -517,24 +490,6 @@ export default {
         }
       )
     },
-    /** 状态改变操作 */
-    changeStatus(row) {
-      let that = this
-      let text = row.status ==="0" ? "有效" : "无效";
-      this.$confirm('是否将ID为 '+row.infoId+' 的实习信息状态改为'+text,"状态变更",{
-        confirmButtonText:"确定",
-        cancelButtonText:"取消",
-        type:"warning"
-      }).then(function () {
-        that.statusChangeParams.infoId = row.infoId
-        that.statusChangeParams.status = row.status
-        return changeStatus(that.statusChangeParams)
-      }).then(()=>{
-        this.msgSuccess("修改成功");
-      }).catch(function () {
-        row.status = row.status==="0"?"1":"0";
-      });
-    },
     handleClose(done) {
       this.$confirm('确认关闭？')
         .then(_ => {
@@ -552,6 +507,16 @@ export default {
           }
         })
       });
+    },
+    foldContoller(){
+      this.foldOpen = !this.foldOpen
+      if(this.foldOpen == true){
+        this.hamburgerParam.academyW = 4
+        this.hamburgerParam.mainW = 20
+      }else{
+        this.hamburgerParam.academyW = 0
+        this.hamburgerParam.mainW = 24
+      }
     },
     confirmStudent(){
       this.dialogVisible = false;
@@ -598,9 +563,9 @@ export default {
         this.teachers = response.rows;
         this.ttotal = response.total;
         console.log(response)
-        var param = '[{'+'"value" : "'+response.rows[0].userId+'","label" : " ' + response.rows[0].nickName +'（' + response.rows[0].guideStudent.length + '/' + response.rows[0].expectNumber +'）'+ '"}'
+        var param = '[{'+'"value" : "'+response.rows[0].userId+'","label" : " ' + response.rows[0].nickName +'（' + response.rows[0].guideStudent.length + '人/' + response.rows[0].expectNumber +'人）'+ '"}'
         for(var i = 1 ; i < this.ttotal ; i++){
-          param += ',{'+'"value" : "'+response.rows[i].userId+'","label" : "' + response.rows[i].nickName +'（' + response.rows[i].guideStudent.length + '/' + response.rows[i].expectNumber +'）'+ '"}'
+          param += ',{'+'"value" : "'+response.rows[i].userId+'","label" : "' + response.rows[i].nickName +'（' + response.rows[i].guideStudent.length + '人/' + response.rows[i].expectNumber +'人）'+ '"}'
         }
         param += ']'
         var dataMap = JSON.parse(param);  //这是一个json数组 ，原数组
@@ -757,7 +722,7 @@ export default {
     /** 删除按钮操作 */
     handleDelete(row) {
       const infoIds = row.infoId || this.ids;
-      this.$confirm('是否确认删除实习信息编号为"' + infoIds + '"的数据项?', "警告", {
+      this.$confirm('是否要取消' + row.baseInfo.baseName + '实习点?', "警告", {
           confirmButtonText: "确定",
           cancelButtonText: "取消",
           type: "warning"

@@ -519,8 +519,6 @@ export default {
       this.single = selection.length!==1
       this.multiple = !selection.length
     },
-
-
     /** 状态改变操作 */
     changeStatus(row) {
       let text = row.status ==="1" ? "有效" : "无效";

@@ -96,7 +96,7 @@
         width="180"
       />
       <el-table-column
-        label="状态"
+        label="审核状态"
         align="center"
         prop="status"
         :formatter="statusFormat"
@@ -159,12 +159,11 @@
             </el-form-item>
           </el-col>
           <el-col :span="24">
-            <el-form-item label="状态" v-hasPermi="['system:notice:edit']">
+            <el-form-item label="审核状态" v-hasPermi="['system:notice:edit']">
               <el-radio-group v-model="noticeStatus">
                 <el-radio-button
                   v-hasPermi="['system:notice:edit']"
                   v-for="dict in [
-                  {value: '0',label:'待审核'},
                   {value: '1',label:'审核通过'},
                   {value: '2',label:'审核不通过'}]"
                   :key="dict.value"

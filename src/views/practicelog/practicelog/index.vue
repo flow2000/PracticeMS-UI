@@ -108,15 +108,59 @@
       <el-table-column label="序号" type="index" align="center" show-overflow-tooltip width="50px">
       </el-table-column>
 <!--      <el-table-column label="日志ID" align="center" prop="logId" />-->
-      <el-table-column label="学号" align="center" prop="userName" width="150"/>
-      <el-table-column label="姓名" align="center" prop="user.nickName"width="80"/>
-<!--      <el-table-column label="地点信息" align="center" prop="locationName" />-->
+      <el-table-column label="学号" align="center" prop="userName" width="150">
+        <template slot-scope="scope">
+          <div v-if="scope.row.userName">
+            <el-popover
+              v-if="scope.row.userName.length > 12"
+              placement="top"
+              trigger="hover"
+            >
+              <span>{{scope.row.userName}}</span>
+              <span slot="reference" style="curosr:pointer">{{scope.row.userName.slice(0,12)+"..."}}</span>
+            </el-popover>
+            <div v-else>{{scope.row.userName}}</div>
+          </div>
+          <div v-else>--</div>
+        </template>
+      </el-table-column>
+      <el-table-column label="姓名" align="center" prop="user.nickName"width="100">
+        <template slot-scope="scope">
+          <div v-if="scope.row.user.nickName">
+            <el-popover
+              v-if="scope.row.user.nickName.length > 9"
+              placement="top"
+              trigger="hover"
+            >
+              <span>{{scope.row.user.nickName}}</span>
+              <span slot="reference" style="curosr:pointer">{{scope.row.user.nickName.slice(0,9)+"..."}}</span>
+            </el-popover>
+            <div v-else>{{scope.row.user.nickName}}</div>
+          </div>
+          <div v-else>--</div>
+        </template>
+      </el-table-column>
       <el-table-column label="创建时间" align="center" prop="time" width="120">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.time, '{y}-{m}-{d}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="日志内容" align="center" prop="logContents"/>
+      <el-table-column label="日志内容" prop="logContents" align="left">
+        <template slot-scope="scope">
+          <div v-if="scope.row.logContents">
+            <el-popover
+              v-if="scope.row.logContents.length > 40"
+              placement="top"
+              trigger="hover"
+            >
+              <span>{{scope.row.logContents}}</span>
+              <span slot="reference" style="curosr:pointer">{{scope.row.logContents.slice(0,40)+"..."}}</span>
+            </el-popover>
+            <div v-else>{{scope.row.logContents}}</div>
+          </div>
+          <div v-else>--</div>
+        </template>
+      </el-table-column>
       <el-table-column label="操作" align="center" width="220" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
@@ -573,5 +617,10 @@
   };
 </script>
 <style>
-
+.overClass{
+  white-space:nowrap;
+  text-overflow:ellipsis;
+  overflow:hidden;
+  width: 170px;
+}
 </style>
