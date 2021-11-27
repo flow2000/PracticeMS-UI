@@ -92,7 +92,7 @@
       <div class="mc-ui-grid-item right-mid1">
         <p class="title1">本周实习学生考勤统计</p>
         <hr/>
-        <div id="chart3" style="
+        <div id="chart3"  style="
         width: 110%;height: 90%;position:relative;
         top: 0%;z-index: 2;
         "></div>
@@ -103,11 +103,11 @@
 
 
       <div class="mc-ui-grid-item left-bottom" >
-        <div id="chart2" style="width: 100%;height: 100%;padding-top: 10%"></div>
+        <div id="chart2"  style="width: 100%;height: 100%;padding-top: 10%"></div>
       </div>
 
       <div class="mc-ui-grid-item right-bottom" >
-        <div id="chart1" style="width: 95%;height: 100%;"></div>
+        <div id="chart1"  style="width: 95%;height: 100%;"></div>
       </div>
 
     </div>
@@ -226,22 +226,30 @@
           focusPracticeNum : 0
         },
         // 最近一周考勤记录
-        thisWeekData : []
+        weekPunch : [],
+        // 图表
+        charts:{
+          chart1:null,
+          chart2:null,
+          chart3:null
+        }
       };
     },
     created() {
       // 获取当前用户信息
       this.getUser();
+
     },
     mounted(){
+      // 获取大屏数据
+      this.getScreenData();
 
-      // 数据大屏初始化
-      this.initScreenData();
+      // 创建图表实例
+      this.initCharts();
 
       // 地图初始化
       var that = this
       this.init(that)
-
       // 接收详细公告信息
       bus.$on('sendNoticeDetail',(detail)=>{
         this.noticeDetail=detail;
@@ -252,7 +260,13 @@
         this.noticeList=list;
         this.allNotice.visible=true;
       })
+    },
+    beforeUpdate() {
 
+    },
+    updated() {
+      // 绘制图表
+      this.drawLine();
     },
     methods: {
 
@@ -260,15 +274,14 @@
         window.open(href, "_blank");
       },
 
-      /* 获取大屏数据并初始化图表 */
-      initScreenData(){
+      /* 获取大屏数据 */
+      getScreenData(){
         this.getTodayPracLogList();
         this.getTodayPunchList();
         this.getUserList();
         this.getStuCount();
         this.getWeekPunch();
-        this.getArrList();
-        this.drawLine();
+        //this.getArrList();
       },
 
       /* 获取当前用户信息 */
@@ -333,7 +346,7 @@
       /* 指导老师获取实习学生总数 */
       getStuCount(){
         stuInfoList(this.stuParams).then(response=>{
-          console.log(response)
+          //console.log(response)
           this.stuCount=response.total;
         })
       },
@@ -341,18 +354,25 @@
       /* 获取一周考勤记录 */
       getWeekPunch(){
         selectNowWeekAttendanceList().then(response=>{
-          that.thisWeekData = response.data
+          this.weekPunch = response.data
+          //console.log(this.weekPunch)
         })
       },
 
+      /* 创建图表实例 */
+      initCharts(){
+        // 基于准备好的dom，初始化echarts实例
+        this.charts.chart1 = echarts.init(document.getElementById('chart1'))
+        this.charts.chart2 = echarts.init(document.getElementById('chart2'))
+        this.charts.chart3 = echarts.init(document.getElementById('chart3'))
+        //console.log(this.charts.chart1)
+      },
       /* 绘图 */
       drawLine(){
-        // 基于准备好的dom，初始化echarts实例
-        let chart1 = echarts.init(document.getElementById('chart1'))
-        let chart2 =echarts.init(document.getElementById('chart2'))
-        let chart3 =echarts.init(document.getElementById('chart3'))
         // 绘制图表
-        chart1.setOption({
+        //console.log("准备绘图")
+        //console.log(this.charts)
+        this.charts.chart1.setOption({
           tooltip: {
             trigger: 'axis',
             axisPointer: {
@@ -466,7 +486,7 @@
             }
           ]
         });
-        chart2.setOption({
+        this.charts.chart2.setOption({
           title: {
             text: '实习类型情况',
             left: 'center'
@@ -497,7 +517,7 @@
             }
           ]
         });
-        chart3.setOption({
+        this.charts.chart3.setOption({
           tooltip: {
             trigger: 'axis',
             axisPointer: {
@@ -518,7 +538,7 @@
           },
           series: [
             {
-              data: [120, 200, 150, 80, 70, 110, 130],
+              data: this.weekPunch,
               type: 'bar'
             }
           ],
