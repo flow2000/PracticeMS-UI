@@ -60,15 +60,3 @@ export function exportInfo(query) {
   })
 }
 
-// 地点信息状态修改
-export function changeLocationStatus(locationId, status) {
-  const data = {
-    locationId,
-    status
-  }
-  return request({
-    url: '/location/info/changeStatus',
-    method: 'put',
-    data: data
-  })
-}

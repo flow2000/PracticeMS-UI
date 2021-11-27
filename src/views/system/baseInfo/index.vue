@@ -2,145 +2,34 @@
   <div class="app-container">
     <!--搜索项-->
     <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px">
-      <el-form-item label="基地ID" prop="baseId">
+      <el-form-item label="查询字段" prop="searchKey">
+        <el-select v-model="queryParams.searchKey" placeholder="请选择查询字段(默认全部)" clearable size="small">
+          <el-option label="所有查询字段" value="allKeys" />
+          <el-option label="单位名称" value="companyName" />
+          <el-option label="单位性质" value="baseNature" />
+          <el-option label="详细地址" value="baseAddress" />
+          <el-option label="基地联系人" value="baseContacts" />
+          <el-option label="基地联系人电话" value="basePhone" />
+          <el-option label="学校负责人" value="schoolLeader" />
+          <el-option label="学校负责人电话" value="schoolPhone" />
+        </el-select>
+      </el-form-item>
+
+      <el-form-item label="查询字符" prop="searchValue">
         <el-input
-          v-model="queryParams.baseId"
-          placeholder="请输入基地ID"
+          v-model="queryParams.searchValue"
+          placeholder="请输入查询字符"
           clearable
           size="small"
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-
-      <!--单位名称-->
-      <!--<el-form-item label="单位名称" prop="companyName">
-        <el-input
-          v-model="queryParams.companyName"
-          placeholder="请输入单位名称"
-          clearable
-          size="small"
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>-->
-
-      <el-form-item label="基地名称" prop="baseName">
-        <el-input
-          v-model="queryParams.baseName"
-          placeholder="请输入基地名称"
-          clearable
-          size="small"
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <!--基地单位性质-->
-      <!--<el-form-item label="基地单位性质" prop="baseNature">
-        <el-input
-          v-model="queryParams.baseNature"
-          placeholder="请输入基地单位性质"
-          clearable
-          size="small"
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>-->
-
-      <!--基地法定代表-->
-      <!--<el-form-item label="基地法定代表" prop="baseLeader">
-        <el-input
-          v-model="queryParams.baseLeader"
-          placeholder="请输入基地法定代表"
-          clearable
-          size="small"
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>-->
-      <!--基地联系人-->
-      <!--<el-form-item label="基地联系人" prop="baseContacts">
-        <el-input
-          v-model="queryParams.baseContacts"
-          placeholder="请输入基地联系人"
-          clearable
-          size="small"
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>-->
-      <!--联系电话-->
-      <!--<el-form-item label="联系电话" prop="basePhone">
-        <el-input
-          v-model="queryParams.basePhone"
-          placeholder="请输入联系电话"
-          clearable
-          size="small"
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>-->
-      <!--传真-->
-      <!--<el-form-item label="传真" prop="baseFax">
-        <el-input
-          v-model="queryParams.baseFax"
-          placeholder="请输入传真"
-          clearable
-          size="small"
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>-->
-      <!--邮箱-->
-      <!--<el-form-item label="邮箱" prop="baseEmail">
-        <el-input
-          v-model="queryParams.baseEmail"
-          placeholder="请输入邮箱"
-          clearable
-          size="small"
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>-->
-
-      <!--学校基地负责人-->
-      <!--<el-form-item label="学校基地负责人" prop="schoolLeader">
-        <el-input
-          v-model="queryParams.schoolLeader"
-          placeholder="请输入学校基地负责人"
-          clearable
-          size="small"
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>-->
-      <!--学校基地负责人电话-->
-      <!--<el-form-item label="学校基地负责人电话" prop="schoolPhone">
-        <el-input
-          v-model="queryParams.schoolPhone"
-          placeholder="请输入学校基地负责人电话"
-          clearable
-          size="small"
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>-->
-      <!--基地状态-->
-      <!--<el-form-item label="基地状态" prop="status">
-        <el-select v-model="queryParams.status" placeholder="请选择基地状态" clearable size="small">
-          <el-option
-            v-for="dict in statusOptions"
-            :key="dict.dictValue"
-            :label="dict.dictLabel"
-            :value="dict.dictValue"
-          />
-        </el-select>
-      </el-form-item>-->
-      <!--删除标志-->
-      <!--<el-form-item label="删除标志" prop="delFlag">
-        <el-select v-model="queryParams.delFlag" placeholder="请选择删除标志" clearable size="small">
-          <el-option
-            v-for="dict in delFlagOptions"
-            :key="dict.dictValue"
-            :label="dict.dictLabel"
-            :value="dict.dictValue"
-          />
-        </el-select>
-      </el-form-item>-->
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
       </el-form-item>
     </el-form>
+
     <!--表头按钮-->
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
@@ -202,14 +91,13 @@
       <el-table-column type="selection" width="55" align="center" />
 
       <!--<el-table-column label="基地ID" align="center" key="baseId" prop="baseId" />-->
-      <el-table-column label="基地名称" align="center" prop="baseName" />
-      <el-table-column label="基地单位性质" align="center" prop="baseNature" />
+      <el-table-column label="单位名称" align="center" prop="companyName" />
+      <el-table-column label="单位性质" align="center" prop="baseNature" />
       <el-table-column label="基地联系人" align="center" prop="baseContacts" />
       <el-table-column label="基地联系电话" align="center" prop="basePhone" />
-      <el-table-column label="学校基地负责人" align="center" prop="schoolLeader" />
-      <el-table-column label="学校基地联系电话" align="center" prop="schoolPhone" />
-
-      <el-table-column label="启用/停用" align="center" key="status" >
+      <el-table-column label="学校负责人" align="center" prop="schoolLeader" />
+      <el-table-column label="学校负责人电话" align="center" prop="schoolPhone" />
+      <!--<el-table-column label="启用/停用" align="center" key="status" >
         <template slot-scope="scope" style="min-width: 100px">
           <el-switch
             v-model="scope.row.status"
@@ -225,7 +113,7 @@
             已停用
           </div>
         </template>
-      </el-table-column>
+      </el-table-column>-->
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
@@ -262,15 +150,15 @@
 
     <!-- 添加或修改基地信息管理对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
-      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
+      <el-form ref="form" :model="form" :rules="rules" label-width="120px">
         <el-form-item label="单位名称" prop="companyName">
           <el-input v-model="form.companyName" placeholder="请输入单位名称" />
         </el-form-item>
+        <el-form-item label="单位性质" prop="baseNature">
+          <el-input v-model="form.baseNature" placeholder="请输入基地单位性质" />
+        </el-form-item>
         <el-form-item label="基地名称" prop="baseName">
           <el-input v-model="form.baseName" placeholder="请输入基地名称" />
-        </el-form-item>
-        <el-form-item label="基地单位性质" prop="baseNature">
-          <el-input v-model="form.baseNature" placeholder="请输入基地单位性质" />
         </el-form-item>
         <el-form-item label="基地法定代表" prop="baseLeader">
           <el-input v-model="form.baseLeader" placeholder="请输入基地法定代表" />
@@ -278,83 +166,75 @@
         <el-form-item label="基地联系人" prop="baseContacts">
           <el-input v-model="form.baseContacts" placeholder="请输入基地联系人" />
         </el-form-item>
-        <el-form-item label="联系电话" prop="basePhone">
+        <el-form-item label="基地联系人电话" prop="basePhone">
           <el-input v-model="form.basePhone" placeholder="请输入联系电话" />
         </el-form-item>
-        <el-form-item label="传真" prop="baseFax">
-          <el-input v-model="form.baseFax" placeholder="请输入传真" />
-        </el-form-item>
-
-        <el-form-item label="基地单位地址" prop="baseAddress">
+        <el-form-item label="基地地址" prop="baseAddress">
           <el-input v-model="form.baseAddress" type="textarea" id="search" placeholder="请输入基地单位地址" />
           <div class="tip-box" id="searchTip" style="z-index: 999999;"></div>
           <el-amap class="amap-box" :amap-manager="amapManager" :vid="'amap-vue'" :zoom="zoom" :plugin="plugin" :center="center" :events="events">
             <el-amap-marker v-for="(marker, index) in markers" :position="marker" :key="index"></el-amap-marker>
           </el-amap>
         </el-form-item>
-
-        <!--<el-form-item label="基地单位地址" prop="baseAddress">
-          <el-input v-model="form.baseAddress" type="textarea" placeholder="请输入内容" />
-        </el-form-item>-->
-        <el-form-item label="地点经纬度" prop="tude">
-          <el-input v-model="form.tude" placeholder="请输入地点经纬度" />
-        </el-form-item>
-        <el-form-item label="邮箱" prop="baseEmail">
-          <el-input v-model="form.baseEmail" placeholder="请输入邮箱" />
-        </el-form-item>
-        <el-form-item label="学校基地负责人" prop="schoolLeader">
+        <el-form-item label="学校负责人" prop="schoolLeader">
           <el-input v-model="form.schoolLeader" placeholder="请输入学校基地负责人" />
         </el-form-item>
-        <el-form-item label="学校基地负责人电话" prop="schoolPhone">
+        <el-form-item label="学校负责人电话" prop="schoolPhone">
           <el-input v-model="form.schoolPhone" placeholder="请输入学校基地负责人电话" />
         </el-form-item>
-        <el-form-item label="基地情况简介" prop="baseIntroduction">
-          <el-input v-model="form.baseIntroduction" type="textarea" placeholder="请输入内容" />
-        </el-form-item>
-        <el-form-item label="实习环境" prop="practiceEnvironment">
-          <el-input v-model="form.practiceEnvironment" type="textarea" placeholder="请输入内容" />
-        </el-form-item>
-        <el-form-item label="基地状态">
-          <el-radio-group v-model="form.status">
-            <el-radio
-              v-for="dict in statusOptions"
-              :key="dict.dictValue"
-              :label="dict.dictValue"
-            >{{dict.dictLabel}}</el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="上传基地申请表">
-          <el-upload ref="upload"
-                     :file-list="upload.fileList"
-                     :action="upload.formUrl"
-                     :headers="upload.headers"
-                     :limit="1"
-                     :on-progress="handleFileUploadProgress"
-                     :on-success="handleFileSuccess"
-                     accept=".pdf"
-                     data="{}"
-          >
-            <el-button size="small" type="primary" icon="el-icon-upload">点击上传</el-button>
-            <div slot="tip" class="el-upload__tip">只能上传不超过 50MB 的.pdf文件</div>
-          </el-upload>
-        </el-form-item>
-        <el-form-item label="删除标志">
-          <el-radio-group v-model="form.delFlag">
-            <el-radio
-              v-for="dict in delFlagOptions"
-              :key="dict.dictValue"
-              :label="dict.dictValue"
-            >{{dict.dictLabel}}</el-radio>
-          </el-radio-group>
-        </el-form-item>
+
+        <label class="moreItem" @click="handleShowMoreItem()" >{{moreItemTitle}}</label>
+        <!-- 更多添加/修改项 -->
+        <div  :style="moreItemStyle">
+          <el-form-item label="传真" prop="baseFax">
+            <el-input v-model="form.baseFax" placeholder="请输入传真" />
+          </el-form-item>
+          <el-form-item label="地点经纬度" prop="tude">
+            <el-input v-model="form.tude" placeholder="请输入地点经纬度" />
+          </el-form-item>
+          <el-form-item label="邮箱" prop="baseEmail">
+            <el-input v-model="form.baseEmail" placeholder="请输入邮箱" />
+          </el-form-item>
+          <el-form-item label="基地情况简介" prop="baseIntroduction">
+            <el-input v-model="form.baseIntroduction" type="textarea" placeholder="请输入内容" />
+          </el-form-item>
+          <el-form-item label="实习环境" prop="practiceEnvironment">
+            <el-input v-model="form.practiceEnvironment" type="textarea" placeholder="请输入内容" />
+          </el-form-item>
+          <el-form-item label="上传基地申请表">
+            <el-upload ref="upload"
+                       :file-list="upload.fileList"
+                       :action="upload.formUrl"
+                       :headers="upload.headers"
+                       :limit="1"
+                       :on-progress="handleFileUploadProgress"
+                       :on-success="handleFileSuccess"
+                       accept=".pdf"
+                       data="{}"
+            >
+              <el-button size="small" type="primary" icon="el-icon-upload">点击上传</el-button>
+              <div slot="tip" class="el-upload__tip">只能上传不超过 50MB 的.pdf文件</div>
+            </el-upload>
+          </el-form-item>
+          <el-form-item label="删除标志">
+            <el-radio-group v-model="form.delFlag">
+              <el-radio
+                v-for="dict in delFlagOptions"
+                :key="dict.dictValue"
+                :label="dict.dictValue"
+              >{{dict.dictLabel}}</el-radio>
+            </el-radio-group>
+          </el-form-item>
+        </div>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
+
     <!-- 用户导入对话框 -->
-    <el-dialog :title="upload.title" :visible.sync="upload.open" width="500px">
+    <!--<el-dialog :title="upload.title" :visible.sync="upload.open" width="500px">
       <el-upload
         ref="upload"
         :limit="1"
@@ -382,7 +262,7 @@
         <el-button type="primary" @click="submitFileForm">确 定</el-button>
         <el-button @click="upload.open = false">取 消</el-button>
       </div>
-    </el-dialog>
+    </el-dialog>-->
     <!-- pdf申请表查看 -->
     <el-dialog :title="pdf.title" :visible.sync="pdf.open" width="1000px" append-to-body>
       <pdf
@@ -396,7 +276,7 @@
 </template>
 
 <script>
-  import { listBaseInfo, getBaseInfo, delBaseInfo, addBaseInfo, updateBaseInfo, exportBaseInfo,changeBaseStatus } from "@/api/system/baseInfo";
+  import { listBaseInfo, getBaseInfo, delBaseInfo, addBaseInfo, updateBaseInfo, exportBaseInfo } from "@/api/system/baseInfo";
   import { getToken } from "@/utils/auth";
   import { importTemplate } from "@/api/system/user";
   import pdf from 'vue-pdf';
@@ -410,6 +290,11 @@
     data() {
       let self = this
       return {
+        //
+        moreItemStyle:{
+          display:'none'
+        },
+        moreItemTitle:'更多添加/修改项 >>',
         upload: {
           // 是否显示弹出层（用户导入）
           open: false,
@@ -654,13 +539,25 @@
       /** 查询基地信息管理列表 */
       getList() {
         this.loading = true;
+        console.log(this.queryParams)
         listBaseInfo(this.queryParams).then(response => {
           this.baseInfoList = response.rows;
-          console.log(this.baseInfoList)
+          //console.log(this.baseInfoList)
           this.total = response.total;
-          console.log(this.total)
+          //console.log(this.total)
           this.loading = false;
         });
+      },
+
+      /* 显示更多添加/修改项 */
+      handleShowMoreItem(){
+        if(this.moreItemTitle!=='收起'){
+          this.moreItemStyle.display='block';
+          this.moreItemTitle='收起'
+        }else {
+          this.moreItemStyle.display='none';
+          this.moreItemTitle='更多添加/修改项 >>'
+        }
       },
       /** 地点信息搜索 */
       initSearch() {
@@ -712,6 +609,7 @@
         }
       },
 
+
       // 基地状态字典翻译
       statusFormat(row, column) {
         return this.selectDictLabel(this.statusOptions, row.status);
@@ -760,7 +658,7 @@
         this.handleQuery();
       },
       // 基地状态修改
-      handleStatusChange(row) {
+      /*handleStatusChange(row) {
         let text = row.status === "0" ? "启用" : "停用";
         this.$confirm('确认要' + text + '"' + row.baseName + '"吗?', "警告", {
           confirmButtonText: "确定",
@@ -773,7 +671,7 @@
         }).catch(function() {
           row.status = row.status === "0" ? "1" : "0";
         });
-      },
+      },*/
       // 多选框选中数据
       handleSelectionChange(selection) {
         this.ids = selection.map(item => item.baseId)
@@ -907,3 +805,13 @@
   };
 
 </script>
+
+<style type="text/css" scoped>
+  .moreItem{
+    color: #19a5e7;
+    cursor: pointer;
+  }
+  .moreItem:hover{
+    color: #1ab394;
+  }
+</style>

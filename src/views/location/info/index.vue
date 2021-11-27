@@ -1,28 +1,22 @@
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px">
-      <el-form-item label="单位名称" prop="companyName">
-        <el-input
-          v-model="queryParams.companyName"
-          placeholder="请输入单位名称"
-          clearable
-          size="small"
-          @keyup.enter.native="handleQuery"
-        />
+      <el-form-item label="查询字段" prop="searchKey">
+        <el-select v-model="queryParams.searchKey" placeholder="请选择查询字段(默认全部)" clearable size="small">
+          <el-option label="所有查询字段" value="allKeys" />
+          <el-option label="单位名称" value="companyName" />
+          <el-option label="详细地址" value="address" />
+          <el-option label="联系人" value="contacts" />
+          <el-option label="联系电话" value="phone" />
+          <el-option label="单位性质" value="nature" />
+          <el-option label="法定代表" value="leader" />
+        </el-select>
       </el-form-item>
-      <el-form-item label="详细地址" prop="address">
+
+      <el-form-item label="查询字符" prop="searchValue">
         <el-input
-          v-model="queryParams.address"
-          placeholder="请输入详细地址"
-          clearable
-          size="small"
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="联系人" prop="contacts">
-        <el-input
-          v-model="queryParams.contacts"
-          placeholder="请输入联系人"
+          v-model="queryParams.searchValue"
+          placeholder="请输入查询字符"
           clearable
           size="small"
           @keyup.enter.native="handleQuery"
@@ -83,83 +77,12 @@
 
     <el-table v-loading="loading" :data="infoList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="单位名称" align="center" prop="companyName">
-        <template slot-scope="scope">
-          <div v-if="scope.row.companyName">
-            <el-popover
-              v-if="scope.row.companyName.length > 7"
-              placement="top"
-              trigger="hover"
-            >
-              <span>{{scope.row.companyName}}</span>
-              <span slot="reference" style="curosr:pointer">{{scope.row.companyName.slice(0,7)+"..."}}</span>
-            </el-popover>
-            <div v-else>{{scope.row.companyName}}</div>
-          </div>
-          <div v-else>--</div>
-        </template>
-      </el-table-column>
-      <el-table-column label="详细地址" align="center" prop="address">
-        <template slot-scope="scope">
-          <div v-if="scope.row.address">
-            <el-popover
-              v-if="scope.row.address.length > 7"
-              placement="top"
-              trigger="hover"
-            >
-              <span>{{scope.row.address}}</span>
-              <span slot="reference" style="curosr:pointer">{{scope.row.address.slice(0,7)+"..."}}</span>
-            </el-popover>
-            <div v-else>{{scope.row.address}}</div>
-          </div>
-          <div v-else>--</div>
-        </template>
-      </el-table-column>
-      <el-table-column label="联系人" align="center" prop="contacts" :show-overflow-tooltip="true">
-        <template slot-scope="scope">
-          <div v-if="scope.row.contacts">
-            <el-popover
-              v-if="scope.row.contacts.length > 7"
-              placement="top"
-              trigger="hover"
-            >
-              <span>{{scope.row.contacts}}</span>
-              <span slot="reference" style="curosr:pointer">{{scope.row.contacts.slice(0,7)+"..."}}</span>
-            </el-popover>
-            <div v-else>{{scope.row.contacts}}</div>
-          </div>
-          <div v-else>--</div>
-        </template>
-      </el-table-column>
-      <el-table-column label="联系电话" align="center" prop="phone" :show-overflow-tooltip="true"/>
-      <el-table-column label="单位性质" align="center" prop="nature" :show-overflow-tooltip="true">
-        <template slot-scope="scope">
-          <div v-if="scope.row.nature">
-            <el-popover
-              v-if="scope.row.nature.length > 7"
-              placement="top"
-              trigger="hover"
-            >
-              <span>{{scope.row.nature}}</span>
-              <span slot="reference" style="curosr:pointer">{{scope.row.nature.slice(0,7)+"..."}}</span>
-            </el-popover>
-            <div v-else>{{scope.row.nature}}</div>
-          </div>
-          <div v-else>--</div>
-        </template>
-      </el-table-column>
-      <el-table-column label="法定代表" align="center" prop="leader" :show-overflow-tooltip="true"/>
-      <el-table-column label="状态" align="center" prop="status" >
-        <template slot-scope="scope">
-          <el-switch
-            v-if="scope.row.status"
-            v-model="scope.row.status"
-            active-value="0"
-            inactive-value="1"
-            @change="handleStatusChange(scope.row)"
-          ></el-switch>
-        </template>
-      </el-table-column>
+      <el-table-column label="单位名称" align="center" prop="companyName"  :show-overflow-tooltip="true"/>
+      <el-table-column label="详细地址" align="center" prop="address"  :show-overflow-tooltip="true"/>
+      <el-table-column label="联系人" align="center" prop="contacts"  :show-overflow-tooltip="true"/>
+      <el-table-column label="联系电话" align="center" prop="phone"  :show-overflow-tooltip="true"/>
+      <el-table-column label="单位性质" align="center" prop="nature"  :show-overflow-tooltip="true"/>
+      <el-table-column label="法定代表" align="center" prop="leader"  :show-overflow-tooltip="true"/>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
@@ -216,15 +139,6 @@
         <el-form-item label="法定代表" prop="leader">
           <el-input v-model="form.leader" placeholder="请输入法定代表" />
         </el-form-item>
-        <el-form-item label="状态">
-          <el-radio-group v-model="form.status">
-            <el-radio
-              v-for="dict in statusOptions"
-              :key="dict.dictValue"
-              :label="dict.dictValue"
-            >{{dict.dictLabel}}</el-radio>
-          </el-radio-group>
-        </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
@@ -277,7 +191,7 @@
   }
 </style>
 <script>
-import { getTude, listInfo, getInfo, delInfo, addInfo, updateInfo, exportInfo, changeLocationStatus } from "@/api/location/info";
+import { listInfo, getInfo, delInfo, addInfo, updateInfo, exportInfo } from "@/api/location/info";
 import {AMapManager, lazyAMapApiLoaderInstance} from 'vue-amap'
 let amapManager = new AMapManager()
 export default {
@@ -305,27 +219,24 @@ export default {
       title: "",
       // 是否显示弹出层
       open: false,
-      // 状态字典
-      statusOptions: [],
-      // 删除标志字典
-      delFlagOptions: [],
       // 查询参数
       queryParams: {
         pageNum: 1,
         pageSize: 10,
-        companyName: null,
-        address: null,
-        contacts: null,
+        searchKey: null,
+        searchValue: null,
       },
       // 表单参数
       form: {},
       // 表单校验
       rules: {
         companyName: [
-          { required: true, message: "单位名称不能为空", trigger: "blur" }
+          { required: true, message: "单位名称不能为空", trigger: "blur" },
+          { min: 2, max: 30, message: '单位名称长度必须介于 2 和 30 之间', trigger: 'blur' }
         ],
         address: [
-          { required: true, message: "详细地址不能为空", trigger: "blur" }
+          { required: true, message: "详细地址不能为空", trigger: "blur" },
+          { min: 2, max: 120, message: '详细地址长度必须介于 2 和 120 之间', trigger: 'blur' }
         ],
         phone: [
           { pattern: /^1[3|4|5|6|7|8|9][0-9]\d{8}$/, message: "请输入正确的手机号码", trigger: "blur" }
@@ -459,12 +370,6 @@ export default {
   },
   created() {
     this.getList();
-    this.getDicts("sys_status").then(response => {
-      this.statusOptions = response.data;
-    });
-    this.getDicts("sys_del_flag").then(response => {
-      this.delFlagOptions = response.data;
-    });
   },
   methods: {
     /** 查询地点信息列表 */
@@ -525,30 +430,6 @@ export default {
         this.poiPicker.searchByKeyword(this.searchKey)
       }
     },
-
-    // 状态字典翻译
-    statusFormat(row, column) {
-      return this.selectDictLabel(this.statusOptions, row.status);
-    },
-    // 删除标志字典翻译
-    delFlagFormat(row, column) {
-      return this.selectDictLabel(this.delFlagOptions, row.delFlag);
-    },
-    // 地点信息状态修改
-    handleStatusChange(row) {
-      let text = row.status === "0" ? "启用" : "停用";
-      this.$confirm('确认要"' + text + '吗?', "警告", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning"
-      }).then(function() {
-        return changeLocationStatus(row.locationId, row.status);
-      }).then(() => {
-        this.msgSuccess(text + "成功");
-      }).catch(function() {
-        row.status = row.status === "0" ? "1" : "0";
-      });
-    },
     // 取消按钮
     cancel() {
       this.open = false;
@@ -565,8 +446,8 @@ export default {
         phone: null,
         nature: null,
         leader: null,
-        status: "0",
-        delFlag: "0"
+        delFlag: "0",
+        searchKey : null
       };
       this.resetForm("form");
     },
@@ -625,7 +506,8 @@ export default {
     /** 删除按钮操作 */
     handleDelete(row) {
       const locationIds = row.locationId || this.ids;
-      this.$confirm('确认删除' + row.companyName + '?', "警告", {
+      const companyName = row.companyName;
+      this.$confirm(companyName === undefined?'确认删除所选数据项？':"确认删除"+ companyName +"？", "警告", {
           confirmButtonText: "确定",
           cancelButtonText: "取消",
           type: "warning"
@@ -654,3 +536,9 @@ export default {
   }
 };
 </script>
+
+<style>
+  .el-textarea__inner{
+    height: 100px
+  }
+</style>
