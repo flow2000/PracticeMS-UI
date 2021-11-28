@@ -8,7 +8,6 @@ export function listPracticeScore(query) {
     params: query
   })
 }
-
 // 查询设置项
 export function listSetting() {
   return request({
@@ -77,6 +76,16 @@ export function exportPracticeScore(query) {
     params: query
   })
 }
+
+// 导出归档实习成绩
+export function exportArchivedScore(query) {
+  return request({
+    url: '/practice-score/practiceScore/exportArchived',
+    method: 'get',
+    params: query
+  })
+}
+
 
 // 修改实习成绩状态
 export function updateScoreStatus(scoreId,status) {

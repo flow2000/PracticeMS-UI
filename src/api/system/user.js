@@ -75,6 +75,14 @@ export function exportUser(query) {
     params: query
   })
 }
+// 导出归档用户
+export function exportArchivedUser(query) {
+  return request({
+    url: '/system/user/exportArchived',
+    method: 'get',
+    params: query
+  })
+}
 
 // 用户密码重置
 export function resetUserPwd(userId, password) {

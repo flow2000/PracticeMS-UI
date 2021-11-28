@@ -51,6 +51,15 @@ export function exportPracticelog(query) {
     params: query
   })
 }
+// 导出归档实习日志
+export function exportArchivedPracticelog(query) {
+  return request({
+    url: '/practicelog/practicelog/exportArchived',
+    method: 'get',
+    params: query
+  })
+}
+
 
 // 获得当天的填写日志人数
 export function getTodayPracLogList() {

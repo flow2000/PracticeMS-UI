@@ -52,6 +52,15 @@ export function exportPunch(query) {
     params: query
   })
 }
+// 导出归档打卡签到
+export function exportArchivedPunch(query) {
+  return request({
+    url: '/punch/punch/exportArchived',
+    method: 'get',
+    params: query
+  })
+}
+
 
 // 获得当天的打卡签到人数
 export function getTodayPunchList() {

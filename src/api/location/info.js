@@ -59,4 +59,13 @@ export function exportInfo(query) {
     params: query
   })
 }
+// 导出归档地点信息
+export function exportArchivedLocationInfo(query) {
+  return request({
+    url: '/location/info/exportArchived',
+    method: 'get',
+    params: query
+  })
+}
+
 
