@@ -5,7 +5,7 @@
       <el-col :span="this.hamburgerParam.academyW" :xs="24">
         <div class="head-container">
           <el-form>
-            <el-form-item  prop="role">
+            <el-form-item prop="role">
               <el-select
                 v-model="queryParams.role"
                 placeholder="用户类型"
@@ -181,7 +181,19 @@
             </el-button>
           </el-col>
 
-          <right-toolbar :showSearch.sync="showSearch" @queryTable="getList" :columns="columns"></right-toolbar>
+          <el-col :span="1.5">
+            <el-button
+              type="warning"
+              plain
+              icon="el-icon-download"
+              size="mini"
+              :loading="exportLoading"
+              @click="exportArchive"
+              v-hasPermi="['system:user:export']"
+            >导出归档数据
+            </el-button>
+          </el-col>
+          <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
         </el-row>
 
         <el-table v-loading="loading" :data="userList" @selection-change="handleSelectionChange">
@@ -402,6 +414,36 @@
       </div>
     </el-dialog>
 
+    <!-- 导出归档数据的对话框 -->
+    <el-dialog :title="export_archive.title" :visible.sync="export_archive.open" width="400px" class="export_archive"
+               append-to-body>
+      <div class="block" style="text-align: center;">
+        <el-form>
+          <el-form-item prop="role">
+            <el-select
+              v-model="archiveTime"
+              placeholder="请选择导出数据年份"
+              clearable
+              size="small"
+              style="width: 70%"
+            >
+              <el-option
+                v-for="dict in archivedYears"
+                :key="dict.dictValue"
+                :label="dict.dictLabel"
+                :value="dict.dictValue"
+              />
+            </el-select>
+          </el-form-item>
+        </el-form>
+      </div>
+
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="submitExportArchive">确 定</el-button>
+        <el-button @click="export_archive.open = false">取 消</el-button>
+      </div>
+    </el-dialog>
+
   </div>
 </template>
 
@@ -413,6 +455,7 @@
     addUser,
     updateUser,
     exportUser,
+    exportArchivedUser,
     resetUserPwd,
     changeUserStatus,
     importTemplate,
@@ -422,7 +465,7 @@
   import { treeselect } from '@/api/system/dept'
   import Treeselect from '@riophae/vue-treeselect'
   import '@riophae/vue-treeselect/dist/vue-treeselect.css'
-  import { Loading } from 'element-ui';
+  import { Loading } from 'element-ui'
 
   export default {
     name: 'User',
@@ -469,6 +512,8 @@
         postOptions: [],
         // 角色选项
         roleOptions: [],
+        // 归档数据年份选项
+        archivedYears: [],
         // 表单参数
         form: {},
         defaultProps: {
@@ -503,6 +548,15 @@
           // 请求地址
           url: process.env.VUE_APP_BASE_API + '/system/user/archived'
         },
+        // 导出归档数据参数
+        export_archive: {
+          // 是否显示弹出层（导出归档数据）
+          open: false,
+          // 弹出层标题（数据归档）
+          title: '',
+          // 请求地址
+          url: process.env.VUE_APP_BASE_API + '/system/user/exportArchived'
+        },
         // 查询参数
         queryParams: {
           pageNum: 1,
@@ -511,7 +565,8 @@
           phonenumber: undefined,
           status: undefined,
           deptId: undefined,
-          role: '实习学生'
+          role: '实习学生',
+          year: undefined
         },
         // 列信息
         columns: [
@@ -573,6 +628,10 @@
 
       this.getDicts('sys_user_roles').then(response => {
         this.roleOptions = response.data
+      })
+
+      this.getDicts('sys_archived_year').then(response => {
+        this.archivedYears = response.data
       })
 
       this.getConfigKey('sys.user.initPassword').then(response => {
@@ -801,6 +860,11 @@
         this.archive.title = '数据归档'
         this.archive.open = true
       },
+      /** 导出归档数据按钮操作 */
+      exportArchive() {
+        this.export_archive.title = '导出归档数据'
+        this.export_archive.open = true
+      },
       /** 下载模板操作 */
       importTemplate() {
         importTemplate().then(response => {
@@ -834,24 +898,56 @@
             background: 'rgba(0, 0, 0, 0.3)',
             lock: true
           }
-          let loadingInstance = Loading.service(loadData);
+          let loadingInstance = Loading.service(loadData)
           dataArchive(this.archiveTime).then(response => {
             this.$nextTick(() => {
               // 以服务的方式调用的 Loading 需要异步关闭
-              loadingInstance.close();
-            });
+              loadingInstance.close()
+            })
             this.msgSuccess('归档成功')
             this.archive.open = false
             this.getList()
             this.archiveTime = ''
           }).catch(resonse => {
-            loadingInstance.close();                // 关闭遮罩层
+            loadingInstance.close()                // 关闭遮罩层
             this.msgError('归档失败')
             this.archive.open = false
             this.archiveTime = ''
           })
         }
+      },
+      submitExportArchive() {
+        if (this.archiveTime == '') {
+          this.msgError('年份不能为空')
+        } else {
+          const queryParams = this.queryParams
+          queryParams.year = this.archiveTime
+          this.exportLoading = true
+          const loadData = {
+            spinner: 'el-icon-loading',
+            text: '导出中...',
+            background: 'rgba(0, 0, 0, 0.3)',
+            lock: true
+          }
+          let loadingInstance = Loading.service(loadData)
+          exportArchivedUser(queryParams).then(response => {
+            this.$nextTick(() => {
+              // 以服务的方式调用的 Loading 需要异步关闭
+              loadingInstance.close()
+            })
+            this.download(response.msg)
+            this.export_archive.open = false
+            this.archiveTime = ''
+            this.exportLoading = false
+          }).catch(() => {
+            loadingInstance.close()                // 关闭遮罩层
+            this.msgError('操作失败')
+            this.export_archive.open = false
+            this.archiveTime = ''
+          })
+        }
       }
+
     }
   }
 </script>

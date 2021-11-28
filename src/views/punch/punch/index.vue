@@ -37,6 +37,18 @@
           v-hasPermi="['punch:punch:export']"
         >导出</el-button>
       </el-col>
+
+      <el-col :span="1.5">
+        <el-button
+          type="warning"
+          plain
+          icon="el-icon-download"
+          size="mini"
+          :loading="exportLoading"
+          @click="exportArchive"
+          v-hasPermi="['punch:punch:export']"
+        >导出归档数据</el-button>
+      </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
@@ -122,18 +134,54 @@
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
+
+    <!-- 导出归档数据的对话框 -->
+    <el-dialog :title="export_archive.title" :visible.sync="export_archive.open" width="400px" class="export_archive"
+               append-to-body>
+      <div class="block" style="text-align: center;">
+        <el-form>
+          <el-form-item prop="role">
+            <el-select
+              v-model="archiveTime"
+              placeholder="请选择导出数据年份"
+              clearable
+              size="small"
+              style="width: 70%"
+            >
+              <el-option
+                v-for="dict in archivedYears"
+                :key="dict.dictValue"
+                :label="dict.dictLabel"
+                :value="dict.dictValue"
+              />
+            </el-select>
+          </el-form-item>
+        </el-form>
+      </div>
+
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="submitExportArchive">确 定</el-button>
+        <el-button @click="export_archive.open = false">取 消</el-button>
+      </div>
+    </el-dialog>
+
   </div>
 </template>
 
 <script>
-  import { listPunch, getPunch, delPunch, addPunch, updatePunch, exportPunch } from "@/api/punch/punch";
+  import { listPunch, exportArchivedPunch,getPunch, delPunch, addPunch, updatePunch, exportPunch } from "@/api/punch/punch";
   import qr from '@/assets/images/qr.png'
+  import { Loading } from 'element-ui'
 
 export default {
   name: "Punch",
   data() {
     const self = this;
       return {
+        //数据归档年份
+        archiveTime: '',
+        // 归档数据年份选项
+        archivedYears: [],
         center: [121.59996, 31.197646],
         lng: 0,
         lat: 0,
@@ -171,6 +219,14 @@ export default {
             }
           }
         }],
+
+        // 导出归档数据参数
+        export_archive: {
+          // 是否显示弹出层（导出归档数据）
+          open: false,
+          // 弹出层标题（数据归档）
+          title: '',
+        },
       // 遮罩层
       loading: true,
         //二维码
@@ -199,6 +255,7 @@ export default {
         pageNum: 1,
         pageSize: 10,
         createTime: null,
+        year: undefined
       },
       // 表单参数
       form: {},
@@ -213,6 +270,9 @@ export default {
   created() {
     this.getList();
 
+    this.getDicts('sys_archived_year').then(response => {
+      this.archivedYears = response.data
+    })
   },
   methods: {
     getLocation() {
@@ -316,6 +376,12 @@ export default {
     handleQuery() {
       this.queryParams.pageNum = 1;
       this.getList();
+    },
+
+    /** 导出归档数据按钮操作 */
+    exportArchive() {
+      this.export_archive.title = '导出归档数据'
+      this.export_archive.open = true
     },
     /** 重置按钮操作 */
     resetQuery() {
@@ -440,7 +506,40 @@ export default {
           this.download(response.msg);
           this.exportLoading = false;
         }).catch(() => {});
+    },
+
+    submitExportArchive() {
+      if (this.archiveTime == '') {
+        this.msgError('年份不能为空')
+      } else {
+        const queryParams = this.queryParams
+        queryParams.year = this.archiveTime
+        this.exportLoading = true
+        const loadData = {
+          spinner: 'el-icon-loading',
+          text: '导出中...',
+          background: 'rgba(0, 0, 0, 0.3)',
+          lock: true
+        }
+        let loadingInstance = Loading.service(loadData)
+        exportArchivedPunch(queryParams).then(response => {
+          this.$nextTick(() => {
+            // 以服务的方式调用的 Loading 需要异步关闭
+            loadingInstance.close()
+          })
+          this.download(response.msg)
+          this.export_archive.open = false
+          this.archiveTime = ''
+          this.exportLoading = false
+        }).catch(() => {
+          loadingInstance.close()                // 关闭遮罩层
+          this.msgError('操作失败')
+          this.export_archive.open = false
+          this.archiveTime = ''
+        })
+      }
     }
+
   }
 };
 </script>

@@ -78,3 +78,12 @@ export function exportArrangement(query) {
     params: query
   })
 }
+
+// 导出归档实习安排
+export function exportArchivedArrangement(query) {
+  return request({
+    url: '/arrangement/arrangement/exportArchived',
+    method: 'get',
+    params: query
+  })
+}
