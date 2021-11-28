@@ -124,6 +124,7 @@
             geocoder.getAddress([lng, lat], function (status, result) {
               if (status === 'complete' && result.info === 'OK') {
                 if (result && result.regeocode) {
+                  console.log(result)
                   console.log(result.regeocode.aois[0].location.lat)
                   console.log(result.regeocode.aois[0].location.lng)
                   console.log("地址为:"+result.regeocode.formattedAddress)

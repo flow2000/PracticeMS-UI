@@ -67,28 +67,6 @@
       </el-col>
       <el-col :span="1.5">
         <el-button
-          type="success"
-          plain
-          icon="el-icon-edit"
-          size="mini"
-          :disabled="single"
-          @click="handleUpdate"
-          v-hasPermi="['practicelog:practicelog:edit']"
-        >修改</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="danger"
-          plain
-          icon="el-icon-delete"
-          size="mini"
-          :disabled="multiple"
-          @click="handleDelete"
-          v-hasPermi="['practicelog:practicelog:remove']"
-        >删除</el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
           type="warning"
           plain
           icon="el-icon-download"
@@ -104,7 +82,6 @@
     </el-row>
 
     <el-table v-loading="loading" :data="practicelogList" border @selection-change="handleSelectionChange">
-      <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="序号" type="index" align="center" show-overflow-tooltip width="50px">
       </el-table-column>
 <!--      <el-table-column label="日志ID" align="center" prop="logId" />-->
@@ -169,7 +146,7 @@
             icon="el-icon-edit"
             @click="handleDetail(scope.row)"
             v-hasPermi="['practicelog:practicelog:edit']"
-          >日志详细</el-button>
+          >日志详情</el-button>
           <el-button
             size="small"
             type="primary"
@@ -553,12 +530,12 @@
           this.title = "修改实习日志";
         });
       },
-      /** 详细按钮 */
+      /** 详情按钮 */
       handleDetail(row) {
         const logId = row.logId || this.ids
         getPracticelog(logId).then(response => {
           this.form = response.data;
-          this.title = "详细";
+          this.title = "详情";
           this.detailOpen = true;
         });
       },

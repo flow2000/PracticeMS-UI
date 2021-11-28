@@ -130,7 +130,7 @@
             icon="el-icon-view"
             @click="handleView(scope.row,scope.index)"
             v-hasPermi="['monitor:operlog:query']"
-          >详细</el-button>
+          >详情</el-button>
         </template>
       </el-table-column>
     </el-table>
