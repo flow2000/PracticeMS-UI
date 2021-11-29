@@ -1,41 +1,45 @@
 <template>
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px">
-      <el-form-item label="学号" prop="userName">
-        <el-input
-          v-model="queryParams.userName"
-          placeholder="请输入学号"
-          clearable
-          size="small"
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-	  <el-form-item label="学生姓名" prop="nickName">
-	    <el-input
-	      v-model="queryParams.nickName"
-	      placeholder="请输入学生姓名"
-	      clearable
-	      size="small"
-	      @keyup.enter.native="handleQuery"
-	    />
-	  </el-form-item>
-      <el-form-item label="实习类型" prop="practiceType">
-        <el-select v-model="queryParams.practiceType" placeholder="请选择实习类型" clearable size="small">
-          <el-option label="集中实习" value="1" />
-          <el-option label="分散实习" value="2" />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="实习状态" prop="practiceStatus">
-        <el-select v-model="queryParams.practiceStatus" placeholder="请选择实习状态" clearable size="small">
-          <el-option label="审核中" value="1" />
-          <el-option label="实习中" value="2" />
-        </el-select>
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
-      </el-form-item>
-    </el-form>
+      <!--搜索项-->
+      <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px">
+        <el-form-item label="查询字段" prop="searchKey">
+          <el-select v-model="queryParams.searchKey" placeholder="请选择查询字段(默认全部)" clearable size="small">
+            <el-option label="所有查询字段" value="allKeys" />
+            <el-option label="学号" value="userName" />
+            <el-option label="姓名" value="nickName" />
+            <el-option label="实习状态" value="practiceStatus" />
+            <el-option label="实习类型" value="practiceType" />
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="查询字符" v-if="this.queryParams.searchKey == 'practiceStatus'" prop="searchValue">
+          <el-select v-model="queryParams.searchValue" placeholder="请选择实习状态" clearable size="small">
+            <el-option label="审核中" value="1" />
+            <el-option label="实习中" value="2" />
+            <el-option label="未实习" value="3" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="查询字符" v-else-if="this.queryParams.searchKey == 'practiceType'" prop="searchValue">
+          <el-select v-model="queryParams.searchValue" placeholder="请选择实习类型" clearable size="small">
+            <el-option label="集中实习" value="1" />
+            <el-option label="分散实习" value="2" />
+            <el-option label="无" value="3" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="查询字符" v-else prop="searchValue">
+          <el-input
+            v-model="queryParams.searchValue"
+            placeholder="请输入查询字符"
+            clearable
+            size="small"
+            @keyup.enter.native="handleQuery"
+          />
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
+          <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+        </el-form-item>
+      </el-form>
 
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
@@ -275,6 +279,11 @@ export default {
     this.getDicts('sys_archived_year').then(response => {
       this.archivedYears = response.data
     })
+  },
+  watch: {
+    searchKey(val , oldVal) {
+      console.log(val)
+    }
   },
   methods: {
     /** 查询实习安排列表 */

@@ -1,55 +1,30 @@
 <template>
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px">
-      <el-form-item label="实习地点" prop="locationName">
-        <el-input
-          v-model="queryParams.locationName"
-          placeholder="请输入地点名称"
-          clearable
-          size="small"
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="岗位名称" prop="postName">
-        <el-input
-          v-model="queryParams.postName"
-          placeholder="请输入岗位名称"
-          clearable
-          size="small"
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="实习人数" prop="number">
-        <el-input
-          v-model="queryParams.number"
-          placeholder="请输入实习人数"
-          clearable
-          size="small"
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-	  <el-form-item label="指导老师" prop="teacherName">
-	    <el-input
-	      v-model="queryParams.teacherName"
-	      placeholder="请输入指导老师姓名"
-	      clearable
-	      size="small"
-	      @keyup.enter.native="handleQuery"
-	    />
-	  </el-form-item>
-      <el-form-item label="进点时间" prop="entryTime">
-        <el-date-picker clearable size="small"
-          v-model="queryParams.entryTime"
-          type="date"
-          value-format="yyyy-MM-dd"
-          placeholder="选择进点时间">
-        </el-date-picker>
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
-      </el-form-item>
-    </el-form>
+      <!--搜索项-->
+      <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px">
+        <el-form-item label="查询字段" prop="searchKey">
+          <el-select v-model="queryParams.searchKey" placeholder="请选择查询字段(默认全部)" clearable size="small">
+            <el-option label="所有查询字段" value="allKeys" />
+            <el-option label="实习地点" value="baseName" />
+            <el-option label="岗位名称" value="postName" />
+            <el-option label="指导老师" value="nickName" />
+          </el-select>
+        </el-form-item>
+
+        <el-form-item label="查询字符" prop="searchValue">
+          <el-input
+            v-model="queryParams.searchValue"
+            placeholder="请输入查询字符"
+            clearable
+            size="small"
+            @keyup.enter.native="handleQuery"
+          />
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
+          <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+        </el-form-item>
+      </el-form>
 
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">

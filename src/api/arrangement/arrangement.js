@@ -18,6 +18,14 @@ export function getScreenData(query) {
   })
 }
 
+// 获取实习dian
+export function getLocationStudentNum() {
+  return request({
+    url: 'arrangement/arrangement/getLocationStudentNum',
+    method: 'post',
+  })
+}
+
 //获取所有学生实习信息
 export function selectAllPractice(query) {
   return request({

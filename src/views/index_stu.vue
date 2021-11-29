@@ -84,7 +84,51 @@
       </el-col>
       <el-col :sm="24" :lg="8">
         <div class="mc-ui-grid-item right-mid" style=" width: auto;margin:1%;min-height: 730px">
+          <el-descriptions v-if="practiceInfo.info != null" direction="vertical" :column="2" border>
+            <el-descriptions-item label="学号">{{this.practiceInfo.user.userName}}</el-descriptions-item>
+            <el-descriptions-item label="手机号" :span="2">{{this.practiceInfo.user.phonenumber}}</el-descriptions-item>
+            <el-descriptions-item label="实习类型">集中实习</el-descriptions-item>
+            <el-descriptions-item :span="2" label="所属班级">
+              <span>{{this.practiceInfo.user.dept.deptName}}</span>
+            </el-descriptions-item>
+            <el-descriptions-item label="实习开始时间">
+              {{this.practiceInfo.info.entryTime}}
+            </el-descriptions-item>
+            <el-descriptions-item :span="2" label="实习结束时间">
+              {{this.practiceInfo.info.endingTime}}
+            </el-descriptions-item>
+            <el-descriptions-item label="指导老师">
+              <span>{{this.practiceInfo.info.teacher.nickName}}</span>
+            </el-descriptions-item>
+            <el-descriptions-item :span="2" label="实习状态">
+              <span v-if="this.practiceInfo.info.status == 0">实习中</span>
+              <span v-else>未实习</span>
+            </el-descriptions-item>
+            <el-descriptions-item :span="3" label="实习地址" style="word-break: break-all;word-wrap: break-word;" >{{this.practiceInfo.info.baseInfo.baseAddress}}</el-descriptions-item>
+          </el-descriptions>
 
+          <el-descriptions v-if="practiceInfo.location != null" direction="vertical" :column="2" border>
+            <el-descriptions-item label="学号">{{this.practiceInfo.user.userName}}</el-descriptions-item>
+            <el-descriptions-item label="手机号" :span="2">{{this.practiceInfo.user.phonenumber}}</el-descriptions-item>
+            <el-descriptions-item label="实习类型">集中实习</el-descriptions-item>
+            <el-descriptions-item :span="2" label="所属班级">
+              <span>{{this.practiceInfo.user.dept.deptName}}</span>
+            </el-descriptions-item>
+            <el-descriptions-item label="实习开始时间">
+              {{this.practiceInfo.info.entryTime}}
+            </el-descriptions-item>
+            <el-descriptions-item :span="2" label="实习结束时间">
+              {{this.practiceInfo.info.endingTime}}
+            </el-descriptions-item>
+            <el-descriptions-item label="指导老师">
+              <span>{{this.practiceInfo.info.teacher.nickName}}</span>
+            </el-descriptions-item>
+            <el-descriptions-item :span="2" label="实习状态">
+              <span v-if="this.practiceInfo.info.status == 0">实习中</span>
+              <span v-else>未实习</span>
+            </el-descriptions-item>
+            <el-descriptions-item :span="3" label="实习地址" style="word-break: break-all;word-wrap: break-word;" >{{this.practiceInfo.info.baseInfo.baseAddress}}</el-descriptions-item>
+          </el-descriptions>
         </div>
       </el-col>
     </el-row>
@@ -94,6 +138,7 @@
 
 <script>
   import { getUserProfile } from '../api/system/user'
+  import { getStudentPracticeInfo } from "@/api/decentralize/decentralize";
   import{listPunch} from '../api/punch/punch'
   import bus from '../bus'
   import qr from '@/assets/images/qr.png'
@@ -112,6 +157,7 @@
         //通知列表
         noticeList: [],
         noticeSlims:[],
+        practiceInfo:[],
         timeState : null,
         //通知条数
         noticetotal:0,
@@ -150,6 +196,7 @@
     created() {
       // 获取当前用户信息
       this.getUser();
+      this.getStudentPracticeInfo();
       this.getTimeState();
     },
     updated() {
@@ -168,6 +215,24 @@
             this.$router.replace({ path: "/index" }).catch(()=>{});
           }
 
+        });
+      },
+      /** 查询学生实习信息 */
+      getStudentPracticeInfo() {
+        this.loading = true;
+        getStudentPracticeInfo().then(response => {
+          this.practiceInfo = response.data;
+          console.log(this.practiceInfo)
+          if(this.practiceInfo.location != null) this.practiceInfo.status = parseInt(this.practiceInfo.status)
+          if(response.data.status == '1'){
+            this.prePracticeInfo = response.data;
+            this.practiceInfo.info = null
+            this.practiceInfo.location = null
+          }
+          if(response.data.status == '3'){
+            this.remark = "reset";
+          }
+          this.loading = false;
         });
       },
       getTimeState() {

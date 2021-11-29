@@ -1,8 +1,3 @@
-
-
-
-
-
 <template>
   <div class="app-container home">
     <el-row :gutter="20">
@@ -103,7 +98,7 @@
         </el-col>
         <el-col :sm="24" :lg="16">
           <div class="mc-ui-grid-item right-bottom" >
-            <div id="chart1" style="width: 100%;height: 100%;padding-top: 1.5%"></div>
+            <div id="chart1" style="width: 100%;height: 100%;padding-top: 1.6% ; overflow: hidden"></div>
           </div>
         </el-col>
       </el-row>
@@ -117,7 +112,7 @@ import * as echarts from 'echarts'
 import { listNotice } from "@/api/system/notice";
 import ScrollPane from '../layout/components/TagsView/ScrollPane'
 import request from '@/utils/request'
-import { getScreenData } from "@/api/arrangement/arrangement";
+import { getScreenData , getLocationStudentNum } from "@/api/arrangement/arrangement";
 import { listUserInfoByRole } from "@/api/practice-info/practiceInfo";
 import { getTude } from '@/api/location/info'
 import { getBaseTude } from '@/api/system/baseInfo'
@@ -149,6 +144,10 @@ export default {
         content:null,
         updateTime:null,
         publisher:null,
+      },
+      practiceStudentNum:{
+        baseName : [],
+        count : []
       },
       //查看所有通知窗口
       allNotice:{
@@ -225,6 +224,10 @@ export default {
       getTodayPracLogList().then(response => {
         this.screenData.nowCompleteLogNum = response.data.PracLogCount
       });
+      getLocationStudentNum().then(response => {
+        this.practiceStudentNum.count = response.data[0]
+        this.practiceStudentNum.baseName = response.data[1]
+      });
       getScreenData().then(response => {
         var that = this
         //分散实习人数
@@ -264,116 +267,195 @@ export default {
       let chart3 =echarts.init(document.getElementById('chart3'))
       // 绘制图表
       chart1.setOption({
+        // ----  标题 -----
+        title: {
+          text: '实习地点人数分布情况',
+            textStyle: {
+            color: '#00afff'
+          },
+          padding: [0, 0, 10, 100]  // 位置
+        },
+        // ---- legend ----
+        legend: {
+          type: 'plain',  // 图列类型，默认为 'plain'
+            top: '1%',  // 图列相对容器的位置 top\bottom\left\right
+            selected: {
+          },
+          textStyle: {  // 图列内容样式
+            color: '#fff',  // 字体颜色
+              backgroundColor: 'black'  // 字体背景色
+          },
+          tooltip: {  // 图列提示框，默认不显示
+            show: true,
+              color: 'red'
+          },
+          data: [   // 图列内容
+            {
+              name: '人数',
+              icon: 'circle',
+              textStyle: {
+                color: 'rgba(0, 0, 0, 0.5)',  // 单独设置某一个图列的颜色
+                backgroundColor: '#fff' // 单独设置某一个图列的字体背景色
+              }
+            }
+          ]
+        },
+        // ---  提示框 ----
         tooltip: {
-          trigger: 'axis',
-          axisPointer: {
-            type: 'shadow'
+          show: true,   // 是否显示提示框，默认为true
+            trigger: 'item', // 数据项图形触发
+            axisPointer: {   // 指示样式
+            type: 'shadow',
+              axis: 'auto'
+          },
+          padding: 5,
+            textStyle: {   // 提示框内容的样式
+            color: '#00afff'
           }
         },
-        legend: {},
-        grid: {
-          left: '3%',
-          right: '4%',
-          bottom: '3%',
-          containLabel: true
+        // ---- gird区域 ---
+        gird: {
+          show: false,    // 是否显示直角坐标系网格
+            top: 80,  // 相对位置 top\bottom\left\right
+            containLabel: false, // gird 区域是否包含坐标轴的刻度标签
+            tooltip: {
+            show: true,
+              trigger: 'item',   // 触发类型
+              textStyle: {
+              color: '#00afff'
+            }
+          }
         },
-        xAxis: [
-          {
-            type: 'category',
-            data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+        //  ------  X轴 ------
+        xAxis: {
+          show: true,  // 是否显示
+            position: 'bottom',  // x轴的位置
+            offset: 0, // x轴相对于默认位置的偏移
+            type: 'category',   // 轴类型， 默认为 'category'
+            name: '实习点',    // 轴名称
+            nameLocation: 'end',  // 轴名称相对位置
+            nameTextStyle: {   // 坐标轴名称样式
+            color: '#00afff',
+              padding: [5, 0, 0, -5]
+          },
+          nameGap: 15, // 坐标轴名称与轴线之间的距离
+            nameRotate: 0,  // 坐标轴名字旋转
+            axisLine: {       // 坐标轴 轴线
+            show: true,  // 是否显示
+              symbol: ['none', 'arrow'],  // 是否显示轴线箭头
+              symbolSize: [8, 8], // 箭头大小
+              symbolOffset: [0, 7],  // 箭头位置
+              // ------   线 ---------
+              lineStyle: {
+              color: '#00afff',
+                width: 1,
+                type: 'solid'
+            }
+          },
+          axisTick: {    // 坐标轴 刻度
+            show: true,  // 是否显示
+              inside: true,  // 是否朝内
+              length: 3,     // 长度
+              lineStyle: {   // 默认取轴线的样式
+              color: '#00afff',
+                width: 1,
+                type: 'solid'
+            }
+          },
+          axisLabel: {    // 坐标轴标签
+            show: true,  // 是否显示
+              inside: false, // 是否朝内
+              rotate: 60, // 旋转角度
+              margin: 5, // 刻度标签与轴线之间的距离
+              color: '#00afff'  // 默认取轴线的颜色
+          },
+          splitLine: {    // gird区域中的分割线
+            show: false,  // 是否显示
+              lineStyle: {
+            }
+          },
+          splitArea: {    // 网格区域
+            show: false  // 是否显示，默认为false
+          },
+          data: this.practiceStudentNum.baseName
+        },
+        //   ------   y轴  ----------
+        yAxis: {
+          show: true,  // 是否显示
+            position: 'left', // y轴位置
+            offset: 0, // y轴相对于默认位置的偏移
+            type: 'value',  // 轴类型，默认为 ‘category’
+            name: '人数',   // 轴名称
+            nameLocation: 'end', // 轴名称相对位置value
+            nameTextStyle: {    // 坐标轴名称样式
+            color: '#00afff',
+              padding: [5, 0, 0, 5]  // 坐标轴名称相对位置
+          },
+          nameGap: 15, // 坐标轴名称与轴线之间的距离
+            nameRotate: 270,  // 坐标轴名字旋转
+
+            axisLine: {    // 坐标轴 轴线
+            show: true,  // 是否显示
+              //  -----   箭头 -----
+              symbol: ['none', 'arrow'],  // 是否显示轴线箭头
+              symbolSize: [8, 8],  // 箭头大小
+              symbolOffset: [0, 7], // 箭头位置
+
+              // ----- 线 -------
+              lineStyle: {
+              color: '#00afff',
+                width: 1,
+                type: 'solid'
+            }
+          },
+          axisTick: {      // 坐标轴的刻度
+            show: true,    // 是否显示
+              inside: true,  // 是否朝内
+              length: 3,      // 长度
+              lineStyle: {
+              color: '#00afff',  // 默认取轴线的颜色
+                width: 1,
+                type: 'solid'
+            }
+          },
+          axisLabel: {      // 坐标轴的标签
+            show: true,    // 是否显示
+              inside: false,  // 是否朝内
+              rotate: 0,     // 旋转角度
+              margin: 8,     // 刻度标签与轴线之间的距离
+              color: '#00afff',  // 默认轴线的颜色
+          },
+          splitLine: {    // gird 区域中的分割线
+            show: true,   // 是否显示
+              lineStyle: {
+              color: '#00afff',
+                width: 1,
+                type: 'dashed'
+            }
+          },
+          splitArea: {     // 网格区域
+            show: false   // 是否显示，默认为false
           }
-        ],
-        yAxis: [
-          {
-            type: 'value'
-          }
-        ],
+        },
+        //  -------   内容数据 -------
         series: [
           {
-            name: 'Direct',
-            type: 'bar',
-            emphasis: {
-              focus: 'series'
+            name: '人数',      // 序列名称
+            type: 'bar',      // 类型
+            legendHoverLink: true,  // 是否启用图列 hover 时的联动高亮
+            label: {   // 图形上的文本标签
+              show: false,
+              position: 'insideTop', // 相对位置
+              rotate: 0,  // 旋转角度
+              color: '#00afff'
             },
-            data: [320, 332, 301, 334, 390, 330, 320]
-          },
-          {
-            name: 'Email',
-            type: 'bar',
-            stack: 'Ad',
-            emphasis: {
-              focus: 'series'
+            itemStyle: {    // 图形的形状
+              color: '#00afff',
+              barBorderRadius: [18, 18, 0 ,0]
             },
-            data: [120, 132, 101, 134, 90, 230, 210]
-          },
-          {
-            name: 'Union Ads',
-            type: 'bar',
-            stack: 'Ad',
-            emphasis: {
-              focus: 'series'
-            },
-            data: [220, 182, 191, 234, 290, 330, 310]
-          },
-          {
-            name: 'Video Ads',
-            type: 'bar',
-            stack: 'Ad',
-            emphasis: {
-              focus: 'series'
-            },
-            data: [150, 232, 201, 154, 190, 330, 410]
-          },
-          {
-            name: 'Search Engine',
-            type: 'bar',
-            data: [862, 1018, 964, 1026, 1679, 1600, 1570],
-            emphasis: {
-              focus: 'series'
-            },
-            /*markLine: {
-              lineStyle: {
-                type: 'dashed'
-              },
-              data: [[{ type: 'min' }, { type: 'max' }]]
-            }*/
-          },
-          {
-            name: 'Baidu',
-            type: 'bar',
-            barWidth: 5,
-            stack: 'Search Engine',
-            emphasis: {
-              focus: 'series'
-            },
-            data: [620, 732, 701, 734, 1090, 1130, 1120]
-          },
-          {
-            name: 'Google',
-            type: 'bar',
-            stack: 'Search Engine',
-            emphasis: {
-              focus: 'series'
-            },
-            data: [120, 132, 101, 134, 290, 230, 220]
-          },
-          {
-            name: 'Bing',
-            type: 'bar',
-            stack: 'Search Engine',
-            emphasis: {
-              focus: 'series'
-            },
-            data: [60, 72, 71, 74, 190, 130, 110]
-          },
-          {
-            name: 'Others',
-            type: 'bar',
-            stack: 'Search Engine',
-            emphasis: {
-              focus: 'series'
-            },
-            data: [62, 82, 91, 84, 109, 110, 120]
+            barWidth: 20,  // 柱形的宽度
+            barCategoryGap: '20%',  // 柱形的间距
+            data: this.practiceStudentNum.count
           }
         ]
       });
@@ -1052,7 +1134,7 @@ export default {
     border-radius: 10px;
     box-shadow: 3px 3px 10px 0px rgba(1,1,1,0.2);
     margin-bottom: 2%;
-    height: 350px;
+    height: 380px;
   }
   .right-bottom{
     margin-top: 10px;
@@ -1061,7 +1143,7 @@ export default {
     border-radius: 10px;
     box-shadow: 3px 3px 10px 0px rgba(1,1,1,0.2);
     margin-bottom: 2%;
-    height: 350px;
+    height: 380px;
   }
 
   .el-carousel__item:nth-child(2n) {

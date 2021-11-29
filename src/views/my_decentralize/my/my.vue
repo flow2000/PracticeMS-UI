@@ -312,27 +312,6 @@ export default {
         expressCompany: '',
         courierNumber: '',
       },
-      rules: {
-        attribute: [
-          { required: true, message: '请选择快递属性', trigger: 'change' }
-        ],
-        destinationCity: [
-          { required: true, message: '请选择城市', trigger: 'change' }
-        ],
-        addressee: [
-          { required: true, message: '请输入收件单位', trigger: 'blur' }
-        ],
-        consigneeAddress: [
-          { required: true, message: '请输入收件地址', trigger: 'blur' }
-        ],
-        expressCompany: [
-          { required: true, message: '请输入快递公司', trigger: 'blur' }
-        ],
-        courierNumber: [
-          { required: true, message: '请输入快递单号', trigger: 'blur' }
-        ],
-      },
-      attributeList: ['客户', '供应商', '其他'],
       citys: regionData,
     }
   },
