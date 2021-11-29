@@ -90,12 +90,57 @@
 
     <el-table v-loading="loading" :data="infoList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="单位名称" align="center" prop="companyName"  :show-overflow-tooltip="true"/>
-      <el-table-column label="详细地址" align="center" prop="address"  :show-overflow-tooltip="true"/>
-      <el-table-column label="联系人" align="center" prop="contacts"  :show-overflow-tooltip="true"/>
-      <el-table-column label="联系电话" align="center" prop="phone"  :show-overflow-tooltip="true"/>
-      <el-table-column label="单位性质" align="center" prop="nature"  :show-overflow-tooltip="true"/>
-      <el-table-column label="法定代表" align="center" prop="leader"  :show-overflow-tooltip="true"/>
+      <el-table-column label="单位名称" align="center" prop="companyName">
+        <template slot-scope="scope">
+          <div v-if="scope.row.companyName">
+            <el-popover
+              v-if="scope.row.companyName.length > 9"
+              placement="top"
+              trigger="hover"
+            >
+              <span>{{scope.row.companyName}}</span>
+              <span slot="reference" style="curosr:pointer">{{scope.row.companyName.slice(0,9)+"..."}}</span>
+            </el-popover>
+            <div v-else>{{scope.row.companyName}}</div>
+          </div>
+          <div v-else>--</div>
+        </template>
+      </el-table-column>
+      <el-table-column label="详细地址" align="center" prop="address" >
+        <template slot-scope="scope">
+          <div v-if="scope.row.address">
+            <el-popover
+              v-if="scope.row.address.length > 9"
+              placement="top"
+              trigger="hover"
+            >
+              <span>{{scope.row.address}}</span>
+              <span slot="reference" style="curosr:pointer">{{scope.row.address.slice(0,9)+"..."}}</span>
+            </el-popover>
+            <div v-else>{{scope.row.address}}</div>
+          </div>
+          <div v-else>--</div>
+        </template>
+      </el-table-column>
+      <el-table-column label="联系人" align="center" prop="contacts" />
+      <el-table-column label="联系电话" align="center" prop="phone" />
+      <el-table-column label="单位性质" align="center" prop="nature" >
+        <template slot-scope="scope">
+          <div v-if="scope.row.nature">
+            <el-popover
+              v-if="scope.row.nature.length > 9"
+              placement="top"
+              trigger="hover"
+            >
+              <span>{{scope.row.nature}}</span>
+              <span slot="reference" style="curosr:pointer">{{scope.row.nature.slice(0,9)+"..."}}</span>
+            </el-popover>
+            <div v-else>{{scope.row.nature}}</div>
+          </div>
+          <div v-else>--</div>
+        </template>
+      </el-table-column>
+      <el-table-column label="法定代表" align="center" prop="leader" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button

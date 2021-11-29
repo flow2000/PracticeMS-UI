@@ -91,7 +91,22 @@
       <el-table-column type="selection" width="55" align="center" />
 
       <!--<el-table-column label="基地ID" align="center" key="baseId" prop="baseId" />-->
-      <el-table-column label="单位名称" align="center" prop="companyName" />
+      <el-table-column label="单位名称" align="center" prop="companyName" >
+        <template slot-scope="scope">
+          <div v-if="scope.row.companyName">
+            <el-popover
+              v-if="scope.row.companyName.length > 9"
+              placement="top"
+              trigger="hover"
+            >
+              <span>{{scope.row.companyName}}</span>
+              <span slot="reference" style="curosr:pointer">{{scope.row.companyName.slice(0,9)+"..."}}</span>
+            </el-popover>
+            <div v-else>{{scope.row.companyName}}</div>
+          </div>
+          <div v-else>--</div>
+        </template>
+      </el-table-column>
       <el-table-column label="单位性质" align="center" prop="baseNature" />
       <el-table-column label="基地联系人" align="center" prop="baseContacts" />
       <el-table-column label="基地联系电话" align="center" prop="basePhone" />

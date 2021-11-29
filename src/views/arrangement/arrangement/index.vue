@@ -120,7 +120,7 @@
             icon="el-icon-delete"
             @click="handleDelete(scope.row)"
             v-if="(scope.row.user != null && scope.row.user.status == 0) || (scope.row.student != null && scope.row.student.status == 2)"
-            v-hasPermi="['arrangement:arrangement:remove']"
+            v-hasPermi="['arrangement:arrangement:edit']"
           >取消实习</el-button>
         </template>
       </el-table-column>

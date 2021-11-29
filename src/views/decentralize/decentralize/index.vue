@@ -72,14 +72,59 @@
         <el-table-column label="分散实习申请编号" align="center" prop="applyId" v-if="false"/>
         <el-table-column label="学生姓名" align="center" prop="student.nickName" />
         <el-table-column label="经营范围" align="center" prop="businessScope" />
-        <el-table-column label="审核人姓名" align="center" prop="auditor.nickName" />
-        <el-table-column label="实习地点" align="center" prop="location.companyName" />
+        <el-table-column label="审核人姓名" align="center" prop="auditor.nickName" >
+          <template slot-scope="scope">
+            <div v-if="scope.row.auditor.nickName">
+              <el-popover
+                v-if="scope.row.auditor.nickName.length > 9"
+                placement="top"
+                trigger="hover"
+              >
+                <span>{{scope.row.auditor.nickName}}</span>
+                <span slot="reference" style="curosr:pointer">{{scope.row.auditor.nickName.slice(0,9)+"..."}}</span>
+              </el-popover>
+              <div v-else>{{scope.row.auditor.nickName}}</div>
+            </div>
+            <div v-else>--</div>
+          </template>
+        </el-table-column>
+        <el-table-column label="实习地点" align="center" prop="location.companyName" >
+          <template slot-scope="scope">
+            <div v-if="scope.row.location.companyName">
+              <el-popover
+                v-if="scope.row.location.companyName.length > 9"
+                placement="top"
+                trigger="hover"
+              >
+                <span>{{scope.row.location.companyName}}</span>
+                <span slot="reference" style="curosr:pointer">{{scope.row.location.companyName.slice(0,9)+"..."}}</span>
+              </el-popover>
+              <div v-else>{{scope.row.location.companyName}}</div>
+            </div>
+            <div v-else>--</div>
+          </template>
+        </el-table-column>
         <el-table-column label="审核时间" align="center" prop="auditTime" width="180">
           <template slot-scope="scope">
             <span>{{ parseTime(scope.row.auditTime, '{y}-{m}-{d}') }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="备注" align="center" prop="notes" />
+        <el-table-column label="备注" align="center" prop="notes" >
+          <template slot-scope="scope">
+            <div v-if="scope.row.notes">
+              <el-popover
+                v-if="scope.row.notes.length > 9"
+                placement="top"
+                trigger="hover"
+              >
+                <span>{{scope.row.notes}}</span>
+                <span slot="reference" style="curosr:pointer">{{scope.row.notes.slice(0,9)+"..."}}</span>
+              </el-popover>
+              <div v-else>{{scope.row.notes}}</div>
+            </div>
+            <div v-else>--</div>
+          </template>
+        </el-table-column>
         <el-table-column label="审核状态" align="center" prop="status" >
           <template slot-scope="scope">
             <span v-if="scope.row.status == 1">未审核</span>

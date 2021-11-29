@@ -271,7 +271,7 @@ export default {
         title: {
           text: '实习地点人数分布情况',
             textStyle: {
-            color: '#00afff'
+            color: 'rgba(0, 0, 0, 0.5)'
           },
           padding: [0, 0, 10, 100]  // 位置
         },
@@ -310,7 +310,7 @@ export default {
           },
           padding: 5,
             textStyle: {   // 提示框内容的样式
-            color: '#00afff'
+            color: 'rgba(0, 0, 0, 0.5)'
           }
         },
         // ---- gird区域 ---
@@ -322,7 +322,7 @@ export default {
             show: true,
               trigger: 'item',   // 触发类型
               textStyle: {
-              color: '#00afff'
+              color: 'rgba(0, 0, 0, 0.5)'
             }
           }
         },
@@ -335,7 +335,7 @@ export default {
             name: '实习点',    // 轴名称
             nameLocation: 'end',  // 轴名称相对位置
             nameTextStyle: {   // 坐标轴名称样式
-            color: '#00afff',
+            color: 'rgba(0, 0, 0, 0.5)',
               padding: [5, 0, 0, -5]
           },
           nameGap: 15, // 坐标轴名称与轴线之间的距离
@@ -347,7 +347,7 @@ export default {
               symbolOffset: [0, 7],  // 箭头位置
               // ------   线 ---------
               lineStyle: {
-              color: '#00afff',
+              color: 'rgba(0, 0, 0, 0.5)',
                 width: 1,
                 type: 'solid'
             }
@@ -357,7 +357,7 @@ export default {
               inside: true,  // 是否朝内
               length: 3,     // 长度
               lineStyle: {   // 默认取轴线的样式
-              color: '#00afff',
+              color: 'rgba(0, 0, 0, 0.5)',
                 width: 1,
                 type: 'solid'
             }
@@ -367,7 +367,7 @@ export default {
               inside: false, // 是否朝内
               rotate: 60, // 旋转角度
               margin: 5, // 刻度标签与轴线之间的距离
-              color: '#00afff'  // 默认取轴线的颜色
+              color: 'rgba(0, 0, 0, 0.5)'  // 默认取轴线的颜色
           },
           splitLine: {    // gird区域中的分割线
             show: false,  // 是否显示
@@ -388,7 +388,7 @@ export default {
             name: '人数',   // 轴名称
             nameLocation: 'end', // 轴名称相对位置value
             nameTextStyle: {    // 坐标轴名称样式
-            color: '#00afff',
+            color: 'rgba(0, 0, 0, 0.5)',
               padding: [5, 0, 0, 5]  // 坐标轴名称相对位置
           },
           nameGap: 15, // 坐标轴名称与轴线之间的距离
@@ -403,7 +403,7 @@ export default {
 
               // ----- 线 -------
               lineStyle: {
-              color: '#00afff',
+              color: 'rgba(0, 0, 0, 0.5)',
                 width: 1,
                 type: 'solid'
             }
@@ -413,7 +413,7 @@ export default {
               inside: true,  // 是否朝内
               length: 3,      // 长度
               lineStyle: {
-              color: '#00afff',  // 默认取轴线的颜色
+              color: 'rgba(0, 0, 0, 0.5)',  // 默认取轴线的颜色
                 width: 1,
                 type: 'solid'
             }
@@ -423,12 +423,12 @@ export default {
               inside: false,  // 是否朝内
               rotate: 0,     // 旋转角度
               margin: 8,     // 刻度标签与轴线之间的距离
-              color: '#00afff',  // 默认轴线的颜色
+              color: 'rgba(0, 0, 0, 0.5)',  // 默认轴线的颜色
           },
           splitLine: {    // gird 区域中的分割线
             show: true,   // 是否显示
               lineStyle: {
-              color: '#00afff',
+              color: 'rgba(0, 0, 0, 0.5)',
                 width: 1,
                 type: 'dashed'
             }
@@ -447,7 +447,7 @@ export default {
               show: false,
               position: 'insideTop', // 相对位置
               rotate: 0,  // 旋转角度
-              color: '#00afff'
+              color: 'rgba(0, 0, 0, 0.5)'
             },
             itemStyle: {    // 图形的形状
               color: '#00afff',

@@ -77,8 +77,22 @@
       <el-table-column
         label="公告标题"
         prop="noticeTitle"
-        :show-overflow-tooltip="true"
-      />
+      >
+        <template slot-scope="scope">
+          <div v-if="scope.row.noticeTitle">
+            <el-popover
+              v-if="scope.row.noticeTitle.length > 12"
+              placement="top"
+              trigger="hover"
+            >
+              <span>{{scope.row.noticeTitle}}</span>
+              <span slot="reference" style="curosr:pointer">{{scope.row.noticeTitle.slice(0,12)+"..."}}</span>
+            </el-popover>
+            <div v-else>{{scope.row.noticeTitle}}</div>
+          </div>
+          <div v-else>--</div>
+        </template>
+      </el-table-column>
 
 
       <el-table-column label="创建人用户名" align="center" prop="createBy" width="150" />
