@@ -20,21 +20,6 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="开始时间" prop="startTime">
-        <el-date-picker clearable size="small"
-          v-model="queryParams.startTime"
-          type="date"
-          value-format="yyyy-MM-dd"
-          placeholder="选择开始时间">
-        </el-date-picker>
-      </el-form-item>
-
-      <el-form-item label="状态" prop="status">
-        <el-select v-model="queryParams.status" placeholder="请选择状态" clearable size="small">
-          <el-option label="有效" value="1" />
-          <el-option label="无效" value="0" />
-        </el-select>
-      </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
@@ -152,18 +137,18 @@
           <el-link type="primary" :href="scope.row.summary" target=_blank>{{scope.row.summary==null?"未上传":(scope.row.summary==""?"未上传":scope.row.nickname+"的实习总结")}}</el-link>
         </template>
       </el-table-column>
-      <el-table-column label="状态" align="center" prop="status" width="60">
-        <template scope="scope" >
-          <el-switch
-            v-model="scope.row.status"
-            active-value="1"
-            inactive-value="0"
+<!--      <el-table-column label="状态" align="center" prop="status" width="60">-->
+<!--        <template scope="scope" >-->
+<!--          <el-switch-->
+<!--            v-model="scope.row.status"-->
+<!--            active-value="1"-->
+<!--            inactive-value="0"-->
 
-            @change="changeStatus(scope.row)"
-          >
-          </el-switch>
-        </template>
-      </el-table-column>
+<!--            @change="changeStatus(scope.row)"-->
+<!--          >-->
+<!--          </el-switch>-->
+<!--        </template>-->
+<!--      </el-table-column>-->
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
@@ -249,12 +234,6 @@
         <el-form-item label="实习PDF路径" prop="summary">
           <el-input v-model="form.summary" type="textarea" placeholder="请输入内容" />
         </el-form-item>
-        <el-form-item label="状态">
-          <el-radio-group v-model="form.status">
-            <el-radio label="1">有效</el-radio>
-            <el-radio label="0">无效</el-radio>
-          </el-radio-group>
-        </el-form-item>
 
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -281,14 +260,18 @@
           <el-input placeholder="填写日志所占比例(小于1)" v-model="formSetting.logWeight" oninput="value=value.replace(/^0[0-9]|^[2-9]|^1[0-9]|^1\.|[^\d.]/g,'')"></el-input>
         </el-form-item>
         <br>
-        <el-tooltip class="item" effect="light" content="Left Center 提示文字" placement="left">
-        <el-button
-            type="warning"
-            plain
-            icon="el-icon-question"
-            size="mini"
-        >帮助</el-button>
-        </el-tooltip>
+        <el-popover
+          placement="left"
+          title="计算规则"
+          width="400"
+          trigger="click">
+          <div>
+            <i class="header-icon el-icon-info"></i>系统分数=打卡分数*打卡权重+日志分数*日志权重
+            <br>
+            <i class="header-icon el-icon-info"></i>总成绩=系统分数*系统权重+教师分数*教师权重+公司分数*公司权重
+          </div>
+          <el-button slot="reference" type="warning" icon="el-icon-question" size="mini" >帮助</el-button>
+        </el-popover>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitSetting" size="mini">保存并生效</el-button>
@@ -399,6 +382,8 @@ export default {
       archiveTime: '',
       user: {},
       setting:{},
+      //帮助提示
+      settinghelp:"总成绩=系统分数+教师分数+公司分数,系统分数=打卡分数*打卡权重+日志分数+日志权重\n",
       // 遮罩层
       loading: true,
       // 导出遮罩层
@@ -700,6 +685,16 @@ export default {
       this.$refs["formSetting"].validate(valid => {
         if (valid){
           console.log(this.formSetting);
+          var sum_total =parseFloat(this.formSetting.systemWeight) +parseFloat(this.formSetting.teacherWeight)+parseFloat(this.formSetting.companyWeight);
+          var sum_Sys = parseFloat(this.formSetting.logWeight)+parseFloat(this.formSetting.punchWeight);
+          if (sum_total!=1){
+            this.$message("系统权重,教师权重与公司权重三者之和要为1");
+            return;
+          }
+          if (sum_Sys!=1){
+            this.$message("打卡权重与日志权重两者之和要为1");
+            return;
+          }
           updateSetting(this.formSetting).then(response => {
             this.msgSuccess("保存成功");
             this.powerWeight= false;
