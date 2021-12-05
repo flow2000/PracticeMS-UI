@@ -77,3 +77,12 @@ export function selectNowWeekAttendanceList() {
     method: 'get'
   })
 }
+// 查询打卡签到列表
+export function archivedList(query) {
+  return request({
+    url: '/punch/punch/archivedList',
+    method: 'get',
+    params: query
+  })
+}
+

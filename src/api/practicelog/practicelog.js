@@ -68,3 +68,12 @@ export function getTodayPracLogList() {
     method: 'get'
   })
 }
+
+// 查询归档实习日志列表
+export function archivedList(query) {
+  return request({
+    url: '/practicelog/practicelog/archivedList',
+    method: 'get',
+    params: query
+  })
+}

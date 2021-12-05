@@ -99,3 +99,13 @@ export function updateScoreStatus(scoreId,status) {
     data: data
   })
 }
+
+
+// 查询归档实习成绩列表
+export function archivedList(query) {
+  return request({
+    url: '/practice-score/practiceScore/archivedList',
+    method: 'get',
+    params: query
+  })
+}

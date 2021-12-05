@@ -77,17 +77,6 @@
         >导出</el-button>
       </el-col>
 
-      <el-col :span="1.5">
-        <el-button
-          type="warning"
-          plain
-          icon="el-icon-download"
-          size="mini"
-          :loading="exportLoading"
-          @click="exportArchive"
-          v-hasPermi="['practicelog:practicelog:export']"
-        >导出归档数据</el-button>
-      </el-col>
 
 
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
@@ -310,35 +299,6 @@
       <el-button type="primary" style="margin-left: 10%;margin-top: 5%" @click="watchSummery">查看上传的实习总结</el-button>
     </el-dialog>
 
-    <!-- 导出归档数据的对话框 -->
-    <el-dialog :title="export_archive.title" :visible.sync="export_archive.open" width="400px" class="export_archive"
-               append-to-body>
-      <div class="block" style="text-align: center;">
-        <el-form>
-          <el-form-item prop="role">
-            <el-select
-              v-model="archiveTime"
-              placeholder="请选择导出数据年份"
-              clearable
-              size="small"
-              style="width: 70%"
-            >
-              <el-option
-                v-for="dict in archivedYears"
-                :key="dict.dictValue"
-                :label="dict.dictLabel"
-                :value="dict.dictValue"
-              />
-            </el-select>
-          </el-form-item>
-        </el-form>
-      </div>
-
-      <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitExportArchive">确 定</el-button>
-        <el-button @click="export_archive.open = false">取 消</el-button>
-      </div>
-    </el-dialog>
 
   </div>
 </template>
@@ -648,44 +608,14 @@
           type: "warning"
         }).then(() => {
           this.exportLoading = true;
-          return exportPracticelog(queryParams);
+          return exportArchivedPracticelog(queryParams);
         }).then(response => {
           this.download(response.msg);
           this.exportLoading = false;
         }).catch(() => {});
       },
 
-      submitExportArchive() {
-        if (this.archiveTime == '') {
-          this.msgError('年份不能为空')
-        } else {
-          const queryParams = this.queryParams
-          queryParams.year = this.archiveTime
-          this.exportLoading = true
-          const loadData = {
-            spinner: 'el-icon-loading',
-            text: '导出中...',
-            background: 'rgba(0, 0, 0, 0.3)',
-            lock: true
-          }
-          let loadingInstance = Loading.service(loadData)
-          exportArchivedPracticelog(queryParams).then(response => {
-            this.$nextTick(() => {
-              // 以服务的方式调用的 Loading 需要异步关闭
-              loadingInstance.close()
-            })
-            this.download(response.msg)
-            this.export_archive.open = false
-            this.archiveTime = ''
-            this.exportLoading = false
-          }).catch(() => {
-            loadingInstance.close()                // 关闭遮罩层
-            this.msgError('操作失败')
-            this.export_archive.open = false
-            this.archiveTime = ''
-          })
-        }
-      }
+
 
     },
   };

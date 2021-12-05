@@ -68,4 +68,13 @@ export function exportArchivedLocationInfo(query) {
   })
 }
 
+// 查询地点信息列表
+export function archivedList(query) {
+  return request({
+    url: '/location/info/archivedList',
+    method: 'get',
+    params: query
+  })
+}
+
 

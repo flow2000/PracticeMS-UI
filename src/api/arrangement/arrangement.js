@@ -95,3 +95,12 @@ export function exportArchivedArrangement(query) {
     params: query
   })
 }
+
+// 查询归档实习安排列表
+export function archivedList(query) {
+  return request({
+    url: '/arrangement/arrangement/archivedList',
+    method: 'post',
+    params: query
+  })
+}

@@ -1,5 +1,5 @@
 import request from '@/utils/request'
-import { praseStrEmpty } from "@/utils/ruoyi";
+import { praseStrEmpty } from '@/utils/ruoyi'
 
 // 查询用户列表
 export function listUser(query) {
@@ -75,6 +75,7 @@ export function exportUser(query) {
     params: query
   })
 }
+
 // 导出归档用户
 export function exportArchivedUser(query) {
   return request({
@@ -171,5 +172,14 @@ export function updateAuthRole(data) {
     url: '/system/user/authRole',
     method: 'put',
     params: data
+  })
+}
+
+// 查询归档用户列表
+export function archivedList(query) {
+  return request({
+    url: '/system/user/archivedList',
+    method: 'get',
+    params: query
   })
 }
