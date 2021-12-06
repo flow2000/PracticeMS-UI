@@ -1,25 +1,35 @@
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px"  v-hasPermi="['practice-score:practiceScore:edit']">
-      <el-form-item label="学号" prop="userId">
+      <el-form-item label="查询字段" prop="searchKey">
+        <el-select v-model="queryParams.searchKey" placeholder="请选择查询的字段（默认全部）" clearable size="small">
+          <el-option label="所有字段" value="allKeys"></el-option>
+          <el-option label="学号" value="username"></el-option>
+          <el-option label="姓名" value="nickname"></el-option>
+        </el-select>
+      </el-form-item>
+      <el-form-item label="查询字符">
+
+      </el-form-item>
+      <el-form-item>
         <el-input
-          v-model="queryParams.username"
-          placeholder="请输入学号"
+          v-model="queryParams.searchValue"
+          placeholder="请输入查询的字符"
           clearable
           v-hasPermi="['practice-score:practiceScore:edit']"
           size="small"
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="姓名" prop="locationId">
-        <el-input
-          v-model="queryParams.nickname"
-          placeholder="请输入姓名"
-          clearable
-          size="small"
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
+<!--      <el-form-item label="姓名" prop="locationId">-->
+<!--        <el-input-->
+<!--          v-model="queryParams.nickname"-->
+<!--          placeholder="请输入姓名"-->
+<!--          clearable-->
+<!--          size="small"-->
+<!--          @keyup.enter.native="handleQuery"-->
+<!--        />-->
+<!--      </el-form-item>-->
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
@@ -28,14 +38,14 @@
 
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
-        <el-button
-          type="primary"
-          plain
-          icon="el-icon-plus"
-          size="mini"
-          @click="handleAdd"
-          v-hasPermi="['practice-score:practiceScore:add']"
-        >新增</el-button>
+<!--        <el-button-->
+<!--          type="primary"-->
+<!--          plain-->
+<!--          icon="el-icon-plus"-->
+<!--          size="mini"-->
+<!--          @click="handleAdd"-->
+<!--          v-hasPermi="['practice-score:practiceScore:add']"-->
+<!--        >新增</el-button>-->
       </el-col>
       <el-col :span="1.5">
         <el-button
@@ -108,17 +118,15 @@
 
     <el-table v-loading="loading" :data="practiceScoreList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-<!--      <el-table-column label="ID" align="center" prop="scoreId" width="40" />-->
-<!--      <el-table-column label="用户ID" align="center" prop="userId"  width="70"/>-->
       <el-table-column label="学号" align="center" prop="username" />
-      <el-table-column label="姓名" align="center" prop="nickname" width="80"/>
+      <el-table-column label="姓名" align="center" prop="nickname" />
 <!--      <el-table-column label="地点ID" align="center" prop="locationId" />-->
-      <el-table-column label="开始时间" align="center" prop="startTime" width="110">
+      <el-table-column label="开始时间" align="center" prop="startTime" >
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.startTime, '{y}-{m}-{d}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="结束时间" align="center" prop="endTime" width="110">
+      <el-table-column label="结束时间" align="center" prop="endTime" >
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.endTime, '{y}-{m}-{d}') }}</span>
         </template>
@@ -127,16 +135,16 @@
       <el-table-column label="实习单位评定成绩" align="center" prop="companyScore" />
       <el-table-column label="指导老师评定成绩" align="center" prop="teacherScore" />
 ..    <el-table-column label="最终成绩" align="center" prop="finalScore" />
-      <el-table-column label="实习鉴定表" align="center" prop="appraisal" >
-        <template scope="scope">
-          <el-link type="primary" :href="scope.row.appraisal" target=_blank>{{scope.row.appraisal==null?"未上传":(scope.row.appraisal==""?"未上传":scope.row.nickname+"的实习鉴定")}}</el-link>
-        </template>
-      </el-table-column>
-      <el-table-column label="实习总结" align="center" prop="summary" >
-        <template scope="scope">
-          <el-link type="primary" :href="scope.row.summary" target=_blank>{{scope.row.summary==null?"未上传":(scope.row.summary==""?"未上传":scope.row.nickname+"的实习总结")}}</el-link>
-        </template>
-      </el-table-column>
+<!--      <el-table-column label="实习鉴定表" align="center" prop="appraisal" >-->
+<!--        <template scope="scope">-->
+<!--          <el-link type="primary" :href="scope.row.appraisal" target=_blank>{{scope.row.appraisal==null?"未上传":(scope.row.appraisal==""?"未上传":scope.row.nickname+"的实习鉴定")}}</el-link>-->
+<!--        </template>-->
+<!--      </el-table-column>-->
+<!--      <el-table-column label="实习总结" align="center" prop="summary" >-->
+<!--        <template scope="scope">-->
+<!--          <el-link type="primary" :href="scope.row.summary" target=_blank>{{scope.row.summary==null?"未上传":(scope.row.summary==""?"未上传":scope.row.nickname+"的实习总结")}}</el-link>-->
+<!--        </template>-->
+<!--      </el-table-column>-->
 <!--      <el-table-column label="状态" align="center" prop="status" width="60">-->
 <!--        <template scope="scope" >-->
 <!--          <el-switch-->
@@ -157,7 +165,7 @@
             icon="el-icon-edit"
             @click="handleUpdate(scope.row)"
             v-hasPermi="['practice-score:practiceScore:edit']"
-          >修改</el-button>
+          >评分</el-button>
           <el-button
             size="mini"
             type="text"
@@ -192,32 +200,33 @@
     />
 
     <!-- 添加或修改实习成绩对话框 -->
-    <el-dialog :title="title" :visible.sync="open" width="650px" append-to-body>
+    <el-dialog :title="title" :visible.sync="open" width="1200px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="180px">
-        <el-form-item label="用户ID" prop="userId">
-          <el-input v-model="form.userId" placeholder="请输入用户ID" />
+        <el-form-item label="实习鉴定">
+          <iframe :src="form.appraisal" width="850" height="700" ></iframe>
         </el-form-item>
-        <el-form-item label="地点ID" prop="locationId">
-          <el-input v-model="form.locationId" placeholder="请输入地点ID" />
-        </el-form-item>
-        <el-form-item label="开始时间" prop="startTime">
-          <el-date-picker clearable size="small"
-            v-model="form.startTime"
-            type="date"
-            value-format="yyyy-MM-dd"
-            placeholder="选择开始时间">
-          </el-date-picker>
-        </el-form-item>
-        <el-form-item label="结束时间" prop="endTime">
-          <el-date-picker clearable size="small"
-            v-model="form.endTime"
-            type="date"
-            value-format="yyyy-MM-dd"
-            placeholder="选择结束时间">
-          </el-date-picker>
-        </el-form-item>
-        <el-form-item label="系统参考成绩" prop="sysScore">
-          <el-input v-model="form.sysScore" placeholder="请输入系统参考成绩" />
+
+<!--        <el-form-item label="开始时间" prop="startTime">-->
+<!--          <el-date-picker clearable size="small"-->
+<!--            v-model="form.startTime"-->
+<!--            type="date"-->
+<!--            value-format="yyyy-MM-dd"-->
+<!--            placeholder="选择开始时间">-->
+<!--          </el-date-picker>-->
+<!--        </el-form-item>-->
+<!--        <el-form-item label="结束时间" prop="endTime">-->
+<!--          <el-date-picker clearable size="small"-->
+<!--            v-model="form.endTime"-->
+<!--            type="date"-->
+<!--            value-format="yyyy-MM-dd"-->
+<!--            placeholder="选择结束时间">-->
+<!--          </el-date-picker>-->
+<!--        </el-form-item>-->
+<!--        <el-form-item label="系统参考成绩" prop="sysScore">-->
+<!--          <el-input v-model="form.sysScore" placeholder="请输入系统参考成绩" />-->
+<!--        </el-form-item>-->
+        <el-form-item label="实习鉴定">
+          <iframe :src="form.summary" width="850" height="700" ></iframe>
         </el-form-item>
         <el-form-item label="单位评定成绩" prop="companyScore">
           <el-input v-model="form.companyScore" placeholder="请输入实习单位评定成绩" />
@@ -225,15 +234,16 @@
         <el-form-item label="指导老师评定成绩" prop="teacherScore">
           <el-input v-model="form.teacherScore" placeholder="请输入实习指导老师评定成绩" />
         </el-form-item>
-        <el-form-item label="最终成绩" prop="finalScore">
-          <el-input v-model="form.finalScore" placeholder="请输入最终成绩" />
-        </el-form-item>
-        <el-form-item label="实习鉴定表PDF路径" prop="appraisal">
-          <el-input v-model="form.appraisal" type="textarea" placeholder="请输入内容" />
-        </el-form-item>
-        <el-form-item label="实习PDF路径" prop="summary">
-          <el-input v-model="form.summary" type="textarea" placeholder="请输入内容" />
-        </el-form-item>
+<!--        <el-form-item label="最终成绩" prop="finalScore">-->
+<!--          <el-input v-model="form.finalScore" placeholder="请输入最终成绩" />-->
+<!--        </el-form-item>-->
+<!--        <el-form-item label="实习鉴定表PDF路径" prop="appraisal">-->
+<!--          <el-input v-model="form.appraisal" type="textarea" placeholder="请输入内容" />-->
+<!--        </el-form-item>-->
+<!--        <el-form-item label="实习PDF路径" prop="summary">-->
+<!--          <el-input v-model="form.summary" type="textarea" placeholder="请输入内容" />-->
+<!--        </el-form-item>-->
+
 
       </el-form>
       <div slot="footer" class="dialog-footer">

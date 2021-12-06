@@ -72,8 +72,8 @@
     </el-row>
 
     <el-table v-loading="loading" :data="noticeList" @selection-change="handleSelectionChange">
-      <el-table-column type="selection" width="55" align="center" v-hasPermi="['system:notice:remove']" />
-      <el-table-column label="序号" align="center" prop="noticeId" width="100" />
+      <el-table-column type="selection" width="55" align="center"  v-if="operationColumnVisable"/>
+      <el-table-column label="序号" align="center" prop="noticeId" width="100"  />
       <el-table-column
         label="公告标题"
         prop="noticeTitle"
@@ -95,9 +95,9 @@
       </el-table-column>
 
 
-      <el-table-column label="创建人用户名" align="center" prop="createBy" width="150" />
-      <el-table-column label="创建人姓名" align="center" prop="nickname" width="150" />
-      <el-table-column label="创建时间" align="center" prop="createTime" width="120">
+      <el-table-column label="创建人用户名" align="center" prop="createBy"  />
+      <el-table-column label="创建人姓名" align="center" prop="nickname"  />
+      <el-table-column label="创建时间" align="center" prop="createTime">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.createTime, '{y}-{m}-{d}') }}</span>
         </template>
@@ -123,15 +123,22 @@
           <p v-if="scope.row.status=='-1'" style="color:#d71345">审核不通过</p>
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width" >
+      <el-table-column label="操作" align="center" class-name="small-padding fixed-width"  v-if="operationColumnVisable">
         <template slot-scope="scope">
           <el-button
             size="mini"
             type="text"
             icon="el-icon-edit"
-            @click="handleUpdate(scope.row)"
-            v-hasPermi="['system:notice:edit']"
-          >修改</el-button>
+            @click="handleExamine(scope.row)"
+            v-hasPermi="['system:notice:examine']"
+          >审核</el-button>
+<!--          <el-button-->
+<!--            size="mini"-->
+<!--            type="text"-->
+<!--            icon="el-icon-edit"-->
+<!--            @click="handleUpdate(scope.row)"-->
+<!--            v-hasPermi="['system:notice:edit']"-->
+<!--          >修改</el-button>-->
           <el-button
             size="mini"
             type="text"
@@ -150,6 +157,49 @@
       :limit.sync="queryParams.pageSize"
       @pagination="getList"
     />
+
+    <!--审核公告对话框-->
+    <el-dialog title="审核" :visible.sync="examineOpen" :title="title" append-to-body>
+      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="公告标题" prop="noticeTitle">
+              <el-input v-model="form.noticeTitle" placeholder="请输入公告标题" disabled />
+            </el-form-item>
+          </el-col>
+
+          <el-col :span="24">
+            <el-form-item label="审核状态" v-hasPermi="['system:notice:edit']">
+              <el-radio-group v-model="noticeStatus" @change="noticeStatusChange">
+                <el-radio-button
+                  v-hasPermi="['system:notice:edit']"
+                  v-for="dict in [
+                  {value: '1',label:'审核通过'},
+                  {value: '2',label:'审核不通过'}]"
+                  :key="dict.value"
+                  v-model="dict.value"
+                  :label="dict.label"
+                ></el-radio-button>
+              </el-radio-group>
+              <el-form-item prop="refuseReason" >
+                <el-input style="margin-top: 20px" v-if="refuseReasonOpen" v-model="refuseReason" placeholder="请输入不通过的理由"/>
+              </el-form-item>
+            </el-form-item>
+
+          </el-col>
+          <el-col :span="24">
+            <el-form-item label="内容" >
+              <span style="font-size: medium" v-html="'<div style='+'position: absolute'+'>'+form.noticeContent+'</div>'"></span>
+
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="submitForm">确 定</el-button>
+        <el-button @click="examineOpen=false">取 消</el-button>
+      </div>
+    </el-dialog>
 
     <!-- 添加或修改公告对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="780px" append-to-body>
@@ -174,7 +224,7 @@
           </el-col>
           <el-col :span="24">
             <el-form-item label="审核状态" v-hasPermi="['system:notice:edit']">
-              <el-radio-group v-model="noticeStatus">
+              <el-radio-group v-model="noticeStatus" >
                 <el-radio-button
                   v-hasPermi="['system:notice:edit']"
                   v-for="dict in [
@@ -189,7 +239,9 @@
           </el-col>
           <el-col :span="24">
             <el-form-item label="内容">
-              <editor v-model="form.noticeContent" :min-height="192"/>
+              <div v-on:blur.lazy="">
+              <editor v-model="form.noticeContent" :aria-disabled="true" :min-height="192"/>
+              </div>
             </el-form-item>
           </el-col>
         </el-row>
@@ -204,13 +256,21 @@
 
 <script>
   import { listNotice, getNotice, delNotice, addNotice, updateNotice } from "@/api/system/notice";
-
+  import { getUserProfile } from '@/api/system/user';
   export default {
     name: "Notice",
     data() {
       return {
+        user:{},
+        roleGroup:{},
+        operationColumnVisable:true,
         // 遮罩层
         loading: true,
+        //拒绝理由
+        refuseReason:"",
+        refuseReasonOpen:false,
+        //审核的对话框
+        examineOpen:false,
         // 选中数组
         ids: [],
         // 非单个禁用
@@ -253,7 +313,10 @@
           ],
           noticeType: [
             { required: true, message: "公告类型不能为空", trigger: "change" }
-          ]
+          ],
+          // refuseReason:[
+          //   { required: true, message: "不通过的理由不能为空", trigger: "change" }
+          // ]
         }
       };
     },
@@ -265,8 +328,25 @@
       this.getDicts("sys_notice_type").then(response => {
         this.typeOptions = response.data;
       });
+
+      getUserProfile().then(response => {
+        this.user = response.data;
+        this.roleGroup = response.roleGroup;
+        console.log(this.roleGroup);
+        if(this.roleGroup.indexOf("系主任")!= -1 || this.roleGroup.indexOf("教学秘书")!= -1 || this.roleGroup.indexOf("系统管理员")!= -1)
+        {
+          this.operationColumnVisable = true;
+        }else {
+          //this.operationColumnVisable = false;
+        }
+      });
     },
     methods: {
+      /**权限的显示*/
+      operationColumn(){
+
+        return false;
+      },
       /** 查询公告列表 */
       getList() {
         this.loading = true;
@@ -323,9 +403,17 @@
         this.open = true;
         this.title = "添加公告";
       },
+      /**审核公告状态改变*/
+      noticeStatusChange(val){
+        if (val=='审核不通过')
+          this.refuseReasonOpen=true;
+        else
+          this.refuseReasonOpen=false;
+      },
       /** 修改按钮操作 */
       handleUpdate(row) {
         this.reset();
+        this.refuseReason="";
         const noticeId = row.noticeId || this.ids
         getNotice(noticeId).then(response => {
           this.form = response.data;
@@ -342,6 +430,7 @@
       submitForm: function() {
         this.$refs["form"].validate(valid => {
           if (valid) {
+            this.form.refuseReason=this.refuseReason;
             if (this.form.noticeId != undefined) {
               if(this.noticeStatus=='待审核')
                 this.form.status='0'
@@ -349,7 +438,6 @@
                 this.form.status='1'
               if(this.noticeStatus=='审核不通过')
                 this.form.status='-1'
-              console.log(this.form);
               updateNotice(this.form).then(response => {
                 this.msgSuccess("修改成功");
                 this.open = false;
@@ -378,6 +466,27 @@
           this.getList();
           this.msgSuccess("删除成功");
         }).catch(() => {});
+      },
+      /**打开审核页面*/
+      handleExamine(row){
+        this.reset();
+        const noticeId = row.noticeId || this.ids;
+        getNotice(noticeId).then(response => {
+          this.form = response.data;
+          if(this.form.status=='0')
+            this.noticeStatus ='待审核';
+          else if(this.form.status=='1')
+          {
+            this.refuseReasonOpen=false;
+            this.noticeStatus ='审核通过';
+          }
+          else {
+            this.noticeStatus ='审核不通过';
+            this.refuseReasonOpen=true;
+          }
+          this.title = "审核公告";
+          this.examineOpen=true;
+        })
       }
     }
   };
