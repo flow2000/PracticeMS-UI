@@ -26,7 +26,7 @@
       </el-col>
 
       <el-col :span="this.hamburgerParam.mainW" :xs="24">
-        <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px"  v-hasPermi="['practice-score:practiceScore:edit']">
+        <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px"  >
           <transition>
             <el-button v-on:click="foldContoller()" class="foldBt" :class="this.foldOpen?'el-icon-s-fold' : 'el-icon-s-unfold'"></el-button>
           </transition>
@@ -85,17 +85,7 @@
 
         <el-row :gutter="10" class="mb8">
 
-          <el-col :span="1.5">
-            <el-button
-              type="warning"
-              plain
-              icon="el-icon-download"
-              size="mini"
-              :loading="exportLoading"
-              @click="handleExport"
-              v-hasPermi="['practice-score:practiceScore:export']"
-            >导出</el-button>
-          </el-col>
+
 
 
           <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
@@ -128,7 +118,32 @@
               <el-link type="primary" :href="scope.row.summary" target=_blank>{{scope.row.summary==null?"未上传":(scope.row.summary==""?"未上传":scope.row.nickname+"的实习总结")}}</el-link>
             </template>
           </el-table-column>
+<!--          <el-table-column label="操作" align="center" class-name="small-padding fixed-width">-->
+<!--            <template slot-scope="scope">-->
+<!--              <el-button-->
+<!--                size="primary"-->
+<!--                type="text"-->
+<!--                icon="el-icon-edit"-->
+<!--                @click="handleUpdate(scope.row)"-->
+<!--                v-hasPermi="['practice-score:practiceScore:edit']"-->
+<!--              >查看PDF</el-button>-->
+<!--            </template>-->
+<!--          </el-table-column>-->
         </el-table>
+
+        <!-- 查看PDF -->
+        <el-dialog title="查看PDF" :visible.sync="open" width="1200px" append-to-body>
+          <el-form ref="form" :model="form" :rules="rules" label-width="180px">
+            <el-form-item label="实习鉴定">
+              <iframe :src="form.appraisal" width="850" height="700" ></iframe>
+            </el-form-item>
+            <el-form-item label="实习总结">
+              <iframe :src="form.summary" width="850" height="700" ></iframe>
+            </el-form-item>
+
+          </el-form>
+
+        </el-dialog>
 
         <pagination
           v-show="total>0"
@@ -143,7 +158,7 @@
 </template>
 
 <script>
-  import { archivedList, exportArchivedScore,calculate,listSetting,updateSetting} from "@/api/practice-score/practiceScore";
+  import { archivedList, exportArchivedScore,calculate,listSetting,updateSetting,getPracticeScore} from "@/api/practice-score/practiceScore";
   import { getUserProfile } from "@/api/system/user";
 
 
@@ -342,7 +357,18 @@
           this.exportLoading = false;
         }).catch(() => {});
       },
+      handleUpdate(row) {
+        this.reset();
+        const scoreId = row.scoreId || this.ids;
+        this.queryParams.teacherId = this.user.userId;
+        this.queryParams.userId = row.userId;
+        getPracticeScore(this.queryParams).then(response => {
+          this.form = response.data;
+          this.open = true;
+          // this.title = "修改实习成绩";
+        });
 
+      },
       handleSetting(){
         this.powerWeight=true;
         this.getSettingList();

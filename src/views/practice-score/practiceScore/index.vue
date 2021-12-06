@@ -101,18 +101,6 @@
         >成绩权重设定</el-button>
       </el-col>
 
-      <el-col :span="1.5">
-        <el-button
-          type="warning"
-          plain
-          icon="el-icon-download"
-          size="mini"
-          :loading="exportLoading"
-          @click="exportArchive"
-          v-hasPermi="['practice-score:practiceScore:export']"
-        >导出归档数据</el-button>
-      </el-col>
-
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
