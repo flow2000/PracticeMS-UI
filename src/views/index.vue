@@ -526,7 +526,7 @@ export default {
       // console.log(that.companyNames)
       var map = new AMap.Map('my_container', {
         resizeEnable: true,
-        zoom: 8,
+        zoom: 10,
         center: [108.365386, 22.843292] // 中心点坐标,广西民族大学
       })
       AMap.plugin('AMap.Geolocation', function() { //异步加载插件

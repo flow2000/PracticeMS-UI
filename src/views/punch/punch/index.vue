@@ -9,6 +9,15 @@
                         placeholder="选择时间">
         </el-date-picker>
       </el-form-item>
+      <el-form-item label="姓名" prop="userName">
+        <el-input
+          v-model="queryParams.userName"
+          placeholder="请输入姓名"
+          clearable
+          size="small"
+          @keyup.enter.native="handleQuery"
+        />
+      </el-form-item>
 <!--      <el-form-item label="状态" prop="status">-->
 <!--        <el-select v-model="queryParams.status" placeholder="请选择状态" clearable size="small">-->
 <!--          <el-option label="请选择字典生成" value="" />-->

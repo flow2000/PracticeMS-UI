@@ -358,8 +358,8 @@
       foldContoller(){
         this.foldOpen = !this.foldOpen
         if(this.foldOpen == true){
-          this.hamburgerParam.academyW = 4
-          this.hamburgerParam.mainW = 20
+          this.hamburgerParam.academyW = 2
+          this.hamburgerParam.mainW = 22
         }else{
           this.hamburgerParam.academyW = 0
           this.hamburgerParam.mainW = 24
