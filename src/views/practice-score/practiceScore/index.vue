@@ -199,8 +199,8 @@
       @pagination="getList"
     />
 
-    <!-- 添加或修改实习成绩对话框 -->
-    <el-dialog :title="title" :visible.sync="open" width="1200px" append-to-body>
+    <!-- 评分 -->
+    <el-dialog title="评分" :visible.sync="open" width="1200px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="180px">
         <el-form-item label="实习鉴定">
           <iframe :src="form.appraisal" width="850" height="700" ></iframe>
@@ -225,7 +225,7 @@
 <!--        <el-form-item label="系统参考成绩" prop="sysScore">-->
 <!--          <el-input v-model="form.sysScore" placeholder="请输入系统参考成绩" />-->
 <!--        </el-form-item>-->
-        <el-form-item label="实习鉴定">
+        <el-form-item label="实习总结">
           <iframe :src="form.summary" width="850" height="700" ></iframe>
         </el-form-item>
         <el-form-item label="单位评定成绩" prop="companyScore">
@@ -517,6 +517,7 @@ export default {
       this.loading = true;
       this.queryParams.teacherId = this.user.userId
       listPracticeScore(this.queryParams).then(response => {
+
         this.practiceScoreList = response.rows;
         this.total = response.total;
         this.loading = false;
