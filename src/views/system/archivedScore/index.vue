@@ -24,6 +24,7 @@
           </el-form>
         </div>
       </el-col>
+
       <el-col :span="this.hamburgerParam.mainW" :xs="24">
         <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px"  v-hasPermi="['practice-score:practiceScore:edit']">
           <transition>
@@ -34,7 +35,6 @@
               v-model="queryParams.username"
               placeholder="请输入学号"
               clearable
-              v-hasPermi="['practice-score:practiceScore:edit']"
               size="small"
               @keyup.enter.native="handleQuery"
             />
@@ -53,6 +53,35 @@
             <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
           </el-form-item>
         </el-form>
+
+<!--        <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px"  v-hasPermi="['practice-score:practiceScore:edit']">-->
+<!--          <transition>-->
+<!--            <el-button v-on:click="foldContoller()" class="foldBt" :class="this.foldOpen?'el-icon-s-fold' : 'el-icon-s-unfold'"></el-button>-->
+<!--          </transition>-->
+<!--          <el-form-item label="学号" prop="userId">-->
+<!--            <el-input-->
+<!--              v-model="queryParams.username"-->
+<!--              placeholder="请输入学号"-->
+<!--              clearable-->
+<!--              v-hasPermi="['practice-score:practiceScore:edit']"-->
+<!--              size="small"-->
+<!--              @keyup.enter.native="handleQuery"-->
+<!--            />-->
+<!--          </el-form-item>-->
+<!--          <el-form-item label="姓名" prop="locationId">-->
+<!--            <el-input-->
+<!--              v-model="queryParams.nickname"-->
+<!--              placeholder="请输入姓名"-->
+<!--              clearable-->
+<!--              size="small"-->
+<!--              @keyup.enter.native="handleQuery"-->
+<!--            />-->
+<!--          </el-form-item>-->
+<!--          <el-form-item>-->
+<!--            <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>-->
+<!--            <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>-->
+<!--          </el-form-item>-->
+<!--        </el-form>-->
 
         <el-row :gutter="10" class="mb8">
 
