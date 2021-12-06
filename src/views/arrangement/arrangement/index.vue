@@ -67,17 +67,7 @@
         >导出</el-button>
       </el-col>
 
-      <el-col :span="1.5">
-        <el-button
-          type="warning"
-          plain
-          icon="el-icon-download"
-          size="mini"
-          :loading="exportLoading"
-          @click="exportArchive"
-          v-hasPermi="['arrangement:arrangement:export']"
-        >导出归档数据</el-button>
-      </el-col>
+
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
@@ -168,35 +158,6 @@
       </div>
     </el-dialog>
 
-    <!-- 导出归档数据的对话框 -->
-    <el-dialog :title="export_archive.title" :visible.sync="export_archive.open" width="400px" class="export_archive"
-               append-to-body>
-      <div class="block" style="text-align: center;">
-        <el-form>
-          <el-form-item prop="role">
-            <el-select
-              v-model="archiveTime"
-              placeholder="请选择导出数据年份"
-              clearable
-              size="small"
-              style="width: 70%"
-            >
-              <el-option
-                v-for="dict in archivedYears"
-                :key="dict.dictValue"
-                :label="dict.dictLabel"
-                :value="dict.dictValue"
-              />
-            </el-select>
-          </el-form-item>
-        </el-form>
-      </div>
-
-      <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitExportArchive">确 定</el-button>
-        <el-button @click="export_archive.open = false">取 消</el-button>
-      </div>
-    </el-dialog>
 
   </div>
 </template>
