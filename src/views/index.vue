@@ -1,612 +1,718 @@
 <template>
-  <div class="app-container home">
-    <el-row :gutter="20">
-      <el-col :sm="24" :lg="5">
-        <div class="mc-ui-grid-item left-mid1" >
-          <p class="title1">实习学生人数</p>
-          <hr/>
-          <p class="text1">{{this.screenData.practiceStudentNum}}</p>
+  <div id="magicalDragScene" class="mc-root mc-ui-absolute-pane"
+       style="height: 900px;min-width: 1500px;
+              background-image:linear-gradient(rgba(3,99,194,0.97),rgba(1,20,56,0.95) )" >
+    <div id="main-panle" class="mc-ui-grid-pane" style="height: 850px; width: auto;margin:0.5%;margin-top:0;min-width: 1500px">
+      <!--公告详细信息-->
+      <el-dialog
+        title="系统通知"
+        :visible.sync="noticeDetail.visible"
+        width="35%"
+      >
+        <p style="text-align: center;font-size: 20px;margin-top: 0">{{noticeDetail.title}}</p>
+        <div style="font-size: 15px;color: #717171;
+        width: 50%;float: left;
+        text-align: left;padding-left: 5%">
+          发布者：{{noticeDetail.publisher}}
         </div>
-      </el-col>
-      <el-col :sm="24" :lg="5">
-        <div class="mc-ui-grid-item left-mid2" >
-          <p class="title1">今日在岗人数</p>
-          <hr/>
-          <p class="text1">{{this.screenData.nowOnGuardNum}}</p>
+        <div style="font-size: 15px;color: #717171;
+        width: 50%;float: right;
+        text-align: right;;padding-right: 5%">
+          发布时间：{{noticeDetail.updateTime}}
         </div>
-      </el-col>
-      <el-col :sm="24" :lg="5">
-        <div class="mc-ui-grid-item left-mid3" >
-          <p class="title1">今日完成日志人数</p>
-          <hr/>
-          <p class="text1">{{this.screenData.nowCompleteLogNum}}</p>
-        </div>
-      </el-col>
-      <el-col :sm="24" :lg="9">
-        <div class="mc-ui-grid-item top-panle">
-          <div style="font-size:xx-large;color: #1c84c6;width: 100%;float: left">
-            <div style="text-align:center;font-size: x-large;color: #0eaa8b;">{{roleGroup}}：{{user.nickName}}</div>
-          </div>
-          <!--公告详细信息-->
-          <el-dialog
-            title="系统通知"
-            :visible.sync="noticeDetail.visible"
-            width="35%"
-            >
-            <p style="text-align: center;font-size: 20px;margin-top: 0">{{noticeDetail.title}}</p>
-            <div style="font-size: 15px;color: #717171;
-            width: 50%;float: left;
-            text-align: left;padding-left: 5%">
-              发布者：{{noticeDetail.publisher}}
-            </div>
-            <div style="font-size: 15px;color: #717171;
-            width: 50%;float: right;
-            text-align: right;;padding-right: 5%">
-              发布时间：{{noticeDetail.updateTime}}
-            </div>
-            <br />
-            <div style="font-size: 16px;padding: 5% 10%" v-html="noticeDetail.content"></div>
-          </el-dialog>
-          <!--所有公告一览-->
-          <el-drawer
-            title="系统通知"
-            :visible.sync="allNotice.visible"
-            >
-            <el-collapse class="allNotice" accordion>
-              <el-collapse-item v-for="item in noticeList" :title="'['+[(item.updateTime.split(' '))[0]]+'] '+item.noticeTitle">
-                <div style="font-size: 12px;color: #717171;
-            width: 50%;float: left;
-            text-align: left;">
-                  发布者：{{item.nickname}}
-                </div>
-                <div style="font-size: 12px;color: #717171;
-            width: 50%;float: right;
-            text-align: right;">
-                  发布时间：{{item.updateTime}}
-                </div>
-                <br/>
-                <div style="font-size: 12px;padding: 0% 2%" v-html="item.noticeContent"></div>
-              </el-collapse-item>
-            </el-collapse>
-          </el-drawer>
-        </div>
-        </el-col>
-      </el-row>
+        <br />
+        <div style="font-size: 16px;padding: 5% 10%" v-html="noticeDetail.content"></div>
+      </el-dialog>
+      <!--所有公告一览-->
+      <el-drawer
+        title="系统通知"
+        :visible.sync="allNotice.visible"
+      >
+        <el-collapse class="allNotice" accordion>
+          <el-collapse-item v-for="item in noticeList" :title="'['+[(item.updateTime.split(' '))[0]]+'] '+item.noticeTitle">
 
-      <el-row :gutter="20">
-        <el-col :sm="24" :lg="15">
-          <div class="mc-ui-grid-item mid-mid">
-            <div id="my_container"></div>
+            <div style="font-size: 12px;color: #717171;
+        width: 50%;float: left;
+        text-align: left;">
+              发布者：{{item.nickname}}
+            </div>
+            <div style="font-size: 12px;color: #717171;
+        width: 50%;float: right;
+        text-align: right;">
+              发布时间：{{item.updateTime}}
+            </div>
+            <br/>
+            <div style="font-size: 12px;padding: 0% 2%" v-html="item.noticeContent"></div>
+          </el-collapse-item>
+        </el-collapse>
+      </el-drawer>
+
+      <!--实习学生人数情况-->
+      <div class="mc-ui-grid-item left-top">
+
+        <div class="stuCounts">
+          <div class="image-border image-border1"></div>
+          <div class="image-border image-border2"></div>
+          <div class="image-border image-border3"></div>
+          <div class="image-border image-border4"></div>
+          <div class="countsItem">
+            <p class="title1">实习学生总人数：</p>
+            <!--<p class="text1" v-if="this.roleGroup==='指导老师'">{{this.stuCount}}</p>
+            <p class="text1" v-else>{{this.userTotal}}</p>-->
+            <p class="text1">354</p>
+            <span class="title1" style="width: 20px;">人</span>
           </div>
-        </el-col>
-        <el-col :sm="24" :lg="9">
-          <div class="mc-ui-grid-item right-mid1">
-            <p class="title1">本周实习出勤情况</p>
-            <hr/>
-            <div id="chart3" style="
-            width: 110%;height: 90%;position:relative;
-            top: 0%;z-index: 2;
-            "></div>
+          <div class="countsItem">
+            <p class="title1">应实习学生人数：</p>
+            <!--<p class="text1" v-if="this.roleGroup==='指导老师'">{{this.stuCount}}</p>
+            <p class="text1" v-else>{{this.userTotal}}</p>-->
+            <p class="text1">350</p>
+            <span class="title1" style="width: 20px;">人</span>
           </div>
-        </el-col>
-      </el-row>
-      <el-row :gutter="20">
-        <el-col :sm="24" :lg="8">
-          <div class="mc-ui-grid-item left-bottom" >
-            <div id="chart2" style="width: 95%;height: 100%;padding-top: 1.5%"></div>
+          <div class="countsItem">
+            <p class="title1">已安排学生人数：</p>
+            <!--<p class="text1" v-if="this.roleGroup==='指导老师'">{{this.stuCount}}</p>
+            <p class="text1" v-else>{{this.userTotal}}</p>-->
+            <p class="text1">342</p>
+            <span class="title1" style="width: 20px;">人</span>
           </div>
-        </el-col>
-        <el-col :sm="24" :lg="16">
-          <div class="mc-ui-grid-item right-bottom" >
-            <div id="chart1" style="width: 100%;height: 100%;padding-top: 1.6% ; overflow: hidden"></div>
+          <div class="countsItem" >
+            <p class="title1">待安排学生人数：</p>
+            <!--<p class="text1" v-if="this.roleGroup==='指导老师'">{{this.stuCount}}</p>
+            <p class="text1" v-else>{{this.userTotal}}</p>-->
+            <p class="text1">8</p>
+            <span class="title1" style="width: 20px;">人</span>
           </div>
-        </el-col>
-      </el-row>
+        </div>
+        <div class="todayCounts">
+          <div class="image-border image-border1"></div>
+          <div class="image-border image-border2"></div>
+          <div class="image-border image-border3"></div>
+          <div class="image-border image-border4"></div>
+          <p class="title2">今日实习在岗人数：</p>
+          <!--<p class="text2">{{this.todayPunchCounts}}</p>-->
+          <p class="text2">340</p>
+          <p class="tip1">比昨日：
+            <i class="el-icon-caret-top" id="icon1"/>
+            增加<span style="color:rgb(253,49,31);font-weight:bold"> 2 </span>人
+          </p>
+
+        </div>
+        <div class="todayLogs">
+          <div class="image-border image-border1"></div>
+          <div class="image-border image-border2"></div>
+          <div class="image-border image-border3"></div>
+          <div class="image-border image-border4"></div>
+          <p class="title2">今日完成日志人数：</p>
+          <!--<p class="text2">{{this.todayPracLogCounts}}</p>-->
+          <p class="text2">340</p>
+          <p class="tip1">比昨日：
+            <i class="el-icon-caret-bottom" id="icon2"/>
+            减少<span style="color: rgb(7,184,134);;font-weight:bold"> 2 </span>人
+          </p>
+        </div>
+      </div>
+
+      <!--地图-->
+      <div class="mc-ui-grid-item mid-top">
+        <!--<div id="my_container"></div>-->
+      </div>
+
+      <!--实习学生考勤统计-->
+      <div class="mc-ui-grid-item right-top">
+        <div class="image-border image-border1"></div>
+        <div class="image-border image-border2"></div>
+        <div class="image-border image-border3"></div>
+        <div class="image-border image-border4"></div>
+        <p class="title1" style="width: 300px;margin-left: 3%;font-size: 20px">本周实习学生考勤统计</p>
+        <div id="chart3" style="
+        width: 110%;height: 100%;
+        z-index: 2;
+        margin-top: 10%;
+        ">
+        </div>
+      </div>
+
+      <!--底部图表-->
+      <div class="mc-ui-grid-item bottom" >
+        <!--饼状图-->
+        <div class="chart2">
+          <div class="image-border image-border1"></div>
+          <div class="image-border image-border2"></div>
+          <div class="image-border image-border3"></div>
+          <div class="image-border image-border4"></div>
+          <div id="chart2" style="width: 100%;height: 100%" ></div>
+        </div>
+
+        <div class="chart1">
+          <div class="image-border image-border1"></div>
+          <div class="image-border image-border2"></div>
+          <div class="image-border image-border3"></div>
+          <div class="image-border image-border4"></div>
+
+          <div id="chart1" style="width: 100%;height: 100%" ></div>
+        </div>
+      </div>
+
     </div>
+  </div>
 </template>
 
 <script>
 
-import { getUserProfile } from '../api/system/user'
-import * as echarts from 'echarts'
-import { listNotice } from "@/api/system/notice";
-import ScrollPane from '../layout/components/TagsView/ScrollPane'
-import request from '@/utils/request'
-import { getScreenData , getLocationStudentNum } from "@/api/arrangement/arrangement";
-import { listUserInfoByRole } from "@/api/practice-info/practiceInfo";
-import { getTude } from '@/api/location/info'
-import { getBaseTude } from '@/api/system/baseInfo'
-import  location from '@/assets/images/location.png'
-import  locationRed from '@/assets/images/location-red.png'
-import { getTodayPunchList , selectNowWeekAttendanceList } from "@/api/punch/punch";
-import { getTodayPracLogList } from "@/api/practicelog/practicelog";
-import bus from '../bus.js'
+  import { getUserProfile,listUser } from '../api/system/user'
+  import * as echarts from 'echarts'
+  import ScrollPane from '../layout/components/TagsView/ScrollPane'
+  import { getTude } from '@/api/location/info'
+  import { getBaseTude } from '@/api/system/baseInfo'
+  import  location from '@/assets/images/location.png'
+  import  locationRed from '@/assets/images/location-red.png'
+  import bus from '../bus.js'
+  import {getTodayPunchList,selectNowWeekAttendanceList} from '../api/punch/punch'
+  import {getTodayPracLogList} from '../api/practicelog/practicelog'
+  import {stuInfoList,getScreenData,getLocationStudentNum} from '../api/arrangement/arrangement'
 
-export default {
-  name: "index",
-  components: { ScrollPane },
-  data() {
-    return {
-      // 版本号
-      version: "3.6.0",
-      // 用户信息
-      user: {},
-      roleGroup: {},
-      //通知列表
-      noticeList: [],
-      noticeSlims:[],
-      //通知条数
-      noticetotal:0,
-      //通知详细窗口
-      noticeDetail:{
-        visible:false,
-        title:null,
-        content:null,
-        updateTime:null,
-        publisher:null,
-      },
-      practiceStudentNum:{
-        baseName : [],
-        count : []
-      },
-      //查看所有通知窗口
-      allNotice:{
-        visible:false
-      },
-      // 通知查询参数
-      noticeParams: {
-        pageNum: 1,
-        pageSize: 5,
-      },
-      // 地图数据
-      ruleForm: {
-        name: '',
-        phone: '',
-        addr: '',
-        long: '',
-        lat: '',
-        start_work_time: '',
-        end_work_time: ''
+  export default {
+    name: "index",
+    components: { ScrollPane },
+    data() {
+      return {
+        // 版本号
+        version: "3.6.0",
+        // 用户信息
+        user: {},
+        roleGroup: {},
+        //通知列表
+        noticeList: [],
+        noticeSlims:[],
+        //通知条数
+        noticetotal:0,
+        //通知详细窗口
+        noticeDetail:{
+          visible:false,
+          title:null,
+          content:null,
+          updateTime:null,
+          publisher:null,
+        },
+        //查看所有通知窗口
+        allNotice:{
+          visible:false
+        },
+        // 通知查询参数
+        noticeParams: {
+          pageNum: 1,
+          pageSize: 5,
+          status: '1',
+        },
+        // 地图数据
+        ruleForm: {
+          name: '',
+          phone: '',
+          addr: '',
+          long: '',
+          lat: '',
+          start_work_time: '',
+          end_work_time: ''
+        },
+        // 管理用户人数
+        userTotal:null,
+        // 管理用户人数列表
+        userList:[],
+        // 查询管理用户列表参数
+        queryParams: {
+          pageNum: undefined,
+          pageSize: undefined,
+          userName: undefined,
+          phonenumber: undefined,
+          status: undefined,
+          deptId: undefined,
+          role: '实习学生'
+        },
+        // 今日打卡成功人数
+        todayPunchCounts:null,
+        // 今日日志提交份数
+        todayPracLogCounts:null,
+        // 指导老师查询实习学生参数
+        stuParams: {
+          pageNum: 1,
+          pageSize: 10,
+          stuId: null,
+          info: null,
+          infoId: null,
+          notes: null,
+          stuOption: null,
+          status: null,
+          postName: null,
+          nickName: null,
+          teacherId: null
+        },
+        // 指导老师查询实习学生总数
+        stuCount:null,
+        // 查询管理用户实习信息参数
+        arrParams: {
+          pageNum: 1,
+          pageSize: 10,
+          stuId: null,
+          info : null,
+          infoId: null,
+          notes: null,
+          stuOption: null,
+          status: null,
+          postName : null,
+          nickName : null
+        },
+        // 管理用户实习信息的人数（分散/集中/其他）
+        screenData : {
+          //分散实习人数
+          scatteredPracticeNum : 0,
+          //集中实习人数
+          focusPracticeNum : 0,
+          //实习基地-实习学生分布情况
+          baseStuData:{
+            baseName : [],
+            count : []
+          },
+        },
+        // 最近一周考勤记录
+        weekPunch : [],
+        // 图表
+        charts:{
+          chart1:null,
+          chart2:null,
+          chart3:null
+        }
+      };
+    },
+    created() {
+      // 获取当前用户信息
+      this.getUser();
+    },
 
+    mounted(){
+      // 创建图表实例
+      this.initCharts();
+
+      // 获取大屏数据
+      this.getScreenData();
+
+
+      // 地图初始化
+      //var that = this
+      //this.init(that)
+
+      // 接收详细公告信息
+      bus.$on('sendNoticeDetail',(detail)=>{
+        this.noticeDetail=detail;
+        this.noticeDetail.visible=true;
+      });
+      //接收全部公告信息
+      bus.$on('sendAllNotice',list=>{
+        this.noticeList=list;
+        this.allNotice.visible=true;
+      })
+
+    },
+    methods: {
+
+      goTarget(href) {
+        window.open(href, "_blank");
       },
-      userQueryParams : {
-        roleName : null
+
+      /* 获取大屏数据 */
+      getScreenData(){
+        console.log("获取大屏数据")
+        this.getTodayPracLogList();
+        this.getTodayPunchList();
+        this.getUserList();
+        this.getStuCount();
+        this.getWeekPunch();
+        this.getArrList();
+        this.getBaseStuData()
       },
-      screenData : {
-        //实习学生人数
-        practiceStudentNum : 0,
-        //今日在岗人数
-        nowOnGuardNum : 0,
-        //今日完成日志人数
-        nowCompleteLogNum : 0,
-        //分散实习人数
-        scatteredPracticeNum : 0,
-        //集中实习人数
-        focusPracticeNum : 0
-      },
-      thisWeekData : []
-    };
-  },
-  created() {
-    // 获取当前用户信息
-    this.getUser();
-    //初始化大屏数据
-    this.initScreenData();
-    // 获取最近的公告
-    //this.getNoticeList();
-  },
-  mounted(){
-    // 地图初始化
-    var that = this
-    this.init(that)
-    // 接收详细公告信息
-    bus.$on('sendNoticeDetail',(detail)=>{
-      this.noticeDetail=detail;
-      this.noticeDetail.visible=true;
-    });
-    //接收全部公告信息
-    bus.$on('sendAllNotice',list=>{
-      this.noticeList=list;
-      this.allNotice.visible=true;
-    })
-    // 展示网络时间
-    // this.showNetDateTime();
-  },
-  methods: {
-    initScreenData(){
-      this.userQueryParams.roleName = 'student'
-      listUserInfoByRole(this.userQueryParams).then(response => {
-        this.screenData.practiceStudentNum = response.total
-      });
-      getTodayPunchList().then(response => {
-        this.screenData.nowOnGuardNum = response.data.punchCount
-      });
-      getTodayPracLogList().then(response => {
-        this.screenData.nowCompleteLogNum = response.data.PracLogCount
-      });
-      getLocationStudentNum().then(response => {
-        this.practiceStudentNum.count = response.data[0]
-        this.practiceStudentNum.baseName = response.data[1]
-      });
-      getScreenData().then(response => {
-        var that = this
-        //分散实习人数
-        this.screenData.scatteredPracticeNum = response.data.scatteredPracticeNum
-        //集中实习人数
-        this.screenData.focusPracticeNum = response.data.focusPracticeNum
-        selectNowWeekAttendanceList().then(response => {
-           that.thisWeekData = response.data
-          //绘图
-          this.drawLine();
+
+      /* 获取当前用户信息 */
+      getUser() {
+        getUserProfile().then(response => {
+          //console.log(response.data)
+          //console.log(response.roleGroup)
+          this.user = response.data;
+          this.roleGroup = response.roleGroup;
+          if(this.roleGroup==="实习学生"){
+            this.$router.replace({ path: "/index_stu" }).catch(()=>{});
+          }else if(this.roleGroup==="指导老师"){
+            this.stuParams.teacherId=this.user.userId;
+            //console.log(this.stuParams.teacherId)
+            //获取管理学生数量
+            this.getStuCount();
+          }else {
+            //获取管理用户列表
+            this.getUserList()
+          }
         });
-      });
-    },
-    goTarget(href) {
-      window.open(href, "_blank");
-    },
+      },
 
-    /* 获取当前用户信息 */
-    getUser() {
-      getUserProfile().then(response => {
-        this.user = response.data;
-        this.roleGroup = response.roleGroup;
-      });
-    },
+      /* 获取今天打卡成功人数 */
+      getTodayPunchList(){
+        getTodayPunchList().then(response=>{
+          if(response.data.punchCount!==null)
+            this.todayPunchCounts=response.data.punchCount;
+          else this.todayPunchCounts=0;
+        })
+      },
 
-    /* 展示网络时间 */
-    showNetDateTime(){
-      getNetDateTime().then(response=>{
-        console.log(response);
-      })
-    },
-    /* 绘图 */
-    drawLine(){
-      // 基于准备好的dom，初始化echarts实例
-      let chart1 = echarts.init(document.getElementById('chart1'))
-      let chart2 =echarts.init(document.getElementById('chart2'))
-      let chart3 =echarts.init(document.getElementById('chart3'))
-      // 绘制图表
-      chart1.setOption({
-        // ----  标题 -----
-        title: {
-          text: '实习地点人数分布情况',
-            textStyle: {
-            color: 'rgba(0, 0, 0, 0.5)'
-          },
-          padding: [0, 0, 10, 100]  // 位置
-        },
-        // ---- legend ----
-        legend: {
-          type: 'plain',  // 图列类型，默认为 'plain'
-            top: '1%',  // 图列相对容器的位置 top\bottom\left\right
-            selected: {
-          },
-          textStyle: {  // 图列内容样式
-            color: '#fff',  // 字体颜色
-              backgroundColor: 'black'  // 字体背景色
-          },
-          tooltip: {  // 图列提示框，默认不显示
-            show: true,
-              color: 'red'
-          },
-          data: [   // 图列内容
-            {
-              name: '人数',
-              icon: 'circle',
-              textStyle: {
-                color: 'rgba(0, 0, 0, 0.5)',  // 单独设置某一个图列的颜色
-                backgroundColor: '#fff' // 单独设置某一个图列的字体背景色
-              }
-            }
-          ]
-        },
-        // ---  提示框 ----
-        tooltip: {
-          show: true,   // 是否显示提示框，默认为true
-            trigger: 'item', // 数据项图形触发
-            axisPointer: {   // 指示样式
-            type: 'shadow',
-              axis: 'auto'
-          },
-          padding: 5,
-            textStyle: {   // 提示框内容的样式
-            color: 'rgba(0, 0, 0, 0.5)'
+      /* 获取今天完成日志人数 */
+      getTodayPracLogList(){
+        getTodayPracLogList().then(response=>{
+          if(response.data.PracLogCount!==null){
+            this.todayPracLogCounts=response.data.PracLogCount
           }
-        },
-        // ---- gird区域 ---
-        gird: {
-          show: false,    // 是否显示直角坐标系网格
-            top: 80,  // 相对位置 top\bottom\left\right
-            containLabel: false, // gird 区域是否包含坐标轴的刻度标签
-            tooltip: {
-            show: true,
-              trigger: 'item',   // 触发类型
-              textStyle: {
-              color: 'rgba(0, 0, 0, 0.5)'
-            }
-          }
-        },
-        //  ------  X轴 ------
-        xAxis: {
-          show: true,  // 是否显示
-            position: 'bottom',  // x轴的位置
-            offset: 0, // x轴相对于默认位置的偏移
-            type: 'category',   // 轴类型， 默认为 'category'
-            name: '实习点',    // 轴名称
-            nameLocation: 'end',  // 轴名称相对位置
-            nameTextStyle: {   // 坐标轴名称样式
-            color: 'rgba(0, 0, 0, 0.5)',
-              padding: [5, 0, 0, -5]
-          },
-          nameGap: 15, // 坐标轴名称与轴线之间的距离
-            nameRotate: 0,  // 坐标轴名字旋转
-            axisLine: {       // 坐标轴 轴线
-            show: true,  // 是否显示
-              symbol: ['none', 'arrow'],  // 是否显示轴线箭头
-              symbolSize: [8, 8], // 箭头大小
-              symbolOffset: [0, 7],  // 箭头位置
-              // ------   线 ---------
-              lineStyle: {
-              color: 'rgba(0, 0, 0, 0.5)',
-                width: 1,
-                type: 'solid'
-            }
-          },
-          axisTick: {    // 坐标轴 刻度
-            show: true,  // 是否显示
-              inside: true,  // 是否朝内
-              length: 3,     // 长度
-              lineStyle: {   // 默认取轴线的样式
-              color: 'rgba(0, 0, 0, 0.5)',
-                width: 1,
-                type: 'solid'
-            }
-          },
-          axisLabel: {    // 坐标轴标签
-            show: true,  // 是否显示
-              inside: false, // 是否朝内
-              rotate: 60, // 旋转角度
-              margin: 5, // 刻度标签与轴线之间的距离
-              color: 'rgba(0, 0, 0, 0.5)'  // 默认取轴线的颜色
-          },
-          splitLine: {    // gird区域中的分割线
-            show: false,  // 是否显示
-              lineStyle: {
-            }
-          },
-          splitArea: {    // 网格区域
-            show: false  // 是否显示，默认为false
-          },
-          data: this.practiceStudentNum.baseName
-        },
-        //   ------   y轴  ----------
-        yAxis: {
-          show: true,  // 是否显示
-            position: 'left', // y轴位置
-            offset: 0, // y轴相对于默认位置的偏移
-            type: 'value',  // 轴类型，默认为 ‘category’
-            name: '人数',   // 轴名称
-            nameLocation: 'end', // 轴名称相对位置value
-            nameTextStyle: {    // 坐标轴名称样式
-            color: 'rgba(0, 0, 0, 0.5)',
-              padding: [5, 0, 0, 5]  // 坐标轴名称相对位置
-          },
-          nameGap: 15, // 坐标轴名称与轴线之间的距离
-            nameRotate: 270,  // 坐标轴名字旋转
+          else this.todayPracLogCounts=0;
+        })
+      },
 
-            axisLine: {    // 坐标轴 轴线
-            show: true,  // 是否显示
-              //  -----   箭头 -----
-              symbol: ['none', 'arrow'],  // 是否显示轴线箭头
-              symbolSize: [8, 8],  // 箭头大小
-              symbolOffset: [0, 7], // 箭头位置
+      /* 获取管理用户列表 */
+      getUserList(){
+        listUser(this.queryParams).then(response=>{
+          if(response.total!==null)
+            this.userTotal=response.total;
+          else this.userTotal=0;
+          this.userList=response.row;
+          //console.log(response.row)
+        })
+      },
 
-              // ----- 线 -------
-              lineStyle: {
-              color: 'rgba(0, 0, 0, 0.5)',
-                width: 1,
-                type: 'solid'
-            }
-          },
-          axisTick: {      // 坐标轴的刻度
-            show: true,    // 是否显示
-              inside: true,  // 是否朝内
-              length: 3,      // 长度
-              lineStyle: {
-              color: 'rgba(0, 0, 0, 0.5)',  // 默认取轴线的颜色
-                width: 1,
-                type: 'solid'
-            }
-          },
-          axisLabel: {      // 坐标轴的标签
-            show: true,    // 是否显示
-              inside: false,  // 是否朝内
-              rotate: 0,     // 旋转角度
-              margin: 8,     // 刻度标签与轴线之间的距离
-              color: 'rgba(0, 0, 0, 0.5)',  // 默认轴线的颜色
-          },
-          splitLine: {    // gird 区域中的分割线
-            show: true,   // 是否显示
-              lineStyle: {
-              color: 'rgba(0, 0, 0, 0.5)',
-                width: 1,
-                type: 'dashed'
-            }
-          },
-          splitArea: {     // 网格区域
-            show: false   // 是否显示，默认为false
-          }
-        },
-        //  -------   内容数据 -------
-        series: [
-          {
-            name: '人数',      // 序列名称
-            type: 'bar',      // 类型
-            legendHoverLink: true,  // 是否启用图列 hover 时的联动高亮
-            label: {   // 图形上的文本标签
-              show: false,
-              position: 'insideTop', // 相对位置
-              rotate: 0,  // 旋转角度
-              color: 'rgba(0, 0, 0, 0.5)'
-            },
-            itemStyle: {    // 图形的形状
-              color: '#00afff',
-              barBorderRadius: [18, 18, 0 ,0]
-            },
-            barWidth: 20,  // 柱形的宽度
-            barCategoryGap: '20%',  // 柱形的间距
-            data: this.practiceStudentNum.count
-          }
-        ]
-      });
-      chart2.setOption({
-        title: {
-          text: '实习类型情况',
-          subtext: 'Fake Data',
-          left: 'center'
-        },
-        tooltip: {
-          trigger: 'item'
-        },
-        legend: {
-          orient: 'vertical',
-          left: 'left'
-        },
-        series: [
-          {
-            name: '人数',
-            type: 'pie',
-            radius: '50%',
-            data: [
-              { value: parseInt(this.screenData.scatteredPracticeNum), name: '分散实习' },
-              { value: parseInt(this.screenData.focusPracticeNum), name: '集中实习' }
-            ],
-            emphasis: {
-              itemStyle: {
-                shadowBlur: 10,
-                shadowOffsetX: 0,
-                shadowColor: 'rgba(0, 0, 0, 0.5)'
-              }
-            }
-          }
-        ]
-      });
-      chart3.setOption({
-        tooltip: {
-          trigger: 'axis',
-          axisPointer: {
-            type: 'shadow'
-          }
-        },
-        xAxis: [
-          {
-            type: 'category',
-            data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-            axisTick: {
-              alignWithLabel: true
-            }
-          }
-        ],
-        yAxis: {
-          type: 'value'
-        },
-        series: [
-          {
-            data: this.thisWeekData,
-            type: 'bar'
-          }
-        ],
+      /* 获取管理实习学生实习信息 */
+      getArrList(){
+        getScreenData().then(response=>{
+          //分散实习人数
+          this.screenData.scatteredPracticeNum = response.data.scatteredPracticeNum
+          //集中实习人数
+          this.screenData.focusPracticeNum = response.data.focusPracticeNum
+          this.charts.chart2.hideLoading();
+          this.drawChart(2)
+        })
+      },
 
-      });
-    },
+      /* 获取实习基地-学生人数数据 */
+      getBaseStuData(){
+        getLocationStudentNum().then(response=>{
+          console.log(response)
+          this.screenData.baseStuData.count = response.data[0]
+          this.screenData.baseStuData.baseName = response.data[1]
+          this.charts.chart1.hideLoading();
+          this.drawChart(1)
+        })
+      },
 
-    /* 地图 */
-    init(that) {
-      let markers = [] // 点聚合数组
-      // console.log(that.companyNames)
-      var map = new AMap.Map('my_container', {
-        resizeEnable: true,
-        zoom: 10,
-        center: [108.365386, 22.843292] // 中心点坐标,广西民族大学
-      })
-      AMap.plugin('AMap.Geolocation', function() { //异步加载插件
-        var geolocation = new AMap.Geolocation()
-        map.addControl(geolocation)
-      })
+      /* 指导老师获取实习学生总数 */
+      getStuCount(){
+        stuInfoList(this.stuParams).then(response=>{
+          //console.log(response)
+          this.stuCount=response.total;
+        })
+      },
 
-      initBaseInfo(that);
-      initLocation(that);
-      initMarkerClusterer();
+      /* 获取一周考勤记录 */
+      getWeekPunch(){
+        selectNowWeekAttendanceList().then(response=>{
+          this.weekPunch = response.data
+          //console.log(this.weekPunch)
+          this.charts.chart3.hideLoading();
+          this.drawChart(3)
+        })
+      },
 
-      function initBaseInfo(that){
-        getTude().then(response => {
-          var i = 0
-          var lonlats = []
-          var companyNames = []
-          for (; i < response.data.length; i++) {
-            var str = response.data[i].tude.split(',')
-            // var strComs = response.data[i].companyName.split(',')
-            //产生经纬度数组
-            var tude = [];
-            var name = [];
-            var longit = parseFloat(str[0])
-            var lat = parseFloat(str[1])
-            tude.push(longit)
-            tude.push(lat)
-            lonlats.push(tude)
-            companyNames.push(response.data[i].companyName)
-          }
-          // let lonlat = [[108.365386, 22.843292], [108.238089, 22.848063], [108.244248, 22.852298]]
-          for (let i = 0; i < lonlats.length; i++) {
-            //获得地点信息
-            var geocoder = new AMap.Geocoder({
-              /// city 指定进行编码查询的城市，支持传入城市名、adcode 和 citycode
-              radius: 10
-            })
-            geocoder.getAddress(lonlats[i], function(status, result) {
-              // console.log(status,result)
-              if (status === 'complete' && result.info === 'OK') {
-                // result为对应的地理位置详细信息
-                //             console.log(result.regeocode.formattedAddress)
-                customMark(lonlats[i][0], lonlats[i][1], companyNames[i])
-                // console.log(address)
-                // this.addresses = address
-              }
-            })
-            // console.log(this.addresses)
-            //添加标记
-            // customMark(lonlat[i][0],lonlat[i][1],address)
-          }
-          // initMarkerClusterer()
-          // cluster.setMaxZoom(15);
+      /* 创建图表实例 */
+      initCharts(){
+        // 基于准备好的dom，初始化echarts实例
+        console.log("创建图表")
+        this.charts.chart1 = echarts.init(document.getElementById('chart1'))
+        this.charts.chart1.showLoading()
+        this.charts.chart2 = echarts.init(document.getElementById('chart2'))
+        this.charts.chart2.showLoading()
+        this.charts.chart3 = echarts.init(document.getElementById('chart3'))
+        this.charts.chart3.showLoading()
+        //console.log(this.charts.chart1)
+      },
+
+      /* 绘图 */
+      drawChart(id){
+        switch (id) {
+          case id=1:{
+            this.charts.chart1.setOption({
+              textStyle:{
+                color:"rgba(255,255,255,0.9)",
+              },
+              title: {
+                text: '实习基地-学生人数分布情况',
+                left: 'center',
+                top:'3%',
+                textStyle:{
+                  color: "rgb(101, 238, 250)",
+                  textShadowColor: 'rgb(3, 170, 253)',
+                  textShadowBlur:2,
+                  fontFamily:'微软雅黑',
+                  fontWeight:'lighter',
+                  fontSize:22,
+                }
+              },
+              tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                  type: 'shadow'
+                }
+              },
+              grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '3%',
+                containLabel: true
+              },
+              xAxis: {
+                type: 'value',
+                boundaryGap: [0, 0.01]
+              },
+              yAxis: {
+                type: 'category',
+                data:this.screenData.baseStuData.baseName /*['Brazil', 'Indonesia', 'USA', 'India', 'China', 'World']*/
+              },
+              series: [
+                {
+                  name: '人数',
+                  type: 'bar',
+                  data: this.screenData.baseStuData.count/*[18203, 23489, 29034, 104970, 131744, 630230]*/,
+                  label: {
+                    show: true,
+                    fontSize:15
+                  },
+                  itemStyle:{
+                    color: new echarts.graphic.LinearGradient(1, 0, 0, 0, [{
+                      offset: 0,
+                      color: '#05d7fc'
+                    }, {
+                      offset: 1,
+                      color: '#6f6afd'
+                    }]),
+                  }
+                }
+              ]
+            });
+          }break;
+          case id=2:{
+            this.charts.chart2.setOption({
+              title: {
+                text: '实习类型情况',
+                left: 'center',
+                top:'3%',
+                textStyle:{
+                  color: "rgb(101, 238, 250)",
+                  textShadowColor: 'rgb(3, 170, 253)',
+                  textShadowBlur:2,
+                  fontFamily:'微软雅黑',
+                  fontWeight:'lighter',
+                  fontSize:22,
+                }
+              },
+              tooltip: {
+                trigger: 'item',
+              },
+              legend: {
+                orient: 'vertical',
+                left: '2%',
+                top:'30%',
+                textStyle:{
+                  color: "rgb(254,255,255)",
+                  textShadowColor: 'rgb(3, 170, 253)',
+                  textShadowBlur:2,
+                  fontFamily:'微软雅黑',
+                  fontWeight:'lighter',
+                  fontSize:13
+                }
+              },
+              series: [
+                {
+                  name: '人数',
+                  type: 'pie',
+                  radius: '50%',
+                  data: [
+                    {
+                      value: parseInt(this.screenData.scatteredPracticeNum),
+                      name: '分散实习',
+                      itemStyle:{
+                        color:'rgb(3,167,255)'
+                      }
+                    },
+                    {
+                      value: parseInt(this.screenData.focusPracticeNum),
+                      name: '集中实习',
+                      itemStyle:{
+                        color:'rgba(3,252,216,0.92)'
+                      }
+                    }
+                  ],
+                  label: {
+                    show:true,
+                    formatter: '{b}：{c}',
+                    color: "rgb(254,255,255)",
+                    textShadowColor: 'rgb(3, 170, 253)',
+                    textShadowBlur:2,
+                    fontFamily:'微软雅黑',
+                    fontWeight:'lighter',
+                    fontSize:16,
+                    /*position:'inside'*/
+                  },
+                  emphasis: {
+                    itemStyle: {
+                      shadowBlur: 10,
+                      shadowOffsetX: 0,
+                      shadowColor: 'rgba(0,0,0,0.5)'
+                    }
+                  }
+                }
+              ]
+            });
+          }break;
+          case id=3:{
+            this.charts.chart3.setOption({
+              textStyle:{
+                color:"rgba(255,255,255,0.9)",
+
+              },
+              tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                  type: 'shadow'
+                }
+              },
+              xAxis: [
+                {
+                  type: 'category',
+                  data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                  axisTick: {
+                    alignWithLabel: true
+                  }
+                }
+              ],
+              yAxis: {
+                type: 'value'
+              },
+              series: [
+                {
+                  data: /*this.weekPunch*/[100,59,254,356,156,15,61],
+                  type: 'bar',
+                  label: {
+                    show: true,
+                    color:"rgb(255,255,255)",
+                    fontSize:15
+                  },
+                  itemStyle:{
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                      offset: 0,
+                      color: '#05a6fc'
+                    }, {
+                      offset: 1,
+                      color: '#0147c6'
+                    }]),
+                  }
+                }
+              ],
+
+            });
+          }break;
+        }
+      },
+
+      /* 地图 */
+      init(that) {
+        let markers = [] // 点聚合数组
+        // console.log(that.companyNames)
+        var map = new AMap.Map('my_container', {
+          resizeEnable: true,
+          zoom: 8,
+          center: [108.365386, 22.843292] // 中心点坐标,广西民族大学
+        })
+        AMap.plugin('AMap.Geolocation', function() { //异步加载插件
+          var geolocation = new AMap.Geolocation()
+          map.addControl(geolocation)
+        })
+
+        initBaseInfo(that);
+        initLocation(that);
+        initMarkerClusterer();
+
+        function initBaseInfo(that){
+          getTude().then(response => {
+            var i = 0
+            var lonlats = []
+            var companyNames = []
+            for (; i < response.data.length; i++) {
+              var str = response.data[i].tude.split(',')
+              // var strComs = response.data[i].companyName.split(',')
+              //产生经纬度数组
+              var tude = [];
+              var name = [];
+              var longit = parseFloat(str[0])
+              var lat = parseFloat(str[1])
+              tude.push(longit)
+              tude.push(lat)
+              lonlats.push(tude)
+              companyNames.push(response.data[i].companyName)
+            }
+            //console.log(companyNames)
+            //console.log(lonlats)
+
+            // let lonlat = [[108.365386, 22.843292], [108.238089, 22.848063], [108.244248, 22.852298]]
+            for (let i = 0; i < lonlats.length; i++) {
+              //获得地点信息
+              var geocoder = new AMap.Geocoder({
+                /// city 指定进行编码查询的城市，支持传入城市名、adcode 和 citycode
+                radius: 10
+              })
+              geocoder.getAddress(lonlats[i], function(status, result) {
+                // console.log(status,result)
+                if (status === 'complete' && result.info === 'OK') {
+                  // result为对应的地理位置详细信息
+                  //             console.log(result.regeocode.formattedAddress)
+                  customMark(lonlats[i][0], lonlats[i][1], companyNames[i])
+                  // console.log(address)
+                  // this.addresses = address
+                }
+              })
+              // console.log(this.addresses)
+              //添加标记
+              // customMark(lonlat[i][0],lonlat[i][1],address)
+            }
+            // initMarkerClusterer()
+            // cluster.setMaxZoom(15);
 // 添加自定义标记
 //             imageIcon=require("../../../assets/images/location.png")
-          function customMark(longit, lat, title) {
-            // let lonlat = [108.365386,22.843292];
-            // 创建 AMap.Icon 实例：
-            let icon = new AMap.Icon({
-              size: new AMap.Size(58, 70),    // 图标尺寸
-              image: location,  // Icon的图像
-              imageSize: new AMap.Size(28, 30)   // 根据所设置的大小拉伸或压缩图片
-            })
+            function customMark(longit, lat, title) {
+              // let lonlat = [108.365386,22.843292];
+              // 创建 AMap.Icon 实例：
+              let icon = new AMap.Icon({
+                size: new AMap.Size(58, 70),    // 图标尺寸
+                image: location,  // Icon的图像
+                imageSize: new AMap.Size(28, 30)   // 根据所设置的大小拉伸或压缩图片
+              })
 
-            // 将 Icon 实例添加到 marker 上:
-            let marker = new AMap.Marker({
-              position: new AMap.LngLat(longit, lat),
-              offset: new AMap.Pixel(-10, -10),
-              icon: icon, // 添加 Icon 实例
-              title: '实习地点：'+title,
-              zoom: 13
-            })
-            var msg_label =
-              '<div style="border-radius:200px;background: #00afff"></div><span >'+title+'</span></div>'
+              // 将 Icon 实例添加到 marker 上:
+              let marker = new AMap.Marker({
+                position: new AMap.LngLat(longit, lat),
+                offset: new AMap.Pixel(-10, -10),
+                icon: icon, // 添加 Icon 实例
+                title: '实习地点：'+title,
+                zoom: 13
+              })
+              var msg_label =
+                '<div style="border-radius:200px;background: #00afff"></div><span >'+title+'</span></div>'
 
-            marker.setLabel({
-              offset: new AMap.Pixel(20, -10), //显示位置
-              content: msg_label //显示内容
-            })
+              marker.setLabel({
+                offset: new AMap.Pixel(20, -10), //显示位置
+                content: msg_label //显示内容
+              })
 
-            var markerContent =`<div class="description">
+              var markerContent =`<div class="description">
               <span class="title">${title}</span>
               <br />
               <div class="mt-3 detail">
@@ -616,186 +722,139 @@ export default {
               </div>
             </div>`
 
-            marker.on('mouseover', function(e) {
-              marker.setTop(true)
-            })
+              marker.on('mouseover', function(e) {
+                marker.setTop(true)
+              })
 
-            marker.on('mouseout', function() {
-              //  鼠标离开标注地点事件
-              marker.setTop(false)
-            })
+              marker.on('mouseout', function() {
+                //  鼠标离开标注地点事件
+                marker.setTop(false)
+              })
 
-            marker.on("click", function (e) {
-              //  点击标注地点事件
-            });
-            // var lonlat=longit+","+lat
-            // markerEvent(marker,lonlat)
-            map.add(marker)
+              marker.on("click", function (e) {
+                //  点击标注地点事件
+              });
+              // var lonlat=longit+","+lat
+              // markerEvent(marker,lonlat)
+              map.add(marker)
 
-            markers.push(marker)
-          }
+              markers.push(marker)
+            }
 
-          // markerEvent在创建点标记后调用，这里不写了
-          function markerEvent(marker, lonlats) {
-            // AMap.event.addListener(marker, 'click', function () {
-            //   openInfo(marker, lonlat);
-            // })
-          }
+            // markerEvent在创建点标记后调用，这里不写了
+            function markerEvent(marker, lonlats) {
+              // AMap.event.addListener(marker, 'click', function () {
+              //   openInfo(marker, lonlat);
+              // })
+            }
 
 // 初始化点聚合k
-          function initMarkerClusterer() {
-            //添加聚合组件
-            map.plugin(['AMap.MarkerClusterer'], function() {
-              var cluster = new AMap.MarkerClusterer(
-                map,     // 地图实例
-                markers)
-              cluster.setMaxZoom(12)
-            })
-          }
+            function initMarkerClusterer() {
+              //添加聚合组件
+              map.plugin(['AMap.MarkerClusterer'], function() {
+                var cluster = new AMap.MarkerClusterer(
+                  map,     // 地图实例
+                  markers)
+                cluster.setMaxZoom(12)
+              })
+            }
 
 // 添加点标记至点聚合中
-          this.addMarkerClusterer = function() {
-            // let lonlat = [Math.random() + 113, Math.random() + 23]
-            // console.log(lonlat)
-            // 创建 AMap.Icon 实例：
-            let icon = new AMap.Icon({
-              size: new AMap.Size(58, 70),    // 图标尺寸
-              image: 'https://chuyinweilai.store/apk/index_calen.png',  // Icon的图像
-              imageSize: new AMap.Size(58, 70)   // 根据所设置的大小拉伸或压缩图片
-            })
+            this.addMarkerClusterer = function() {
+              // let lonlat = [Math.random() + 113, Math.random() + 23]
+              // console.log(lonlat)
+              // 创建 AMap.Icon 实例：
+              let icon = new AMap.Icon({
+                size: new AMap.Size(58, 70),    // 图标尺寸
+                image: 'https://chuyinweilai.store/apk/index_calen.png',  // Icon的图像
+                imageSize: new AMap.Size(58, 70)   // 根据所设置的大小拉伸或压缩图片
+              })
 
-            // 将 Icon 实例添加到 marker 上:
-            let marker = new AMap.Marker({
-              position: new AMap.LngLat(lonlats[0], lonlats[1]),
-              offset: new AMap.Pixel(-10, -10),
-              icon: icon, // 添加 Icon 实例
-              title: "111",
-              zoom: 13
-            })
-            markerEvent(marker, lonlats)
-            cluster.addMarker(marker)
-          }
+              // 将 Icon 实例添加到 marker 上:
+              let marker = new AMap.Marker({
+                position: new AMap.LngLat(lonlats[0], lonlats[1]),
+                offset: new AMap.Pixel(-10, -10),
+                icon: icon, // 添加 Icon 实例
+                title: "111",
+                zoom: 13
+              })
+              markerEvent(marker, lonlats)
+              cluster.addMarker(marker)
+            }
+          })
+        }
 
-          var geocoder, marker
-          // function regeocoder(lnglatXY,that) {
-          //   AMap.plugin('AMap.Geocoder',function(){
-          //     var geocoder = new AMap.Geocoder({
-          //       radius: 1000,
-          //       extensions: "all"
-          //     });
-          //     var address;
-          //     geocoder.getAddress(lnglatXY, function(status, result) {
-          //       if (status === 'complete' && result.info === 'OK') {
-          //         address = result.regeocode.formattedAddress;
-          //         console.log("address"+address)
-          //         that.ruleForm.addr = address
-          //       }
-          //     });
-          //     if(!marker){
-          //       var marker = new AMap.Marker({
-          //         position: new AMap.LngLat(113.397428, 23.2,112.397428, 23.2),   // 经纬度对象，也可以是经纬度构成的一维数组[116.39, 39.9]
-          //         title: '默认图标'
-          //       });
-          //       var msg_label = '<span>'+ "测试"+'</span>';
-          //       marker.setLabel({
-          //         offset: new AMap.Pixel(20, -10), //显示位置
-          //         content: msg_label //显示内容
-          //       });
-          //       var msg_title = '测试使用的title';
-          //       marker.setTitle(msg_title);
-          //       marker.on("mouseover", function(e) {
-          //         marker.setTop(true);
-          //       });
-          //       marker.on("mouseout", function() {
-          //         marker.setTop(false);
-          //       });
-          //       map.add(marker);
-          //     }
-          //     // marker.setMap(mapObj);
-          //     marker.setPosition(lnglatXY);
-          //   })
-          // }
-          // var that = this
-          // map.on('click', function(e) {
-          //   var lnglatXY = [e.lnglat.getLng(),e.lnglat.getLat()];
-          //   regeocoder(lnglatXY,that)
-          //   that.ruleForm.long = e.lnglat.getLng()
-          //   that.ruleForm.lat = e.lnglat.getLat()
-          // });
-        })
-      }
+        function initLocation(that){
+          var lonlats = []
+          var companyNames = []
+          getBaseTude().then(response => {
+            var i = 0
 
-      function initLocation(that){
-        var lonlats = []
-        var companyNames = []
-        getBaseTude().then(response => {
-          var i = 0
-
-          for (; i < response.data.length; i++) {
-            var str = response.data[i].tude.split(',')
-            // var strComs = response.data[i].companyName.split(',')
-            //产生经纬度数组
-            var tude = [];
-            var name = [];
-            var longit = parseFloat(str[0])
-            var lat = parseFloat(str[1])
-            tude.push(longit)
-            tude.push(lat)
-            lonlats.push(tude)
-            companyNames.push(response.data[i].companyName)
-          }
-          // console.log(companyNames)
-          // console.log(lonlats)
+            for (; i < response.data.length; i++) {
+              var str = response.data[i].tude.split(',')
+              // var strComs = response.data[i].companyName.split(',')
+              //产生经纬度数组
+              var tude = [];
+              var name = [];
+              var longit = parseFloat(str[0])
+              var lat = parseFloat(str[1])
+              tude.push(longit)
+              tude.push(lat)
+              lonlats.push(tude)
+              companyNames.push(response.data[i].companyName)
+            }
+            // console.log(companyNames)
+            // console.log(lonlats)
 
 
-          // let lonlat = [[108.365386, 22.843292], [108.238089, 22.848063], [108.244248, 22.852298]]
-          for (let i = 0; i < lonlats.length; i++) {
-            //获得地点信息
-            var geocoder = new AMap.Geocoder({
-              /// city 指定进行编码查询的城市，支持传入城市名、adcode 和 citycode
-              radius: 10
-            })
-            geocoder.getAddress(lonlats[i], function(status, result) {
-              // console.log(status,result)
-              if (status === 'complete' && result.info === 'OK') {
-                // result为对应的地理位置详细信息
-                //             console.log(result.regeocode.formattedAddress)
-                customMark(lonlats[i][0], lonlats[i][1], companyNames[i])
-                // console.log(address)
-                // this.addresses = address
-              }
-            })
-            // console.log(this.addresses)
-            //添加标记
-            // customMark(lonlat[i][0],lonlat[i][1],address)
-          }
-          // cluster.setMaxZoom(15);
+            // let lonlat = [[108.365386, 22.843292], [108.238089, 22.848063], [108.244248, 22.852298]]
+            for (let i = 0; i < lonlats.length; i++) {
+              //获得地点信息
+              var geocoder = new AMap.Geocoder({
+                /// city 指定进行编码查询的城市，支持传入城市名、adcode 和 citycode
+                radius: 10
+              })
+              geocoder.getAddress(lonlats[i], function(status, result) {
+                // console.log(status,result)
+                if (status === 'complete' && result.info === 'OK') {
+                  // result为对应的地理位置详细信息
+                  //             console.log(result.regeocode.formattedAddress)
+                  customMark(lonlats[i][0], lonlats[i][1], companyNames[i])
+                  // console.log(address)
+                  // this.addresses = address
+                }
+              })
+              // console.log(this.addresses)
+              //添加标记
+              // customMark(lonlat[i][0],lonlat[i][1],address)
+            }
+            // cluster.setMaxZoom(15);
 // 添加自定义标记
-          function customMark(longit, lat, title) {
-            // let lonlat = [108.365386,22.843292];
-            // 创建 AMap.Icon 实例：
-            var icon = new AMap.Icon({
-              size: new AMap.Size(58, 70),    // 图标尺寸
-              image: locationRed,  // Icon的图像
-              imageSize: new AMap.Size(28, 30)   // 根据所设置的大小拉伸或压缩图片
-            })
+            function customMark(longit, lat, title) {
+              // let lonlat = [108.365386,22.843292];
+              // 创建 AMap.Icon 实例：
+              var icon = new AMap.Icon({
+                size: new AMap.Size(58, 70),    // 图标尺寸
+                image: locationRed,  // Icon的图像
+                imageSize: new AMap.Size(28, 30)   // 根据所设置的大小拉伸或压缩图片
+              })
 
-            // 将 Icon 实例添加到 marker 上:
-            var marker = new AMap.Marker({
-              position: new AMap.LngLat(longit, lat),
-              offset: new AMap.Pixel(-10, -10),
-              icon: icon, // 添加 Icon 实例
-              title: '基地  ：'+title,
-              zoom: 13
-            })
-            var msg_label = '<span>' + title + '</span>'
+              // 将 Icon 实例添加到 marker 上:
+              var marker = new AMap.Marker({
+                position: new AMap.LngLat(longit, lat),
+                offset: new AMap.Pixel(-10, -10),
+                icon: icon, // 添加 Icon 实例
+                title: '基地  ：'+title,
+                zoom: 13
+              })
+              var msg_label = '<span>' + title + '</span>'
 
-            marker.setLabel({
-              offset: new AMap.Pixel(20, -10), //显示位置
-              content: msg_label //显示内容
-            })
+              marker.setLabel({
+                offset: new AMap.Pixel(20, -10), //显示位置
+                content: msg_label //显示内容
+              })
 
-            var markerContent =`<div class="description">
+              var markerContent =`<div class="description">
               <span class="title">${title}</span>
               <br />
               <div class="mt-3 detail">
@@ -805,395 +864,412 @@ export default {
               </div>
             </div>`
 
-            marker.on('mouseover', function(e) {
-              marker.setTop(true)
-            })
-            marker.on('mouseout', function() {
-              marker.setTop(false)
-            })
+              marker.on('mouseover', function(e) {
+                marker.setTop(true)
+              })
+              marker.on('mouseout', function() {
+                marker.setTop(false)
+              })
 
-            // var lonlat=longit+","+lat
-            // markerEvent(marker,lonlat)
-            map.add(marker)
+              map.add(marker)
 
-            markers.push(marker)
-          }
+              markers.push(marker)
+            }
 
-          // markerEvent在创建点标记后调用，这里不写了
-          function markerEvent(marker, lonlats) {
-            // AMap.event.addListener(marker, 'click', function () {
-            //   openInfo(marker, lonlat);
-            // })
-          }
+            // markerEvent在创建点标记后调用，这里不写了
+            function markerEvent(marker, lonlats) {
+              // AMap.event.addListener(marker, 'click', function () {
+              //   openInfo(marker, lonlat);
+              // })
+            }
 
 // 初始化点聚合k
-          function initMarkerClusterer() {
-            //添加聚合组件
-            map.plugin(['AMap.MarkerClusterer'], function() {
-              var cluster = AMap.MarkerClusterer(
-                map,     // 地图实例
-                markers)
-              cluster.setMaxZoom(12)
-            })
-          }
+            function initMarkerClusterer() {
+              //添加聚合组件
+              map.plugin(['AMap.MarkerClusterer'], function() {
+                var cluster = AMap.MarkerClusterer(
+                  map,     // 地图实例
+                  markers)
+                cluster.setMaxZoom(12)
+              })
+            }
+          })
+        }
 
-// 添加点标记至点聚合中
-//             this.addMarkerClusterer = function() {
-//               // let lonlat = [Math.random() + 113, Math.random() + 23]
-//               // console.log(lonlat)
-//               // 创建 AMap.Icon 实例：
-//               let icon = new AMap.Icon({
-//                 size: new AMap.Size(58, 70),    // 图标尺寸
-//                 image: 'http://chuyinweilai.store/apk/index_calen.png',  // Icon的图像
-//                 imageSize: new AMap.Size(58, 70)   // 根据所设置的大小拉伸或压缩图片
-//               })
-//
-//               // 将 Icon 实例添加到 marker 上:
-//               let marker = new AMap.Marker({
-//                 position: new AMap.LngLat(lonlats[0], lonlats[1]),
-//                 offset: new AMap.Pixel(-10, -10),
-//                 icon: icon, // 添加 Icon 实例
-//                 title: "111",
-//                 zoom: 13
-//               })
-//               markerEvent(marker, lonlats)
-//               cluster.addMarker(marker)
-//             }
+        function initMarkerClusterer() {
+          //添加聚合组件
+          map.plugin(['AMap.MarkerClusterer'], function() {
+            var cluster = AMap.MarkerClusterer(
+              map,     // 地图实例
+              markers)
+            cluster.setMaxZoom(12)
+          })
+        }
 
-          var geocoder, marker
-          // function regeocoder(lnglatXY,that) {
-          //   AMap.plugin('AMap.Geocoder',function(){
-          //     var geocoder = new AMap.Geocoder({
-          //       radius: 1000,
-          //       extensions: "all"
-          //     });
-          //     var address;
-          //     geocoder.getAddress(lnglatXY, function(status, result) {
-          //       if (status === 'complete' && result.info === 'OK') {
-          //         address = result.regeocode.formattedAddress;
-          //         console.log("address"+address)
-          //         that.ruleForm.addr = address
-          //       }
-          //     });
-          //     if(!marker){
-          //       var marker = new AMap.Marker({
-          //         position: new AMap.LngLat(113.397428, 23.2,112.397428, 23.2),   // 经纬度对象，也可以是经纬度构成的一维数组[116.39, 39.9]
-          //         title: '默认图标'
-          //       });
-          //       var msg_label = '<span>'+ "测试"+'</span>';
-          //       marker.setLabel({
-          //         offset: new AMap.Pixel(20, -10), //显示位置
-          //         content: msg_label //显示内容
-          //       });
-          //       var msg_title = '测试使用的title';
-          //       marker.setTitle(msg_title);
-          //       marker.on("mouseover", function(e) {
-          //         marker.setTop(true);
-          //       });
-          //       marker.on("mouseout", function() {
-          //         marker.setTop(false);
-          //       });
-          //       map.add(marker);
-          //     }
-          //     // marker.setMap(mapObj);
-          //     marker.setPosition(lnglatXY);
-          //   })
-          // }
-          // var that = this
-          // map.on('click', function(e) {
-          //   var lnglatXY = [e.lnglat.getLng(),e.lnglat.getLat()];
-          //   regeocoder(lnglatXY,that)
-          //   that.ruleForm.long = e.lnglat.getLng()
-          //   that.ruleForm.lat = e.lnglat.getLat()
-          // });
-        })
       }
-
-      function initMarkerClusterer() {
-        //添加聚合组件
-        map.plugin(['AMap.MarkerClusterer'], function() {
-          var cluster = AMap.MarkerClusterer(
-            map,     // 地图实例
-            markers)
-          cluster.setMaxZoom(12)
-        })
-      }
-
     }
-  }
-};
-  /* 通过noticeId搜索通知列表获取索引值 */
-  function checkNoticeId(list,id){
-  let i=0;
-  for(let item of list){
-    if(item.noticeId===id) return i;
-    i++;
-  }
-}
-  /* 获取网络时间 */
-  function getNetDateTime() {
-  return request({
-    url: 'http://api.m.taobao.com/rest/api3.do?api=mtop.common.getTimestamp',
-    method: 'get'
-  })
-}
+  };
 </script>
 
 <style scoped lang="scss">
-.home {
-  blockquote {
-    padding: 10px 20px;
-    margin: 0 0 20px;
-    font-size: 17.5px;
-    border-left: 5px solid #eee;
+  .home {
+    blockquote {
+      padding: 10px 20px;
+      margin: 0 0 20px;
+      font-size: 17.5px;
+      border-left: 5px solid #eee;
+    }
+    hr {
+      margin-top: 20px;
+      margin-bottom: 20px;
+      border: 0;
+      border-top: 1px solid #eee;
+    }
+    .col-item {
+      margin-bottom: 20px;
+    }
+
+    ul {
+      padding: 0;
+      margin: 0;
+    }
+
+    font-family: "open sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 13px;
+    color: #676a6c;
+    overflow-x: hidden;
+
+    ul {
+      list-style-type: none;
+    }
+
+    h4 {
+      margin-top: 0px;
+    }
+
+    h2 {
+      margin-top: 10px;
+      font-size: 26px;
+      font-weight: 100;
+    }
+
+    p {
+      margin-top: 10px;
+
+      b {
+        font-weight: 700;
+      }
+    }
+
+    .update-log {
+      ol {
+        display: block;
+        list-style-type: decimal;
+        margin-block-start: 1em;
+        margin-block-end: 1em;
+        margin-inline-start: 0;
+        margin-inline-end: 0;
+        padding-inline-start: 40px;
+      }
+    }
   }
-  hr {
-    margin-top: 20px;
-    margin-bottom: 20px;
-    border: 0;
-    border-top: 1px solid #eee;
-  }
-  .col-item {
-    margin-bottom: 20px;
+  #my_container {
+    width:100%;
+    height: 100%;
   }
 
-  ul {
+  /**
+  * 信息窗口主体
+  */
+  .infoWindow {
+    position: relative !important;
+    box-shadow: none;
+    bottom: 0;
+    left: 0;
+    width: 15.75rem;
+    height: 13.5rem;
     padding: 0;
-    margin: 0;
+    color: #fff;
+    font-size: 12px;
   }
 
-  font-family: "open sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 13px;
-  color: #676a6c;
-  overflow-x: hidden;
-
-  ul {
-    list-style-type: none;
+  /**
+  * 信息窗口外壳
+  */
+  .amap-info-contentContainer .amap-info-sharp {
+    border-top: 8px solid rgba(0, 44, 71, .5);
   }
 
-  h4 {
-    margin-top: 0px;
+  /**
+  * 信息窗口箭头
+  */
+  .amap-info-content {
+    background-color: rgba(0, 44, 71, .5);
   }
 
-  h2 {
-    margin-top: 10px;
-    font-size: 26px;
-    font-weight: 100;
+  /**
+  * 关闭按钮
+  */
+  .amap-info-close {
+    right: 10px;
+    color: #fff;
   }
 
-  p {
-    margin-top: 10px;
-
-    b {
-      font-weight: 700;
-    }
+  #my_container .amap-marker-label {
+    border: 0 none;
+    background-color: #fff;
+    white-space: nowrap;
+    box-shadow: 0 0 5px 0 rgba(0, 0, 0, .3);
+    border-radius: 5px;
   }
 
-  .update-log {
-    ol {
-      display: block;
-      list-style-type: decimal;
-      margin-block-start: 1em;
-      margin-block-end: 1em;
-      margin-inline-start: 0;
-      margin-inline-end: 0;
-      padding-inline-start: 40px;
-    }
+  #my_container .amap-marker-label:after {
+    position: absolute;
+    border: 5px solid transparent;
+    border-top-color: #fff;
+    top: 19px;
+    left: 43%;
+    content: '';
+    width: 0;
+    height: 0;
   }
-}
-#my_container {
-  width:100%;
-  height: 100%;
-}
 
-/**
-* 信息窗口主体
-*/
-.infoWindow {
-  position: relative !important;
-  box-shadow: none;
-  bottom: 0;
-  left: 0;
-  width: 15.00rem;
-  height: 13.5rem;
-  padding: 0;
-  color: #fff;
-  font-size: 12px;
-}
-
-/**
-* 信息窗口外壳
-*/
-.amap-info-contentContainer .amap-info-sharp {
-  border-top: 8px solid rgba(0, 44, 71, .5);
-}
-
-/**
-* 信息窗口箭头
-*/
-.amap-info-content {
-  background-color: rgba(0, 44, 71, .5);
-}
-
-/**
-* 关闭按钮
-*/
-.amap-info-close {
-  right: 10px;
-  color: #fff;
-}
-
-#my_container .amap-marker-label {
-  border: 0 none;
-  background-color: #fff;
-  white-space: nowrap;
-  box-shadow: 0 0 5px 0 rgba(0, 0, 0, .3);
-  border-radius: 5px;
-}
-
-#my_container .amap-marker-label:after {
-  position: absolute;
-  border: 5px solid transparent;
-  border-top-color: #fff;
-  top: 19px;
-  left: 43%;
-  content: '';
-  width: 0;
-  height: 0;
-}
-
-.icon-s {
-  display: block;
-  margin: 0 auto;
-  width: 0;
-  height: 0;
-  border-style: solid;
-  border-width: 40px;
-  border-top-color: red;
-  border-right-color: blue;
-  border-bottom-color: yellow;
-  border-left-color: black;
-}
+  .icon-s {
+    display: block;
+    margin: 0 auto;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 40px;
+    border-top-color: red;
+    border-right-color: blue;
+    border-bottom-color: yellow;
+    border-left-color: black;
+  }
 </style>
 
 <!--首页元素布局-->
-<style type="text/css">
-  .top-panle{
-    max-width: 100%;
-    height: 160px;
-    padding: 10% 1.5%;
-    border: 1px solid #e0e0e0;
-    border-radius: 10px;
-    box-shadow: 3px 3px 10px 0px rgba(1,1,1,0.2);
+<style scoped type="text/css">
+  #main-panle{
+    display: grid;
+    grid-template-columns: 0.4fr 0.6fr 0.4fr;
+    grid-template-rows:0.9fr 0.8fr;
+    gap: 0.5% 0.5%;
+    grid-template-areas:
+      "left-top mid-top right-top "
+      "bottom bottom bottom"
+  ;
+
   }
 
-  .left-mid1 {
-    padding: 2%;
-    border: 1px solid #e0e0e0;
+  .left-top {
+    grid-area: left-top;
+    margin-top: 1%;
+    /*padding: 2%;*/
+    /*border: 1px solid #e0e0e0;
     border-radius: 10px;
-    box-shadow: 3px 3px 10px 0px rgba(1,1,1,0.2);
+    box-shadow: 3px 3px 10px 0px rgba(1,1,1,0.2);*/
   }
 
-  .left-mid2 {
-    padding: 2%;
-    border: 1px solid #e0e0e0;
-    border-radius: 10px;
-    box-shadow: 3px 3px 10px 0px rgba(1,1,1,0.2);
-  }
-
-  .left-mid3 {
-    padding: 2%;
-    border: 1px solid #e0e0e0;
-    border-radius: 10px;
-    box-shadow: 3px 3px 10px 0px rgba(1,1,1,0.2);
-  }
-
-  .mid-mid {
-    height: 500px;
+  .mid-top {
+    grid-area: mid-top;
     padding: 0.2%;
-    border: 1px solid #e0e0e0;
+    /*border: 1px solid #e0e0e0;
     border-radius: 10px;
-    box-shadow: 3px 3px 10px 0px rgba(1,1,1,0.2);
+    box-shadow: 3px 3px 10px 0px rgba(1,1,1,0.2);*/
 
   }
 
-  .right-mid1 {
+  .right-top {
+    grid-area: right-top;
     padding: 2%;
-    height: 500px;
-    max-width: 100%;
-    min-width: 100%;
-    border: 1px solid #e0e0e0;
-    border-radius: 10px;
+    margin-top: 1%;
+    margin-bottom: 1%;
+    position: relative;
+    background-color: rgba(11, 74, 175, 0.43);
+    border: 1px solid #33a8f5;
+    box-shadow: inset 0 0 15px rgba(66, 198, 250, 0.98);
+    /*background-color: rgba(3, 194, 155, 0.17);*/
+
+  }
+
+  .bottom{
+    grid-area: bottom;
+    /*border: 1px solid #e0e0e0;*/
+    /*border-radius: 10px;
     box-shadow: 3px 3px 10px 0px rgba(1,1,1,0.2);
-  }
-
-  .left-bottom{
-    margin-top: 10px;
-    padding: 2%;
-    border: 1px solid #e0e0e0;
-    border-radius: 10px;
-    box-shadow: 3px 3px 10px 0px rgba(1,1,1,0.2);
-    margin-bottom: 2%;
-    height: 380px;
-  }
-  .right-bottom{
-    margin-top: 10px;
-    padding: 2%;
-    border: 1px solid #e0e0e0;
-    border-radius: 10px;
-    box-shadow: 3px 3px 10px 0px rgba(1,1,1,0.2);
-    margin-bottom: 2%;
-    height: 380px;
-  }
-
-  .el-carousel__item:nth-child(2n) {
-  }
-  .el-carousel__item:nth-child(2n+1) {
-  }
-
-  .noticeSlim{
-    color: #f34f4f;
-    font-size: 16px;
-    text-align: center;
-    margin: 2% 15%
-  }
-  .noticeSlim:hover{
-    color: #0ab685;
-    cursor: pointer;
-
+    margin-bottom: 0.5%;
+    min-width: 500px;*/
   }
 
   .title1{
-    text-align: left;
-    color: #7f7f7f;
-    font-size:15px;
-    margin: 8px;
-    z-index: 1;
+    font-family: "微软雅黑 Light";
+    width: 200px;
+    font-size: 25px;
+    margin-top: 2.5%;
+    margin-bottom: 0;
+    margin-left: 10%;
+    position: relative;
+    float: left;
+    color: rgb(101, 238, 250);
+    text-shadow: 0 0 1px rgb(3, 170, 253);
+  }
+  .title2{
+    font-family: "微软雅黑 Light";
+    width: 180px;
+    font-size: 18px;
+    margin-top: 6%;
+    margin-bottom: 0;
+    margin-left: 6%;
+    position: relative;
+    color: rgb(101, 238, 250);
+    text-shadow: 0 0 1px rgb(3, 170, 253);
+  }
+  .tip1 {
+    font-family: "微软雅黑 Light";
+    width: 180px;
+    font-size: 16px;
+    margin-left: 6%;
+    position: relative;
+    color: rgb(101, 238, 250);
+    text-shadow: 0 0 1px rgb(3, 170, 253);
+  }
+  #icon1{
+    font-size: 18px;
+    position: relative;
+    color: rgb(255, 23, 2);
+
+  }
+  #icon2{
+    font-size: 18px;
+    position: relative;
+    color: rgba(3, 253, 136, 0.83);
   }
   .text1{
+    width: 60px;
+    font-size: 35px;
+    position: relative;
+    margin-top: 1.8%;
+    margin-bottom: 0;
+    margin-left: 3%;
+    float: left;
+    text-align: right;
+    color: rgba(44, 252, 228, 1);
+    text-shadow: 0 0 1px rgb(75, 192, 250);
+  }
+  .text2{
+    font-size: 45px;
+    position: relative;
+    margin-top: 13%;
+    margin-bottom: 15%;
     text-align: center;
-    color:#2495b8;
-    font-size: 50px;
-    margin:25px 10px
+    color: rgba(44, 252, 228, 1);
+    text-shadow: 0 0 1px rgb(75, 192, 250);
   }
-  .data1{
-    text-align: left;
-    color: #7f7f7f;
-    font-size: 13px;
-    margin: 8px
-  }
-  .sysNoticeTitle{
-    text-align: center;
-    font-size:larger;
-    color: #959595;
-    margin: 0 40%
-  }
-  .sysNoticeTitle:hover {
-    cursor: pointer;
-    color: #1ab394;
-  }
+
+
   .allNotice{
     padding: 5%;
   }
-</style>
 
+  .image-border {
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    z-index: 99;
+
+  }
+
+  .image-border1 {
+    top: 0;
+    left: 0;
+    border-left: 3px solid #4fe6fa;
+    border-top: 3px solid #4fe6fa;
+  }
+
+  .image-border2 {
+    top: 0;
+    right: -2px;
+    border-right: 3px solid #4fe6fa;
+    border-top: 3px solid #4fe6fa;
+  }
+
+  .image-border3 {
+    bottom: 0;
+    left: 0;
+    border-bottom: 3px solid #4fe6fa;
+    border-left: 3px solid #4fe6fa;
+  }
+
+  .image-border4 {
+    bottom: 0;
+    right: -2px;
+    border-right: 3px solid #4fe6fa;
+    border-bottom: 3px solid #4fe6fa;
+  }
+
+  .stuCounts{
+    padding-top: 2%;
+    height: 55%;
+    margin-bottom: 5%;
+    position: relative;
+    background-color: rgba(6, 72, 175, 0.56);
+    border: 1px solid #33a8f5;
+    box-shadow: inset 0 0 15px rgba(66, 198, 250, 0.98);
+
+  }
+  .countsItem{
+    position: relative;
+    height: 21.5%;
+    margin-bottom: 2%;
+    margin-left: 1%;
+    margin-right: 1%;
+    text-align: left;
+    font-size:15px;
+    background-color: rgba(21, 201, 201, 0.22);
+    border: 1px solid #33a8f5;
+    box-shadow: inset 0 0 15px rgba(66, 198, 250, 0.98);
+  }
+  .todayCounts {
+    height: 39%;
+    width: 48%;
+    margin-right: 2%;
+    float: left;
+    position: relative;
+    background-color: rgba(13, 88, 206, 0.56);
+    border: 1px solid #33a8f5;
+    box-shadow: inset 0 0 15px rgba(66, 198, 250, 0.98);
+  }
+  .todayLogs{
+    height: 39%;
+    width: 48%;
+    margin-left: 2%;
+    float: left;
+    position: relative;;
+    background-color: rgba(13, 88, 206, 0.56);
+    border: 1px solid #33a8f5;
+    box-shadow: inset 0 0 15px rgba(66, 198, 250, 0.98);
+  }
+
+  .chart1{
+    width: 59%;
+    height: 100%;
+    margin-left: 1%;
+    position: relative;
+    float: left;
+    background-color: rgba(27, 100, 215, 0.43);
+    border: 1px solid #33a8f5;
+    box-shadow: inset 0 0 15px rgba(66, 198, 250, 0.98);
+  }
+  .chart2{
+    width: 39%;
+    height: 100%;
+    margin-right: 1%;
+    position: relative;
+    float: left;
+    background-color: rgba(27, 100, 215, 0.43);
+    border: 1px solid #33a8f5;
+    box-shadow: inset 0 0 15px rgba(66, 198, 250, 0.98);
+  }
+
+</style>
