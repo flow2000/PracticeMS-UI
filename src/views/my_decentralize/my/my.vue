@@ -160,6 +160,23 @@ export default {
   data() {
     let self = this
     return {
+      rules: {
+        companyName: [
+          { required: true, message: "单位名称不能为空", trigger: "blur" }
+        ],
+        province: [
+          { required: true, message: "所属地区不能为空", trigger: "blur" }
+        ],
+        address: [
+          { required: true, message: "详细地址不能为空", trigger: "change" }
+        ],
+        nature: [
+          { required: true, message: "单位性质不能为空", trigger: "change" }
+        ],
+        businessScope: [
+          { required: true, message: "经营范围不能为空", trigger: "change" }
+        ]
+      },
       size: '',
       practiceInfo : [],
       prePracticeInfo : [],
