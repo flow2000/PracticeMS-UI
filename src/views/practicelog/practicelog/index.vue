@@ -52,7 +52,7 @@
           icon="el-icon-upload"
           size="mini"
           @click="openAppraisal"
-          v-hasPermi="['practicelog:practicelog:add']"
+          v-hasPermi="['practicelog:practicelog:upload']"
         >上传实习鉴定</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -62,7 +62,7 @@
           icon="el-icon-upload2"
           size="mini"
           @click="openSummery"
-          v-hasPermi="['practicelog:practicelog:add']"
+          v-hasPermi="['practicelog:practicelog:upload']"
         >上传实习总结</el-button>
       </el-col>
       <el-col :span="1.5">
