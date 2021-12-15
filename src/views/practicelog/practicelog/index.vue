@@ -608,7 +608,7 @@
           type: "warning"
         }).then(() => {
           this.exportLoading = true;
-          return exportArchivedPracticelog(queryParams);
+          return exportPracticelog(queryParams);
         }).then(response => {
           this.download(response.msg);
           this.exportLoading = false;
