@@ -72,7 +72,7 @@
         <el-table-column label="分散实习申请编号" align="center" prop="applyId" v-if="false"/>
         <el-table-column label="学生姓名" align="center" prop="student.nickName" />
         <el-table-column label="经营范围" align="center" prop="businessScope" />
-        <el-table-column label="审核人姓名" align="center" prop="auditor.nickName" >
+        <el-table-column v-if="auditor != null" label="审核人姓名" align="center" prop="auditor.nickName" >
           <template slot-scope="scope">
             <div v-if="scope.row.auditor.nickName">
               <el-popover
@@ -87,6 +87,9 @@
             </div>
             <div v-else>--</div>
           </template>
+        </el-table-column>
+        <el-table-column v-else label="审核人姓名" align="center" >
+            <div>--</div>
         </el-table-column>
         <el-table-column label="实习地点" align="center" prop="location.companyName" >
           <template slot-scope="scope">
