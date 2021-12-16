@@ -2,8 +2,7 @@
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px"  v-hasPermi="['practice-score:practiceScore:edit']">
       <el-form-item label="查询字段" prop="searchKey">
-        <el-select v-model="queryParams.searchKey" placeholder="请选择查询的字段（默认全部）" clearable size="small">
-          <el-option label="所有字段" value="allKeys"></el-option>
+        <el-select v-model="queryParams.searchKey" placeholder="请选择查询的字段" clearable size="small">
           <el-option label="学号" value="username"></el-option>
           <el-option label="姓名" value="nickname"></el-option>
         </el-select>
@@ -217,10 +216,10 @@
           <iframe :src="form.summary" width="850" height="700" ></iframe>
         </el-form-item>
         <el-form-item label="单位评定成绩" prop="companyScore">
-          <el-input v-model="form.companyScore" placeholder="请输入实习单位评定成绩" />
+          <el-input v-model="form.companyScore" oninput="value=value.replace(/[^\d]/g,'')"  maxLength='3' placeholder="请输入实习单位评定成绩" />
         </el-form-item>
         <el-form-item label="指导老师评定成绩" prop="teacherScore">
-          <el-input v-model="form.teacherScore" placeholder="请输入实习指导老师评定成绩" />
+          <el-input v-model="form.teacherScore" oninput="value=value.replace(/[^\d]/g,'')"  maxLength='3' placeholder="请输入实习指导老师评定成绩" />
         </el-form-item>
 <!--        <el-form-item label="最终成绩" prop="finalScore">-->
 <!--          <el-input v-model="form.finalScore" placeholder="请输入最终成绩" />-->
@@ -504,6 +503,16 @@ export default {
     getList() {
       this.loading = true;
       this.queryParams.teacherId = this.user.userId
+
+      if (this.queryParams.searchKey!=null){
+        if (this.queryParams.searchKey =="username"){
+          this.queryParams.username=this.queryParams.searchValue;
+        }
+        if (this.queryParams.searchKey =="nickname"){
+          this.queryParams.nickname=this.queryParams.searchValue;
+        }
+      }
+      console.log(this.queryParams);
       listPracticeScore(this.queryParams).then(response => {
 
         this.practiceScoreList = response.rows;
@@ -636,7 +645,17 @@ export default {
       this.form.filePath = response.url;
       this.msgSuccess(response.msg);
     },
-
+    //数据的处理，只能输入0-100
+    judgeNumber(number) {
+      number = Number(number);
+      if (number>100){
+        return false;
+      }
+      if(number<0){
+        return false;
+      }
+      return true;
+    },
     /** 新增按钮操作 */
     handleAdd() {
       this.reset();
@@ -662,6 +681,14 @@ export default {
       this.$refs["form"].validate(valid => {
         if (valid) {
           if (this.form.scoreId != null) {
+            if (!this.judgeNumber(this.form.companyScore)){
+              this.msgError("请输入0-100的整数");
+              return;
+            }
+            if(!this.judgeNumber(this.form.teacherScore)){
+              this.msgError("请输入0-100的整数");
+              return;
+            }
             updatePracticeScore(this.form).then(response => {
               this.msgSuccess("修改成功");
               this.open = false;
